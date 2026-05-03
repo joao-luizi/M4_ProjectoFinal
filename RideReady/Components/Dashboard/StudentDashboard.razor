@@ -1,0 +1,136 @@
+﻿@using System.Globalization
+
+@code {
+    // Mock user data
+    private int classesRemaining = 5;
+    private string paymentStatus = "paid"; // or "pending", "late"
+
+    private List<ClassItem> studentClasses = new()
+    {
+        new ClassItem { Id = 1, Title = "Volteio", StartTime = DateTime.Now.AddDays(1), Status = "scheduled" },
+        new ClassItem { Id = 2, Title = "Sela I", StartTime = DateTime.Now.AddDays(3), Status = "scheduled" },
+        new ClassItem { Id = 3, Title = "Sela II", StartTime = DateTime.Now.AddDays(5), Status = "scheduled" },
+        new ClassItem { Id = 4, Title = "Individual", StartTime = DateTime.Now.AddDays(7), Status = "scheduled" },
+    };
+
+    private List<ClassItem> UpcomingClasses => studentClasses
+        .Where(c => c.Status == "scheduled" && c.StartTime > DateTime.Now)
+        .OrderBy(c => c.StartTime)
+        .Take(4)
+        .ToList();
+
+    private string GetPaymentColor() => paymentStatus switch
+    {
+        "paid" => "bg-green",
+        "pending" => "bg-yellow",
+        "late" => "bg-red",
+        _ => "bg-gray"
+    };
+
+    private string GetPaymentLabel() => paymentStatus switch
+    {
+        "paid" => "Pago",
+        "pending" => "Pendente",
+        "late" => "Atrasado",
+        _ => "Desconhecido"
+    };
+
+    private string GetPaymentDescription() => paymentStatus switch
+    {
+        "paid" => "Tudo em dia",
+        "pending" => "Pagamento esperado",
+        "late" => "Acesso limitado",
+        _ => ""
+    };
+
+    public class ClassItem
+    {
+        public int Id { get; set; }
+        public string Title { get; set; }
+        public DateTime StartTime { get; set; }
+        public string Status { get; set; }
+    }
+}
+
+<p class="text-muted mb-6">Aqui está o resumo das suas aulas e atividades.</p>
+
+<RadzenRow class="rz-mb-4">
+    <RadzenColumn Width="50%">
+        <RadzenCard Style="border-radius: 8px; width: 100%; height: 100%;">
+            <RadzenStack Gap="0.5rem" class="rz-p-4">
+                <RadzenText Text="Aulas Agendadas" TextStyle="TextStyle.H6" />
+                <RadzenText Text="@studentClasses.Count.ToString()" TextStyle="TextStyle.H4" Style="font-weight: bold;" />
+                <RadzenText TextStyle="TextStyle.Caption" class="rz-text-secondary">
+                    @if (studentClasses.Count > 0)
+                    {
+                        <text>Próxima: @studentClasses.First().StartTime.ToString("dd/MM/yyyy")</text>
+                    }
+                    else
+                    {
+                        <text>Nenhuma aula agendada</text>
+                    }
+                </RadzenText>
+            </RadzenStack>
+        </RadzenCard>
+    </RadzenColumn>
+
+    <RadzenColumn Width="50%">
+        <RadzenCard Style="border-radius: 8px; width: 100%; height: 100%;">
+            <RadzenStack Gap="0.5rem" class="rz-p-4">
+                <RadzenText Text="Aulas Restantes" TextStyle="TextStyle.H6" />
+                <RadzenText Text="@classesRemaining.ToString()" TextStyle="TextStyle.H4" Style="font-weight: bold;" />
+                <RadzenText Text="No seu pacote atual" TextStyle="TextStyle.Caption" class="text-muted" />
+            </RadzenStack>
+        </RadzenCard>
+    </RadzenColumn>
+
+    <RadzenColumn Width="50%">
+        <RadzenCard Style="border-radius: 8px; width: 100%; height: 100%;">
+            <RadzenStack Gap="0.5rem" class="rz-p-4">
+                <RadzenText Text="Status de Pagamento" TextStyle="TextStyle.H6" />
+                <div class="@GetPaymentColor() rounded-circle w-3 h-3 mb-1"></div>
+                <RadzenText Text="@GetPaymentLabel()" TextStyle="TextStyle.H4" Style="font-weight: bold;" />
+                <RadzenText Text="@GetPaymentDescription()" TextStyle="TextStyle.Caption" class="text-muted" />
+            </RadzenStack>
+        </RadzenCard>
+    </RadzenColumn>
+
+    <RadzenColumn Width="50%">
+        <RadzenCard Style="border-radius: 8px; width: 100%; height: 100%;">
+            <RadzenStack Gap="0.5rem" class="rz-p-4">
+                <RadzenText Text="Horário Escolar" TextStyle="TextStyle.H6" />
+                <RadzenText Text="8:00 - 19:00" TextStyle="TextStyle.H4" Style="font-weight: bold;" />
+                <RadzenText Text="Segunda a Sábado" TextStyle="TextStyle.Caption" class="text-muted" />
+            </RadzenStack>
+        </RadzenCard>
+    </RadzenColumn>
+</RadzenRow>
+
+<h3 class="text-xl font-semibold mt-8 mb-4">Próximas Aulas</h3>
+
+@if (UpcomingClasses.Any())
+{
+    <RadzenRow class="rz-mb-4">
+        @foreach (var item in UpcomingClasses)
+        {
+            <RadzenColumn Width="25%">
+                <RadzenCard Style="border-radius: 8px; width: 100%; height: 100%;">
+                    <RadzenStack Gap="0.5rem" class="rz-p-4">
+                        <RadzenText Text="@item.Title" TextStyle="TextStyle.H6" Style="font-weight: bold;" />
+                        <RadzenText Text="@item.StartTime.ToString("f", CultureInfo.GetCultureInfo("pt-PT"))" TextStyle="TextStyle.Caption" class="text-muted" />
+                    </RadzenStack>
+                </RadzenCard>
+            </RadzenColumn>
+        }
+    </RadzenRow>
+}
+else
+{
+    <RadzenCard class="text-center p-6 border rounded items d-flex justify-content-center">
+        <RadzenStack Gap="0.5rem" class="rz-p-4">
+            <RadzenText Text="Você não tem aulas agendadas." TextStyle="TextStyle.Caption" class="text-muted" />
+            <RadzenButton Text="Ver Aulas Disponíveis" Class="mt-2" NavigateTo="/classes" />
+        </RadzenStack>
+    </RadzenCard>
+}
+

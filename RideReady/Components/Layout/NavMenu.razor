@@ -1,0 +1,40 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using SharedLibrary.Models.Static_Class
+@inject NavigationManager NavigationManager
+@inject SignInManager<EMUser> SignInManager
+@rendermode InteractiveServer
+
+
+<RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0" class="ms-3">
+    <RadzenSidebarToggle Click="@(() => sidebarExpanded = !sidebarExpanded)" />
+</RadzenStack>
+<RadzenSidebar Responsive="false" @bind-Expanded="@sidebarExpanded" style="position: absolute; z-index: 3;">
+    <RadzenStack AlignItems="AlignItems.End" class="rz-p-2">
+        <RadzenButton Icon="west" Variant="Variant.Text" ButtonStyle="ButtonStyle.Secondary" Click="@(() => sidebarExpanded = false)" />
+    </RadzenStack>
+    <RadzenPanelMenu>
+        <RadzenPanelMenuItem Path="/dashboard" Text="Home" Icon="home" Style="font-size: 1.2rem" Click="@(() => sidebarExpanded = !sidebarExpanded)" />
+        <AuthorizeView>
+            <Authorized>
+                @* <RadzenPanelMenuItem Path="/dashboard" Text="Dashboard" Icon="account_box" Style="font-size: 1.2rem" Click="@(() => sidebarExpanded = !sidebarExpanded)" /> *@
+                <RadzenPanelMenuItem Path="/lessons" Text="Lessons" Icon="event" Style="font-size: 1.2rem" Click="@(() => sidebarExpanded = !sidebarExpanded)" />
+            </Authorized>
+        </AuthorizeView>
+        <AuthorizeView Roles="@StaticRole.Admin">
+            <Authorized>
+                <RadzenPanelMenuItem Path="/users" Text="Users" Icon="account_box" Style="font-size: 1.2rem" Click="@(() => sidebarExpanded = !sidebarExpanded)" />
+                <RadzenPanelMenuItem Path="/horses" Text="Horses" Icon="motorcycle" Style="font-size: 1.2rem" Click="@(() => sidebarExpanded = !sidebarExpanded)" />
+            </Authorized>
+        </AuthorizeView>
+    </RadzenPanelMenu>
+</RadzenSidebar>
+
+@if (sidebarExpanded)
+{
+    <div @onclick="@(() => sidebarExpanded = false)" class="rz-dialog-mask" style="position: absolute; z-index: 2"></div>
+}
+
+@code {
+    bool sidebarExpanded = false;
+}
+

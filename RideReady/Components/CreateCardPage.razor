@@ -1,0 +1,117 @@
+﻿@page "/createLesson"
+@rendermode InteractiveServer
+
+@using Microsoft.EntityFrameworkCore
+@using RepositoryLibrary.IServices
+@using RepositoryLibrary.Models
+@using RepositoryLibrary.Models.DTOs
+@inject ILessonService lessonService
+@inject ISchoolService schoolService
+@inject Radzen.DialogService dialogService
+@inject ILessonTypeService lessonTypeService
+@inject IUserService userService
+@inject NavigationManager NavigationManager
+
+@if(lesson is null || lessonTypes is null || teachers is null || schools is null)
+{
+    <p>Loading...</p>
+}
+else{
+
+
+
+
+<RadzenStack Gap="1rem" Orientation="Orientation.Vertical" JustifyContent="JustifyContent.SpaceBetween" Style="height: 100%;">
+    <RadzenTemplateForm Data="@lesson" Submit="@((Lesson args) => { Submit(args); })">
+<RadzenStack>
+    <RadzenFormField Text="SchoolName" Variant="Variant.Filled">
+      <RadzenDropDown Data="schools"
+      TextProperty="SchoolName"
+      ValueProperty="SchoolId"
+      Change="OnSchoolSelected" 
+      @bind-Value="selectedSchoolId"
+      Placeholder="Escolha a escola..." />
+    </RadzenFormField>
+    <RadzenFormField Text="Tipo de Aula" Variant="Variant.Filled">
+        <RadzenDropDown  Data="lessonTypes"  TextProperty="Name"  @bind-Value="lesson.LessonType"/>
+    </RadzenFormField>
+    <RadzenFormField Text="Professor" Variant="Variant.Filled">
+        <RadzenDropDown  Data="teachers"  TextProperty="Name"  ValueProperty="Id"
+      @bind-Value="selectedTeacherId"
+      Change="OnTeacherSelected"
+      Placeholder="Escolha o professor…"/>
+    </RadzenFormField>
+    <RadzenFormField Text="Data da Aula" Variant="Variant.Filled">
+        <RadzenDatePicker @bind-Value="@lesson.BeginOfLesson" ShowTime="@true" />
+    </RadzenFormField>
+      <RadzenFormField Text="Numero Maximo de Alunos" Variant="Variant.Filled">
+        <RadzenNumeric @bind-Value="MaxSpots" ShowTime="@true" />
+    </RadzenFormField>
+</RadzenStack>
+<RadzenStack Orientation="Orientation.Horizontal" Style="width: 100%" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.End">
+          <RadzenButton ButtonType="ButtonType.Submit" Size="ButtonSize.Large"  Text="Save" Style="margin: 0.5rem"/>
+        <RadzenButton Click="@((args) => dialogService.Close(true))" Variant="Variant.Flat" Text="Close" Size="ButtonSize.Large" Style="margin: 0.5rem" />
+</RadzenStack>
+</RadzenTemplateForm>
+
+</RadzenStack>
+}
+
+@code {
+    [Parameter] public int lessonId { get; set; }
+    [Parameter] public bool ShowClose { get; set; } = true;
+    Lesson lesson {get; set;}  = new Lesson ();
+    List<School> schools {get; set;}
+    string selectedTeacherId;
+    int selectedSchoolId;
+    int MaxSpots;
+    private IEnumerable<LessonType> lessonTypes {get; set;} 
+    private IEnumerable<UpdateUserDto> teachers {get; set;} 
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        @* lesson = await lessonService.GetLessonByIdAsync(lessonId); *@
+        lessonTypes = await lessonTypeService.GetLessonTypes();
+        teachers = await userService.GetUsersByRole("Teacher");
+        schools = await schoolService.GetSchoolsAsync();
+       
+    }
+
+  void OnTeacherSelected(object teacherId)
+    {
+      // Always replace the collection with a single entry:
+      lesson.LessonProfs = new List<LessonProf>
+      {
+        new LessonProf {
+          Lesson = lesson,
+          UserId = (string)teacherId
+        }
+      };
+    }
+
+  async Task OnSchoolSelected(object SchoolId)
+  {
+    var selectedSchool = await schoolService.GetSchoolByIdAsync((int)SchoolId);
+    if (selectedSchool != null)
+    {
+        lesson.School = selectedSchool;
+    }
+    else
+    {
+        // Lida com caso de escola não encontrada
+        Console.WriteLine("Escola não encontrada.");
+    }
+  }
+  async Task Submit(Lesson changedLesson)
+  {
+    changedLesson.EndOfLesson = changedLesson.BeginOfLesson.AddMinutes(changedLesson.LessonType.DurationInMinutes);
+    changedLesson.MaxSpots =MaxSpots; 
+    // This is where you send it back to your service:
+    var createdLesson = await lessonService.CreateLessonAsync(changedLesson);
+    dialogService.Close();
+    NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
+    // then maybe show a notification or close dialog
+  }
+}

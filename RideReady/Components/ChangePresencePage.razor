@@ -1,0 +1,78 @@
+﻿@page "/editPresence/{lessonId}"
+@rendermode InteractiveServer
+
+@using Microsoft.EntityFrameworkCore
+@using RepositoryLibrary.IServices
+@using RepositoryLibrary.Models
+@using RepositoryLibrary.Models.DTOs
+@using RepositoryLibrary.Services
+@inject IBookingService bookingService
+@inject ILessonService lessonService
+@inject Radzen.DialogService dialogService
+@inject ILessonTypeService lessonTypeService
+@inject IUserService userService
+@inject NavigationManager NavigationManager
+
+
+
+@if(lesson is null )
+{
+    <p>Loading...</p>
+}
+else{
+<RadzenStack  Orientation="Orientation.Vertical" JustifyContent="JustifyContent.SpaceBetween" Style="height: 100%;">
+<RadzenStack>
+    @if(bookings.Any()){
+        foreach(Booking booking in bookings){
+            <p>@UserNames[booking.UserId] - @booking.WasPresent  - <RadzenButton Click=@(args => ChangePresence(booking.UserId)) Text="Marcar Presença" /></p>
+        }
+    }
+
+</RadzenStack>
+<RadzenStack Orientation="Orientation.Horizontal" Style="width: 100%" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.End">
+          <RadzenButton ButtonType="ButtonType.Submit" Size="ButtonSize.Large"  Text="Save" Style="margin: 0.5rem"/>
+        <RadzenButton Click="@((args) => dialogService.Close(true))" Variant="Variant.Flat" Text="Close" Size="ButtonSize.Large" Style="margin: 0.5rem" />
+</RadzenStack>
+</RadzenStack>
+}
+
+@code {
+    @* [Parameter] public int lessonId { get; set; } *@
+    [Parameter] public int LessonId { get; set; }
+    [Parameter] public bool ShowClose { get; set; } = true;
+    Lesson lesson {get; set;} 
+    string selectedTeacherId;
+    private IEnumerable<LessonType> lessonTypes {get; set;} 
+    private IEnumerable<UpdateUserDto> teachers {get; set;} 
+    private IEnumerable<Booking> bookings {get; set;}
+        private Dictionary<string, string> UserNames {get; set;}
+
+    protected override async Task OnParametersSetAsync()
+    {
+        UserNames = new Dictionary<string, string>();
+        await base.OnParametersSetAsync();
+        var test = (int)LessonId;
+        lesson = await lessonService.GetLessonByIdAsync(LessonId);
+        bookings =  lesson.Bookings ?? [];
+        if(bookings.Any()) 
+        {
+            foreach(Booking booking in bookings)
+            {
+                var user = await userService.GetUserById(booking.UserId);
+                UserNames[booking.UserId] = user.UserName;
+            }
+        }
+        @* order = dbContext.Orders.Where(o => o.OrderID == OrderID) *@
+                          @* .Include("Customer") *@
+                          @* .Include("Employee").FirstOrDefault(); *@
+
+        @* orderDetails = dbContext.OrderDetails.Where(o => o.OrderID == OrderID).Include("Order").ToList(); *@
+    }
+
+    private async Task ChangePresence(string userId)
+    {
+        await bookingService.ChangeBookingPresenceAsync(userId, LessonId);
+        @* NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true); *@
+    }
+
+}

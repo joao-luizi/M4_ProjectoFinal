@@ -1,0 +1,19 @@
+﻿@page "/notification"
+@using Microsoft.AspNetCore.Identity
+@inject SignInManager<EMUser> Manager
+@inject NavigationManager NavigationManager
+
+<h3>You signed out successfully</h3>
+
+@code {
+
+    protected async override Task OnInitializedAsync()
+    {
+        await Manager.SignOutAsync();
+
+        // settimeout to redirect
+        await Task.Delay(10);
+
+        NavigationManager.NavigateTo("/", forceLoad: true);
+    }
+}

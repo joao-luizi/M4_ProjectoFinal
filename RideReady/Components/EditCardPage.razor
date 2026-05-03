@@ -1,0 +1,100 @@
+﻿@page "/editLesson/{lessonId}"
+@rendermode InteractiveServer
+
+@using Microsoft.EntityFrameworkCore
+@using RepositoryLibrary.IServices
+@using RepositoryLibrary.Models
+@using RepositoryLibrary.Models.DTOs
+@inject ILessonService lessonService
+@inject Radzen.DialogService dialogService
+@inject ILessonTypeService lessonTypeService
+@inject IUserService userService
+@inject NavigationManager NavigationManager
+
+@if(lesson is null || lessonTypes is null || teachers is null)
+{
+    <p>Loading...</p>
+}
+else{
+
+
+
+
+<RadzenStack Gap="1rem" Orientation="Orientation.Vertical" JustifyContent="JustifyContent.SpaceBetween" Style="height: 100%;">
+    <RadzenTemplateForm Data="@lesson" Submit="@((Lesson args) => { Submit(args); })">
+<RadzenStack>
+    <RadzenFormField Text="SchoolName" Variant="Variant.Filled">
+      <RadzenTextBox @bind-Value="@lesson.School.SchoolName" />
+    </RadzenFormField>
+    <RadzenFormField Text="Tipo de Aula" Variant="Variant.Filled">
+        <RadzenDropDown  Data="lessonTypes"  TextProperty="Name"  @bind-Value="lesson.LessonType"/>
+    </RadzenFormField>
+    <RadzenFormField Text="Professor" Variant="Variant.Filled">
+        <RadzenDropDown  Data="teachers"  TextProperty="Name"  ValueProperty="Id"
+      @bind-Value="selectedTeacherId"
+      Change="OnTeacherSelected"
+      Placeholder="Select a teacher…"/>
+    </RadzenFormField>
+    <RadzenFormField Text="RadzenDatePicker" Variant="Variant.Filled">
+        <RadzenDatePicker @bind-Value="@lesson.BeginOfLesson" ShowTime="@true" />
+    </RadzenFormField>
+</RadzenStack>
+<RadzenStack Orientation="Orientation.Horizontal" Style="width: 100%" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.End">
+          <RadzenButton ButtonType="ButtonType.Submit" Size="ButtonSize.Large"  Text="Save" Style="margin: 0.5rem"/>
+        @* <RadzenButton ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Large" Icon="cancel" Text="Cancel"  /> *@
+        <RadzenButton Click="@((args) => dialogService.Close(true))" Variant="Variant.Flat" Text="Close" Size="ButtonSize.Large" Style="margin: 0.5rem" />
+</RadzenStack>
+</RadzenTemplateForm>
+    @* <RadzenStack Visible="@ShowClose" Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" Gap="0.5rem">
+        <RadzenButton Click="@((args) => dialogService.Close(true))" Variant="Variant.Flat" Text="Close" Style="width: 120px" />
+    </RadzenStack> *@
+</RadzenStack>
+}
+
+@code {
+    [Parameter] public int lessonId { get; set; }
+    [Parameter] public bool ShowClose { get; set; } = true;
+    Lesson lesson {get; set;} 
+    string selectedTeacherId;
+    private IEnumerable<LessonType> lessonTypes {get; set;} 
+    private IEnumerable<UpdateUserDto> teachers {get; set;} 
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        lesson = await lessonService.GetLessonByIdAsync(lessonId);
+        lessonTypes = await lessonTypeService.GetLessonTypes();
+        teachers = await userService.GetUsersByRole("Teacher");
+        if (lesson.LessonProfs.Any())
+    {
+      selectedTeacherId = lesson.LessonProfs.ToList()[0].UserId;
+    }
+        @* order = dbContext.Orders.Where(o => o.OrderID == OrderID) *@
+                          @* .Include("Customer") *@
+                          @* .Include("Employee").FirstOrDefault(); *@
+
+        @* orderDetails = dbContext.OrderDetails.Where(o => o.OrderID == OrderID).Include("Order").ToList(); *@
+    }
+
+void OnTeacherSelected(object teacherId)
+  {
+    // Always replace the collection with a single entry:
+    lesson.LessonProfs = new List<LessonProf>
+    {
+      new LessonProf {
+        Lesson = lesson,
+        UserId = (string)teacherId
+      }
+    };
+  }
+     async Task Submit(Lesson changedLesson)
+  {
+    changedLesson.EndOfLesson = changedLesson.BeginOfLesson.AddMinutes(changedLesson.LessonType.DurationInMinutes)  ;
+    // This is where you send it back to your service:
+    await lessonService.UpdateLessonAsync(changedLesson);
+    dialogService.Close();
+    NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
+    // then maybe show a notification or close dialog
+  }
+}

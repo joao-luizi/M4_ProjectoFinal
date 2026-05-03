@@ -1,0 +1,142 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using RepositoryLibrary.IServices
+@using RepositoryLibrary.Models.DTOs
+@using SharedLibrary.Models.Static_Class
+
+@inject Radzen.DialogService dialogService
+@inject IUserService _userService
+@inject UserManager<EMUser> _userManager
+
+<RadzenStack Gap="1rem" 
+Orientation="Orientation.Vertical" 
+JustifyContent="JustifyContent.SpaceBetween" 
+Style="height: 100%;">
+    <RadzenStack>
+        <RadzenRow>
+            <RadzenColumn Size="12" SizeMD="6" class="rz-p-4 rz-border-radius-1" Style="border: var(--rz-grid-cell-border)">
+                <RadzenText TextStyle="TextStyle.Subtitle1">Contact</RadzenText>
+                <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center">
+                    <RadzenImage Path="@(User.Photo is not null ? Convert.ToBase64String(User.Photo.UserPhoto) : "User_default_image/user.png")" Style="width: 80px; height: 80px; border-radius: 50%" AlternateText="@($"{User.FirstName} {User.LastName}")" />
+                    <RadzenStack Gap="0" class="rz-text-truncate">
+                        <RadzenText 
+                        TextStyle="TextStyle.Overline" 
+                        class="rz-mt-2 rz-my-0" 
+                        Style="color: var(--rz-text-tertiary-color);">
+                            Full Name
+                        </RadzenText>
+                        <RadzenText TextStyle="TextStyle.Body1" class="rz-text-truncate"><b>@($"{User.FirstName} {User.LastName}")</b></RadzenText>
+                        <RadzenText TextStyle="TextStyle.Overline"
+                        class="rz-mt-2 rz-my-0"
+                        Style="color: var(--rz-text-tertiary-color);">
+                            Phone Number
+                        </RadzenText>
+                        <RadzenText TextStyle="TextStyle.Body1" class="rz-text-truncate">
+                            <b>@(string.IsNullOrEmpty(User.PhoneNumber) ? "-" : User.PhoneNumber)</b>
+                        </RadzenText>
+                        <RadzenText TextStyle="TextStyle.Overline"
+                        class="rz-mt-2 rz-my-0"
+                        Style="color: var(--rz-text-tertiary-color);">
+                            Email
+                        </RadzenText>
+                        <RadzenText TextStyle="TextStyle.Body1" class="rz-text-truncate"><b>@($"{User.Email}")</b></RadzenText>
+                    </RadzenStack>
+
+                </RadzenStack>
+            </RadzenColumn>
+            <RadzenColumn Size="12" SizeMD="6" class="rz-p-4 rz-border-radius-1" Style="border: var(--rz-grid-cell-border)">
+                <RadzenText TextStyle="TextStyle.Subtitle1">Detailed Information</RadzenText>
+                <RadzenStack Gap="0" class="rz-text-truncate">
+                    <RadzenText TextStyle="TextStyle.Overline"
+                    class="rz-mt-2 rz-my-0"
+                    Style="color: var(--rz-text-tertiary-color);">
+                        Address
+                    </RadzenText>
+                    <RadzenText TextStyle="TextStyle.Body1" class="rz-text-truncate"><b>@($"{User.Address}")</b></RadzenText>
+                    <RadzenText TextStyle="TextStyle.Overline"
+                    class="rz-mt-2 rz-my-0"
+                    Style="color: var(--rz-text-tertiary-color);">
+                        Birthdate
+                    </RadzenText>
+                    <RadzenText TextStyle="TextStyle.Body1" class="rz-text-truncate">
+                        <b>@($"{DateOnly.FromDateTime(User.Birthdate).ToString("dd, MMM, yyyy")}")</b>
+                    </RadzenText>
+                    <RadzenText TextStyle="TextStyle.Overline"
+                    class="rz-mt-2 rz-my-0"
+                    Style="color: var(--rz-text-tertiary-color);">
+                        Role
+                    </RadzenText>
+                    <RadzenDropDown @bind-Value=@UserRole Data=@Roles Style="width: 100%; max-width: 400px;" Name="DropDownBindValue" />
+                </RadzenStack>
+            </RadzenColumn>
+            <RadzenColumn Size="12" SizeMD="6" class="rz-p-4 rz-border-radius-1" Style="border: var(--rz-grid-cell-border)">
+                <RadzenText TextStyle="TextStyle.Subtitle1">Detailed Information</RadzenText>
+                <RadzenStack Gap="0" class="rz-text-truncate">
+                    <RadzenText TextStyle="TextStyle.Overline"
+                    class="rz-mt-2 rz-my-0"
+                    Style="color: var(--rz-text-tertiary-color);">
+                        Citizen Number
+                    </RadzenText>
+                    <RadzenText TextStyle="TextStyle.Body1" class="rz-text-truncate"><b>@($"{User.CitizenNumber}")</b></RadzenText>
+                    <RadzenText TextStyle="TextStyle.Overline"
+                    class="rz-mt-2 rz-my-0"
+                    Style="color: var(--rz-text-tertiary-color);">
+                        Tax Identification Number
+                    </RadzenText>
+                    <RadzenText TextStyle="TextStyle.Body1" class="rz-text-truncate">
+                        <b>@($"{User.TaxIdentificationNumber}")</b>
+                    </RadzenText>
+                    <RadzenText TextStyle="TextStyle.Overline"
+                    class="rz-mt-2 rz-my-0"
+                    Style="color: var(--rz-text-tertiary-color);">
+                        Social Health Number
+                    </RadzenText>
+                    <RadzenText TextStyle="TextStyle.Body1" class="rz-text-truncate">
+                        <b>@($"{User.SocialHealthNumber}")</b>
+                    </RadzenText>
+                </RadzenStack>
+            </RadzenColumn>
+            <RadzenColumn Size="12" SizeMD="6" class="rz-p-4 rz-border-radius-1" Style="border: var(--rz-grid-cell-border)">
+                <RadzenStack Gap="0" class="rz-text-truncate">
+                    <RadzenText TextStyle="TextStyle.Overline"
+                    class="rz-mt-2 rz-my-0"
+                    Style="color: var(--rz-text-tertiary-color);">
+                        User state
+                    </RadzenText>
+                    <RadzenSwitch @bind-Value=@User.IsActive InputAttributes="@(new Dictionary<string,object>(){ { "aria-label", "Switch value" }})" />
+                </RadzenStack>
+            </RadzenColumn>
+        </RadzenRow> 
+        <RadzenStack Visible="@ShowClose" Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" Gap="0.5rem">
+            <RadzenButton Click="@((args) => OnSubmit(User))" Variant="Variant.Flat" ButtonStyle="ButtonStyle.Primary" Text="Save Changes" Style="width: 120px" />
+            <RadzenButton Click="@((args) => dialogService.Close(true))" Variant="Variant.Flat" ButtonStyle="ButtonStyle.Secondary" Text="Close" Style="width: 120px" />
+        </RadzenStack>
+    </RadzenStack>
+</RadzenStack>
+
+@code {
+    [Parameter] public UpdateUserDto User { get; set; } = default!;
+    [Parameter] public bool ShowClose { get; set; } = true;
+    public List<string> Roles { get; set; } = new List<string> {StaticRole.Admin, StaticRole.Student, StaticRole.Teacher};
+    private bool IsActive { get; set; }
+    private string UserRole { get; set; } = "";
+
+    IEnumerable<UpdateUserDto> userDetails;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        userDetails = new List<UpdateUserDto> { User };
+        IsActive = User.IsActive;
+        UserRole = User.Roles.First();
+    }
+
+    async Task OnSubmit(UpdateUserDto user)
+    {
+        var isActive = user.IsActive;
+        user.Roles.Clear();
+        user.Roles.Add(UserRole);
+        var update = await _userService.EditUserAsync(user);
+        dialogService.Close(true);
+    }
+}

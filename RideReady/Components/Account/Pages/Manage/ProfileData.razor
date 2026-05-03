@@ -1,0 +1,175 @@
+﻿@page "/Account/Manage/ProfileData"
+
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.WebUtilities
+@using RideReady.Data
+@using System.Text.Encodings.Web
+@using System.Text
+@using System.ComponentModel.DataAnnotations
+
+@inject UserManager<EMUser> UserManager
+@inject IEmailSender<EMUser> EmailSender
+@inject IdentityUserAccessor UserAccessor
+@inject NavigationManager NavigationManager
+@inject SignInManager<EMUser> SignInManager
+
+<PageTitle>Manage Personal Data</PageTitle>
+
+<h3>Manage Personal Data</h3>
+
+<StatusMessage Message="@message" />
+<div class="row">
+    <div class="col-md-6">
+        <EditForm Model="Input" FormName="personalData" OnValidSubmit="OnValidSubmitAsync" method="post">
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" role="alert" />
+            <div class="form-floating mb-3">
+                <InputText @bind-Value="Input.FirstName" class="form-control" autocomplete="first-name" aria-required="true" placeholder="Please enter first name." />
+                <label for="new-first-name" class="form-label">First Name</label>
+                <ValidationMessage For="() => Input.FirstName" class="text-danger" />
+            </div>
+            <div class="form-floating mb-3">
+                <InputText @bind-Value="Input.LastName" class="form-control" autocomplete="last-name" aria-required="true" placeholder="Please enter last name." />
+                <label for="new-last-name" class="form-label">Last Name</label>
+                <ValidationMessage For="() => Input.LastName" class="text-danger" />
+            </div>
+            <div class="form-floating mb-3">
+                <InputText @bind-Value="Input.Address" class="form-control" autocomplete="address" aria-required="true" placeholder="Please enter new address." />
+                <label for="new-address" class="form-label">New Address</label>
+                <ValidationMessage For="() => Input.Address" class="text-danger" />
+            </div>
+            <div class="form-floating mb-3">
+                <InputDate @bind-Value="Input.Birthdate" class="form-control" autocomplete="birthdate" aria-required="true" placeholder="dd/mm/yyyy" />
+                <label for="birthdate">Birthdate</label>
+                <ValidationMessage For="() => Input.Birthdate" class="text-danger" />
+            </div>
+            <div class="form-floating mb-3">
+                <InputText @bind-Value="Input.CitizenNumber" class="form-control" autocomplete="citizenIdNumber" aria-required="true" placeholder="Please enter new Citizen Number." />
+                <label for="new-citizenIdNumber" class="form-label">New Citizen Number</label>
+                <ValidationMessage For="() => Input.CitizenNumber" class="text-danger" />
+            </div>
+            <div class="form-floating mb-3">
+                <InputText @bind-Value="Input.TaxIdentificationNumber" class="form-control" autocomplete="taxIdNumber" aria-required="true" placeholder="Please enter new Tax Identification Number." />
+                <label for="new-taxIdNumber" class="form-label">New Tax Identification Number</label>
+                <ValidationMessage For="() => Input.TaxIdentificationNumber" class="text-danger" />
+            </div>
+            <div class="form-floating mb-3">
+                <InputText @bind-Value="Input.SocialHealthNumber" class="form-control" autocomplete="socialHealthNumber" aria-required="true" placeholder="Please enter new Social Health Number." />
+                <label for="new-socialHealthNumber" class="form-label">New Social Health Number</label>
+                <ValidationMessage For="() => Input.SocialHealthNumber" class="text-danger" />
+            </div>
+            <button type="submit" class="w-100 btn btn-lg btn-primary">Change data</button>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    private string? message;
+    private EMUser user = default!;
+    private string? address;
+    private string? firstName;
+    private string? lastName;
+    private string? taxIdNumber;
+    private string? socialHealth;
+    private string? citizenNumber;
+    private DateOnly birthdate;
+    private bool isEmailConfirmed;
+
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    [SupplyParameterFromForm(FormName = "personalData")]
+    private InputModel Input { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        user = await UserAccessor.GetRequiredUserAsync(HttpContext);
+        address = user.Address;
+        firstName = user.FirstName;
+        lastName = user.LastName;
+        taxIdNumber = user.TaxIdentificationNumber.ToString();
+        socialHealth = user.SocialHealthNumber.ToString();
+        citizenNumber = user.CitizenNumber.ToString();
+        birthdate = DateOnly.FromDateTime(user.Birthdate);
+        isEmailConfirmed = await UserManager.IsEmailConfirmedAsync(user);
+
+        Input.Address ??= address;
+        Input.FirstName ??= firstName;
+        Input.LastName ??= lastName;
+        Input.TaxIdentificationNumber ??= taxIdNumber;
+        Input.SocialHealthNumber ??= socialHealth;
+        Input.CitizenNumber ??= citizenNumber;
+        Input.Birthdate = birthdate;
+    }
+
+    private async Task OnValidSubmitAsync()
+    {
+        var userId = await UserManager.GetUserIdAsync(user);
+        user.Address = Input.Address;
+        user.FirstName = Input.FirstName;
+        user.LastName = Input.LastName;
+        user.TaxIdentificationNumber = Convert.ToInt32(Input.TaxIdentificationNumber);
+        user.SocialHealthNumber = Convert.ToInt64(Input.SocialHealthNumber);
+        user.CitizenNumber = Convert.ToInt32(Input.CitizenNumber);
+        user.Birthdate = new DateTime(Input.Birthdate.Year, Input.Birthdate.Month, Input.Birthdate.Day);
+
+        await UserManager.UpdateAsync(user);
+        await SignInManager.RefreshSignInAsync(user);
+    }
+
+    // private async Task OnSendEmailVerificationAsync()
+    // {
+    //     if (email is null)
+    //     {
+    //         return;
+    //     }
+
+    //     var userId = await UserManager.GetUserIdAsync(user);
+    //     var code = await UserManager.GenerateEmailConfirmationTokenAsync(user);
+    //     code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+    //     var callbackUrl = NavigationManager.GetUriWithQueryParameters(
+    //         NavigationManager.ToAbsoluteUri("Account/ConfirmEmail").AbsoluteUri,
+    //         new Dictionary<string, object?> { ["userId"] = userId, ["code"] = code });
+
+    //     await EmailSender.SendConfirmationLinkAsync(user, email, HtmlEncoder.Default.Encode(callbackUrl));
+
+    //     message = "Verification email sent. Please check your email.";
+    // }
+
+    private sealed class InputModel
+    {
+        [Required]
+        [Display(Name = "First Name")]
+        public string FirstName { get; set; }
+
+        [Required]
+        [Display(Name = "Last Name")]
+        public string LastName { get; set; }
+
+        [Required]
+        [Display(Name = "NIF")]
+        [RegularExpression(@"^\d+$", ErrorMessage = "Please enter only numbers.")]
+        [StringLength(9, ErrorMessage = "The {0} must be {1} digits long.")]
+        public string TaxIdentificationNumber { get; set; }
+
+        [Required]
+        [Display(Name = "Social Health Number")]
+        [RegularExpression(@"^\d+$", ErrorMessage = "Please enter only numbers.")]
+        [StringLength(11, ErrorMessage = "The {0} must be {1} digits long.")]
+        public string SocialHealthNumber { get; set; }
+
+        [Required]
+        [Display(Name = "Citizen Number")]
+        [RegularExpression(@"^\d+$", ErrorMessage = "Please enter only numbers.")]
+        [StringLength(8, ErrorMessage = "The {0} must be {1} digits long.")]
+        public string CitizenNumber { get; set; }
+
+        [Required]
+        [Display(Name = "Birthdate")]
+        public DateOnly Birthdate { get; set; }
+
+        [Required]
+        [Display(Name = "Address")]
+        public string Address { get; set; }
+    }
+}

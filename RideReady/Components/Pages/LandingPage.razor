@@ -1,0 +1,91 @@
+﻿@page "/"
+@using RideReady.Components.Layout
+@layout EmptyLayout
+@rendermode InteractiveServer
+
+<nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
+    <div class="container-fluid">
+        <a class="navbar-brand d-flex align-items-center" href="/">
+            <img src="/Images/Logo.png"
+                 alt="RideReady logo"
+                 class="img-fluid rounded"
+                 style="max-width: 50px; height: auto;" />
+            <span class="ms-2">RideReady</span>
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                data-bs-target="#navbarNav" aria-controls="navbarNav"
+                aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto align-items-lg-center">
+                <li class="nav-item px-2">
+                    <NavLink class="nav-link" href="/dashboard">Home</NavLink>
+                </li>
+                <li class="nav-item px-2">
+                    <NavLink class="nav-link" href="/features">Features</NavLink>
+                </li>
+                <li class="nav-item px-2">
+                    <NavLink class="nav-link" href="/pricing">Pricing</NavLink>
+                </li>
+                <li class="nav-item px-2">
+                    <NavLink class="btn btn-primary text-white" href="/home">Get Started</NavLink>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="hero d-flex flex-column flex-md-row align-items-center min-vh-100 bg-rz-light">
+    <div class="container-fluid px-3 px-md-5">
+        <div class="row gx-4 gy-5 align-items-center">
+            <!-- Text -->
+            <div class="col-12 col-md-6 text-center text-md-start">
+                <h1 class="display-4 fw-bold">Streamline Your Equestrian Classes</h1>
+                <p class="lead mb-4">
+                    RideReady helps riding schools manage schedules, instructors, and students
+                    all in one place. Spend less time organizing and more time riding.
+                </p>
+                <NavLink href="/dashboard" class="btn btn-lg btn-primary">Start Organizing</NavLink>
+            </div>
+
+            <!-- Carousel -->
+            <div class="col-12 col-md-6 d-flex justify-content-center">
+                <RadzenCarousel @ref="carousel"
+                                AllowNavigation="false"
+                                Auto="true"
+                                Interval="3500"
+                                class="w-100"
+                                Style="max-height: 400px;">
+                    <Items>
+                        @foreach (var img in new[] {
+                        "/images/Cavalo.jpg",
+                        "/images/Cavalo_1.jpg",
+                        "/images/Cavalo_2.jpg",
+                        "/images/Cavalo_3.jpg",
+                        "/images/Cavalo_4.jpg" })
+                        {
+                            <RadzenCarouselItem>
+                                <RadzenImage Path="@img"
+                                             class="w-100 h-auto rounded shadow-sm" />
+                            </RadzenCarouselItem>
+                        }
+                    </Items>
+                </RadzenCarousel>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer class="py-4 bg-light">
+    <div class="container text-center">
+        <small class="text-muted">© 2025 RideReady. All rights reserved.</small>
+    </div>
+</footer>
+
+@code {
+    RadzenCarousel carousel;
+
+    string prevIcon = "arrow_circle_left";
+    string nextIcon = "arrow_circle_right";
+                }

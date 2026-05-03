@@ -1,0 +1,231 @@
+﻿@using System.Globalization
+@using RepositoryLibrary.Models
+@rendermode InteractiveServer
+
+@inject RepositoryLibrary.IServices.IHorseService HorseService
+@inject Radzen.DialogService DialogService
+@inject AuthenticationStateProvider AuthStateProvider
+
+
+@code {
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+
+            var allHorses = await HorseService.GetHorsesAsync();
+            TotalHorses = allHorses.Count;
+
+            var schoolHorses = await HorseService.GetHorsesBySchool(schoolId);
+            TotalSchoolHorses = schoolHorses.Count;
+
+            TotalUserHorses = TotalHorses - TotalSchoolHorses;
+
+            horses = allHorses.Select(h => new HorsesData
+                {
+                    HorseId = h.HorseId,
+                    Name = h.Name,
+                    Breed = h.Breed,
+                    Age = h.Age,
+                }).ToList();
+
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Error fetching horses: " + ex.Message);
+        }
+    }
+
+    private int TotalHorses;
+
+    private int TotalSchoolHorses;
+
+    private int TotalUserHorses;
+
+    private bool showAddHorseForm = false;
+
+    private Horse? selectedHorse = null;
+
+    private List<HorsesData> horses = new();
+
+
+    public class HorsesData
+    {
+        public int HorseId { get; set; }
+        public string Name { get; set; }
+        public string Breed { get; set; }
+        public int Age { get; set; }
+        public string UserHorses { get; set; }
+    }
+
+    async Task ToggleAddHorseForm()
+    {
+        showAddHorseForm = !showAddHorseForm;
+    }
+
+    private async Task HandleHorseAdded(Horse horse)
+    {
+        var horseData = new HorsesData
+            {
+                HorseId = horse.HorseId,
+                Name = horse.Name,
+                Breed = horse.Breed,
+                Age = horse.Age,
+            };
+
+        horses.Add(horseData);
+        TotalHorses++;
+        if (horse.School?.SchoolId == schoolId)
+            TotalSchoolHorses++;
+        else
+            TotalUserHorses++;
+
+        showAddHorseForm = true;
+    }
+
+    private Task HideAddHorseForm()
+    {
+        showAddHorseForm = false;
+        return Task.CompletedTask;
+    }
+
+    void EditHorse(HorsesData horseData)
+    {
+        selectedHorse = new Horse
+            {
+                HorseId = horseData.HorseId,
+                Name = horseData.Name,
+                Breed = horseData.Breed,
+                Age = horseData.Age,
+                School = new School { SchoolId = schoolId }
+            };
+        showAddHorseForm = true;
+    }
+
+    private async Task HandleHorseUpdated(Horse updated)
+    {
+        var dto = horses.FirstOrDefault(h => h.HorseId == updated.HorseId);
+        if (dto != null)
+        {
+            dto.Name = updated.Name;
+            dto.Breed = updated.Breed;
+            dto.Age = updated.Age;
+        }
+
+        selectedHorse = null;
+        showAddHorseForm = false;
+    }
+
+    async Task DeleteHorse(HorsesData horsesData)
+    {
+        bool? confirmed = await DialogService.Confirm(
+          $"Quer eliminar o cavalo “{horsesData.Name}”?", "Confirmar",
+          new ConfirmOptions { OkButtonText = "Sim", CancelButtonText = "Não" }
+        );
+
+        if (confirmed == true)
+        {
+            try
+            {
+                await HorseService.RemoveHorse(new Horse { HorseId = horsesData.HorseId });
+
+                horses.Remove(horsesData);
+                TotalHorses--;
+                if (horsesData.UserHorses == "Escola") TotalSchoolHorses--;
+                else TotalUserHorses--;
+
+                StateHasChanged();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erro a eliminar: {ex.Message}");
+            }
+        }
+    }
+
+
+    // Mock user data
+    private int schoolId = 1;
+
+}
+
+<br />
+<h3 class="text-3xl font-bold mb-2">Gestão de Cavalos</h3>
+<p class="text-muted mb-6">Cadastre, edite e remova os cavalos da escola e de proprietários.</p>
+
+<RadzenRow class="rz-mb-4">
+    <RadzenColumn Width="50%">
+        <RadzenCard Style="border-radius: 8px; width: 100%; height: 100%;">
+            <RadzenStack Gap="0.5rem" class="rz-p-4">
+                <RadzenText Text="Total de Cavalos" TextStyle="TextStyle.H6" />
+                <RadzenText Text="@TotalHorses.ToString()" TextStyle="TextStyle.H4" Style="font-weight: bold;" />
+                <RadzenText Text="Cavalos registados na escola" TextStyle="TextStyle.Caption" class="text-muted" />
+            </RadzenStack>
+        </RadzenCard>
+    </RadzenColumn>
+
+    <RadzenColumn Width="50%">
+        <RadzenCard Style="border-radius: 8px; width: 100%; height: 100%;">
+            <RadzenStack Gap="0.5rem" class="rz-p-4">
+                <RadzenText Text="Cavalos da Escola" TextStyle="TextStyle.H6" />
+                <RadzenText Text="@TotalSchoolHorses.ToString()" TextStyle="TextStyle.H4" Style="font-weight: bold;" />
+            </RadzenStack>
+        </RadzenCard>
+    </RadzenColumn>
+
+    <RadzenColumn Width="50%">
+        <RadzenCard Style="border-radius: 8px; width: 100%; height: 100%;">
+            <RadzenStack Gap="0.5rem" class="rz-p-4">
+                <RadzenText Text="Cavalos de Proprietário" TextStyle="TextStyle.H6" />
+                <RadzenText Text="@TotalUserHorses.ToString()" TextStyle="TextStyle.H4" Style="font-weight: bold;" />
+            </RadzenStack>
+        </RadzenCard>
+    </RadzenColumn>
+</RadzenRow>
+
+<div class="grid grid-cols-2 mt-8 mb-4 items-center">
+    <h3 class="text-xl font-semibold">Lista de Cavalos</h3>
+    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
+        <RadzenButton Text="@((showAddHorseForm ? "Fechar Formulário" : "Novo Cavalo"))"
+                      Icon="add_circle"
+                      ButtonStyle="ButtonStyle.Primary"
+                      Click="@ToggleAddHorseForm" />
+    </RadzenStack>
+
+    @if (showAddHorseForm)
+    {
+        <AddHorseForm SchoolId="@schoolId"
+                      OnHorseAdded="HandleHorseAdded"
+                      OnHorseUpdated="HandleHorseUpdated"
+                      OnCancel="HideAddHorseForm"
+                      HorseToEdit="selectedHorse" />
+
+
+    }
+
+
+</div>
+
+<RadzenDataGrid Data="@horses" TItem="HorsesData" Style="border-radius: 8px;" Class="w-100">
+    <Columns>
+        <RadzenDataGridColumn TItem="HorsesData" Property="HorseId" Title="ID" />
+        <RadzenDataGridColumn TItem="HorsesData" Property="Name" Title="Nome" />
+        <RadzenDataGridColumn TItem="HorsesData" Property="Breed" Title="Raça" />
+        <RadzenDataGridColumn TItem="HorsesData" Property="Age" Title="Idade" />
+        <RadzenDataGridColumn TItem="HorsesData" Property="UserHorses" Title="Proprietário / Escola" />
+        <RadzenDataGridColumn TItem="HorsesData" Title="Ações">
+            <Template Context="horse">
+                <RadzenButton Icon="edit" Size="ButtonSize.Small" Style="margin-right: 8px;"
+                              ButtonStyle="ButtonStyle.Info"
+                              Click="@(() => EditHorse(horse))" />
+                <RadzenButton Icon="delete" Size="ButtonSize.Small"
+                              ButtonStyle="ButtonStyle.Danger"
+                              Click="@(() => DeleteHorse(horse))" />
+            </Template>
+        </RadzenDataGridColumn>
+
+    </Columns>
+</RadzenDataGrid>
+
+

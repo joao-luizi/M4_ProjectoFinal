@@ -1,0 +1,137 @@
+﻿@using System.Globalization
+@inject RepositoryLibrary.IServices.IUserService UserService
+@inject RepositoryLibrary.IServices.ILessonService LessonService
+@inject RepositoryLibrary.IServices.IHorseService HorseService
+
+
+@code {
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var users = await UserService.GetUsersByRole("Student");
+
+            //Para as remaingClasses tenho de ir buscar as aulas que sobram dos packages
+
+            students = users.Select(u => new StudentData
+                {
+					Name = u.FirstName + " " + u.LastName,
+
+                    // These might be UI-specific or mock data for now:
+                    ClassesRemaining = 0, // TODO: Replace with real logic later
+                    PaymentStatus = "paid",
+                    LastClass = DateTime.Now.AddDays(-7)
+                }).ToList();
+
+            totalStudents = students.Count;
+
+            var lessons = await LessonService.GetAllLessonsAsync();
+            scheduledClasses = lessons.Count(l => l.BeginOfLesson >= DateTime.Now);
+
+            var horses = await HorseService.GetHorsesAsync();
+            totalHorses = horses.Count();
+
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Error fetching students");
+        }
+    }
+
+    private int totalStudents;
+
+    private int scheduledClasses;
+
+    private int totalHorses;
+
+    private int missingPayments = 0; // dynamically updated in real scenario
+
+    private string GetPaymentStyle() => $"font-weight: bold; color: {(missingPayments == 0 ? "green" : "red")};";
+
+    public class StudentData
+    {
+        public string Name { get; set; }
+        public string PaymentStatus { get; set; } // "paid" or "unpaid"
+        public int ClassesRemaining { get; set; }
+        public DateTime LastClass { get; set; }
+    }
+
+    private List<StudentData> students = new();
+}
+
+<p class="text-muted mb-6">Gerencie alunos, aulas e pagamentos.</p>
+
+<RadzenRow class="rz-mb-4">
+    <RadzenColumn Width="50%">
+        <RadzenCard Style="border-radius: 8px; width: 100%; height: 100%;">
+            <RadzenStack Gap="0.5rem" class="rz-p-4">
+                <RadzenText Text="Total de Alunos" TextStyle="TextStyle.H6" />
+                <RadzenText Text="@totalStudents.ToString()" TextStyle="TextStyle.H4" Style="font-weight: bold;" />
+                <RadzenText Text="Alunos registados na escola" TextStyle="TextStyle.Caption" class="text-muted" />
+            </RadzenStack>
+        </RadzenCard>
+    </RadzenColumn>
+
+    <RadzenColumn Width="50%">
+        <RadzenCard Style="border-radius: 8px; width: 100%; height: 100%;">
+            <RadzenStack Gap="0.5rem" class="rz-p-4">
+                <RadzenText Text="Aulas Agendadas" TextStyle="TextStyle.H6" />
+                <RadzenText Text="@scheduledClasses.ToString()" TextStyle="TextStyle.H4" Style="font-weight: bold;" />
+                <RadzenText Text="Próximas aulas no calendário" TextStyle="TextStyle.Caption" class="text-muted" />
+            </RadzenStack>
+        </RadzenCard>
+    </RadzenColumn>
+
+    <RadzenColumn Width="50%">
+        <RadzenLink Path="/horses" Style="text-decoration: none;">
+            <RadzenCard Style="border-radius: 8px; width: 100%; height: 100%; cursor: pointer;">
+                <RadzenStack Gap="0.5rem" class="rz-p-4">
+                    <RadzenText Text="Cavalos" TextStyle="TextStyle.H6" />
+                    <RadzenText Text="@totalHorses.ToString()" TextStyle="TextStyle.H4" Style="font-weight: bold;" />
+                </RadzenStack>
+            </RadzenCard>
+        </RadzenLink>
+    </RadzenColumn>
+
+    <RadzenColumn Width="50%">
+        <RadzenCard Style="border-radius: 8px; width: 100%; height: 100%;">
+            <RadzenStack Gap="0.5rem" class="rz-p-4">
+                <RadzenText Text="Pagamentos em Falta" TextStyle="TextStyle.H6" />
+                <RadzenText Text="@missingPayments.ToString()"
+                            TextStyle="TextStyle.H4"
+                            Style="@GetPaymentStyle()" />
+                <RadzenText Text="Alunos com pagamentos atrasados"
+                            TextStyle="TextStyle.Caption"
+                            class="text-muted" />
+            </RadzenStack>
+        </RadzenCard>
+    </RadzenColumn>
+</RadzenRow>
+
+<h3 class="text-xl font-semibold mt-8 mb-4">Lista de Alunos</h3>
+
+<RadzenDataGrid Data="@students" TItem="StudentData" Style="border-radius: 8px;" Class="w-100">
+    <Columns>
+        <RadzenDataGridColumn TItem="StudentData" Property="Name" Title="Nome" />
+        <RadzenDataGridColumn TItem="StudentData" Property="PaymentStatus" Title="Status de Pagamento">
+            <Template Context="student">
+                @if (student.PaymentStatus == "paid")
+                {
+                    <span class="text-success">Pago</span>
+                }
+                else
+                {
+                    <span class="text-danger">Não Pago</span>
+                }
+            </Template>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="StudentData" Property="ClassesRemaining" Title="Aulas Restantes" />
+        <RadzenDataGridColumn TItem="StudentData" Property="LastClass" Title="Última Aula">
+            <Template Context="student">
+                @student.LastClass.ToString("dd/MM/yyyy HH:mm")
+            </Template>
+        </RadzenDataGridColumn>
+    </Columns>
+</RadzenDataGrid>
+

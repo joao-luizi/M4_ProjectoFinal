@@ -1,0 +1,92 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using System.Security.Claims
+
+@inherits LayoutComponentBase
+@inject NavigationManager NavigationManager
+@inject SignInManager<EMUser> Manager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject UserManager<EMUser> UserManager
+
+
+<RadzenComponents @rendermode="InteractiveServer" />
+<div class="page">
+
+    <main>
+        <RadzenLayout style="position: relative;grid-template-areas: 'rz-sidebar rz-header' 'rz-sidebar rz-body'" >
+
+
+            <RadzenHeader class="d-flex justify-content-between align-items-center">
+                <div class="d-flex">
+                    <NavMenu />
+
+                    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0">
+                        <NavLink href="/">
+                            <img Src="/Images/Logo.png" Alt="placeholder" class="rounded ms-1 my-1" style="width: 50px; height: 50px;"/>
+                        </NavLink>
+                    </RadzenStack>
+
+                </div>
+
+                <AuthorizeView>
+                    <Authorized>
+                        <RadzenProfileMenu class="me-3">
+                            <Template>
+                                <RadzenImage Path="User_default_image/user.png" Style="width: 2.5rem;" AlternateText="community" />
+                                <RadzenLabel Text="@(string.IsNullOrEmpty(UserName) ? "John Doe" : UserName)" Style="font-size: 1.2rem;" class="mx-2" />
+                            </Template>
+                            <ChildContent>
+                                <RadzenProfileMenuItem Text="Profile" Path="/Account/Manage" Icon="account_circle" Style="font-size: 1.2rem"></RadzenProfileMenuItem>
+                                <RadzenProfileMenuItem Path="notification" Text="Logout" Icon="exit_to_app" Style="font-size: 1.2rem"></RadzenProfileMenuItem>
+                            </ChildContent>
+                        </RadzenProfileMenu>
+                    </Authorized>
+
+                    <NotAuthorized>
+                        <div class="d-flex align-items-center me-3">
+                            <NavLink class="nav-link" href="Account/Register">
+                                Register
+                            </NavLink>
+
+                            <NavLink class="nav-link btn btn-primary text-white" href="Account/Login">
+                                <span class="bi bi-person-badge-nav-menu" aria-hidden="true"></span> Login
+                            </NavLink>
+                        </div>
+                    </NotAuthorized>
+                </AuthorizeView>
+            </RadzenHeader>
+
+            <RadzenBody>
+                <div class="rz-p-4">
+                    @Body
+                </div>
+            </RadzenBody>
+            @if (sidebarExpanded)
+            {
+                <div @onclick="@(() => sidebarExpanded = false)" class="rz-dialog-mask" style="position: absolute; z-index: 2"></div>
+            }
+        </RadzenLayout>
+    </main>
+</div>
+
+<div id="blazor-error-ui">
+    An unhandled error has occurred.
+    <a href="" class="reload">Reload</a>
+    <a class="dismiss">🗙</a>
+</div>
+
+@code {
+    bool sidebarExpanded = false;
+    private string UserName { get; set; } = "";
+    private ClaimsPrincipal user { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        var firstName = user.FindFirst("FirstName")?.Value;
+        var lastName = user.FindFirst("LastName")?.Value;
+
+        UserName = $"{firstName} {lastName}".Trim();
+    }
+}

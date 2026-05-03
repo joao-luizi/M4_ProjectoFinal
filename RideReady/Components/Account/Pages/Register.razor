@@ -1,0 +1,295 @@
+﻿@page "/Account/Register"
+
+@using System.ComponentModel.DataAnnotations
+@using System.Text
+@using System.Text.Encodings.Web
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.WebUtilities
+@using RepositoryLibrary.IServices
+@using RepositoryLibrary.Models
+@using RepositoryLibrary.Services
+@using RideReady.Data
+@using SharedLibrary.Models.Static_Class
+
+@inject UserManager<EMUser> UserManager
+@inject IUserStore<EMUser> UserStore
+@inject SignInManager<EMUser> SignInManager
+@inject IEmailSender<EMUser> EmailSender
+@inject ILogger<Register> Logger
+@inject NavigationManager NavigationManager
+@inject IdentityRedirectManager RedirectManager
+@inject ISchoolService _schoolService
+
+<PageTitle>Register</PageTitle>
+
+@if(Schools is null) 
+{
+    <RadzenProgressBarCircular ProgressBarStyle="ProgressBarStyle.Dark" Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
+}
+else 
+{
+
+    <div class="row d-flex justify-content-center">
+        <div class="col-md-4">
+            <StatusMessage Message="@Message" />
+            <RadzenCard class="rz-my-12 rz-mx-auto rz-p-4 rz-p-md-12" style="max-width: 600px;">
+                <EditForm Model="Input" asp-route-returnUrl="@ReturnUrl" method="post" OnValidSubmit="RegisterUser" FormName="register">
+                    <DataAnnotationsValidator />
+                    <h1 class="text-primary">Register</h1>
+                    <h2>Create a new account.</h2>
+                    <hr />
+                    <ValidationSummary class="text-danger" role="alert" />
+                    <div class="form-floating mb-3">
+                        <InputText @bind-Value="Input.FirstName" class="form-control" autocomplete="firstname" aria-required="true" placeholder="Your first name" />
+                        <label for="firstName">First Name</label>
+                        <ValidationMessage For="() => Input.FirstName" class="text-danger" />
+                    </div>
+                    <div class="form-floating mb-3">
+                        <InputText @bind-Value="Input.LastName" class="form-control" autocomplete="lastname" aria-required="true" placeholder="Your last name" />
+                        <label for="lastName">Last Name</label>
+                        <ValidationMessage For="() => Input.LastName" class="text-danger" />
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <InputText @bind-Value="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
+                        <label for="email">Email</label>
+                        <ValidationMessage For="() => Input.Email" class="text-danger" />
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <InputText type="password" @bind-Value="Input.Password" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
+                        <label for="password">Password</label>
+                        <ValidationMessage For="() => Input.Password" class="text-danger" />
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <InputText type="password" @bind-Value="Input.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
+                        <label for="confirm-password">Confirm Password</label>
+                        <ValidationMessage For="() => Input.ConfirmPassword" class="text-danger" />
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <InputText @bind-Value="Input.Address" class="form-control" autocomplete="address" aria-required="true" placeholder="Your current address" />
+                        <label for="address">Address</label>
+                        <ValidationMessage For="() => Input.Address" class="text-danger" />
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <InputDate @bind-Value="Input.Birthdate" class="form-control" autocomplete="birthdate" aria-required="true" placeholder="dd/mm/yyyy" />
+                        <label for="birthdate">Birthdate</label>
+                        <ValidationMessage For="() => Input.Birthdate" class="text-danger" />
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <InputText @bind-Value="Input.CitizenNumber" class="form-control" autocomplete="address" aria-required="true" placeholder="Citizen Number" />
+                        <label for="address">Citizen Number</label>
+                        <ValidationMessage For="() => Input.CitizenNumber" class="text-danger" />
+                    </div>
+                    <div class="form-floating mb-3">
+                        <InputText @bind-Value="Input.TaxIdentificationNumber" class="form-control" autocomplete="taxnumber" aria-required="true" placeholder="Tax identification Number" />
+                        <label for="address">Tax Identification Number</label>
+                        <ValidationMessage For="() => Input.TaxIdentificationNumber" class="text-danger" />
+                    </div>
+                    <div class="form-floating mb-3">
+                        <InputText @bind-Value="Input.SocialHealthNumber" class="form-control" autocomplete="healthnumber" aria-required="true" placeholder="Social Health Number" />
+                        <label for="address">Social Health Number</label>
+                        <ValidationMessage For="() => Input.SocialHealthNumber" class="text-danger" />
+                    </div>
+
+                    <div class="form-floating">
+                        <div class="form mb-3">
+                            <InputCheckbox @bind-Value="Input.ImageAuthorized" class="form-check-input" autocomplete="healthnumber" aria-required="true" placeholder="Social Health Number" />
+                            <label for="address">I Agree to Store My Image</label>
+                            <ValidationMessage For="() => Input.ImageAuthorized" class="text-danger" />
+                        </div>
+
+                        <div class="form mb-3">
+                            <InputCheckbox @bind-Value="Input.InformationAuthorized" class="form-check-input" autocomplete="informationauthorized" aria-required="true" placeholder="Information Authorized" />
+                            <label class="form-check-label" for="informationauthorized">Allow Storage of My Information</label>
+                            <ValidationMessage For="() => Input.InformationAuthorized" class="text-danger" />
+                        </div>
+                    </div>
+
+                    <div class="form mb-3">
+                        <label for="school">Select School</label>
+                        <InputSelect 
+                        @bind-Value="Input.SchoolId" 
+                        class="form-control" 
+                        autocomplete="school" 
+                        aria-required="true" 
+                        placeholder="Information Authorized"
+                        TValue="int">
+                            @foreach(var school in Schools) 
+                            {
+                                <option value="@school.SchoolId">@school.SchoolName</option>
+                            }
+                        </InputSelect>
+                        <ValidationMessage For="() => Input.InformationAuthorized" class="text-danger" />
+                    </div>
+
+                    <button type="submit" class="w-100 btn btn-lg btn-primary">Register</button>
+                </EditForm>
+            </RadzenCard>
+        </div>
+
+    </div>
+}
+
+@code {
+    private IEnumerable<IdentityError>? identityErrors;
+
+    [SupplyParameterFromForm]
+    private InputModel Input { get; set; } = new();
+
+    [SupplyParameterFromQuery]
+    private string? ReturnUrl { get; set; }
+
+    private string? Message => identityErrors is null ? null : $"Error: {string.Join(", ", identityErrors.Select(error => error.Description))}";
+
+    private List<School> Schools { get; set; } = new List<School>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        Schools = await _schoolService.GetSchoolsAsync();
+    }
+
+    public async Task RegisterUser(EditContext editContext)
+    {
+        var user = CreateUser();
+        user.RegisterDate = DateTime.Now;
+        user.Birthdate = (DateTime)Input.Birthdate;
+        user.Address = Input.Address;
+        user.CitizenNumber = Convert.ToInt32(Input.CitizenNumber);
+        user.SocialHealthNumber = Convert.ToInt64(Input.SocialHealthNumber);
+        user.TaxIdentificationNumber = Convert.ToInt32(Input.TaxIdentificationNumber);
+        user.FirstName = Input.FirstName;
+        user.LastName = Input.LastName;
+        user.ImageAuthorized = Input.ImageAuthorized;
+        user.InformationAuthorized = Input.InformationAuthorized;
+
+        await UserStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
+        var emailStore = GetEmailStore();
+        await emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
+        var result = await UserManager.CreateAsync(user, Input.Password);
+
+        if (!result.Succeeded)
+        {
+            identityErrors = result.Errors;
+            return;
+        }
+
+        var roleResult = await UserManager.AddToRoleAsync(user, StaticRole.Student);
+
+        await _schoolService.CreateUserSchoolAsync(user.Id, Input.SchoolId);
+
+        Logger.LogInformation("User created a new account with password.");
+
+        var userId = await UserManager.GetUserIdAsync(user);
+        var code = await UserManager.GenerateEmailConfirmationTokenAsync(user);
+        code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+        var callbackUrl = NavigationManager.GetUriWithQueryParameters(
+            NavigationManager.ToAbsoluteUri("Account/ConfirmEmail").AbsoluteUri,
+            new Dictionary<string, object?> { ["userId"] = userId, ["code"] = code, ["returnUrl"] = ReturnUrl });
+
+        await EmailSender.SendConfirmationLinkAsync(user, Input.Email, HtmlEncoder.Default.Encode(callbackUrl));
+
+        if (UserManager.Options.SignIn.RequireConfirmedAccount)
+        {
+            RedirectManager.RedirectTo(
+                "Account/RegisterConfirmation",
+                new() { ["email"] = Input.Email, ["returnUrl"] = ReturnUrl });
+        }
+
+        await SignInManager.SignInAsync(user, isPersistent: false);
+        RedirectManager.RedirectTo(ReturnUrl);
+    }
+
+    private EMUser CreateUser()
+    {
+        try
+        {
+            return Activator.CreateInstance<EMUser>();
+        }
+        catch
+        {
+            throw new InvalidOperationException($"Can't create an instance of '{nameof(EMUser)}'. " +
+                $"Ensure that '{nameof(EMUser)}' is not an abstract class and has a parameterless constructor.");
+        }
+    }
+
+    private IUserEmailStore<EMUser> GetEmailStore()
+    {
+        if (!UserManager.SupportsUserEmail)
+        {
+            throw new NotSupportedException("The default UI requires a user store with email support.");
+        }
+        return (IUserEmailStore<EMUser>)UserStore;
+    }
+
+    private sealed class InputModel
+    {
+        [Required]
+        [EmailAddress]
+        [Display(Name = "Email")]
+        public string Email { get; set; } = "";
+
+        [Required]
+        [StringLength(100, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 6)]
+        [DataType(DataType.Password)]
+        [Display(Name = "Password")]
+        public string Password { get; set; } = "";
+
+        [DataType(DataType.Password)]
+        [Display(Name = "Confirm password")]
+        [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
+        public string ConfirmPassword { get; set; } = "";
+
+        [Required]
+        [Display(Name = "First Name")]
+        public string FirstName { get; set; }
+
+        [Required]
+        [Display(Name = "Last Name")]
+        public string LastName { get; set; }
+
+        [Required]
+        [Display(Name = "Information Authorization")]
+        [Range(typeof(bool), "true", "true", ErrorMessage = "You must authorize the use of your image.")]
+        public bool InformationAuthorized { get; set; }
+
+        [Required]
+        [Display(Name = "Image Authorization")]
+        [Range(typeof(bool), "true", "true", ErrorMessage = "You must authorize the use of your image.")]
+        public bool ImageAuthorized { get; set; }
+
+        [Required]
+        [Display(Name = "NIF")]
+        [RegularExpression(@"^\d+$", ErrorMessage = "Please enter only numbers.")]
+        [StringLength(9, ErrorMessage = "The {0} must be {1} digits long.")]
+        public string TaxIdentificationNumber { get; set; }
+
+        [Required]
+        [Display(Name = "Social Health Number")]
+        [RegularExpression(@"^\d+$", ErrorMessage = "Please enter only numbers.")]
+        [StringLength(11, ErrorMessage = "The {0} must be {1} digits long.")]
+        public string SocialHealthNumber { get; set; }
+
+        [Required]
+        [Display(Name = "Citizen Number")]
+        [RegularExpression(@"^\d+$", ErrorMessage = "Please enter only numbers.")]
+        [StringLength(8, ErrorMessage = "The {0} must be {1} digits long.")]
+        public string CitizenNumber { get; set; }
+
+        [Required]
+        [Display(Name = "Birthdate")]
+        public DateTime? Birthdate { get; set; }
+
+        [Required]
+        [Display(Name = "Address")]
+        public string Address { get; set; }
+
+        [Required]
+        [Display(Name = "School")]
+        public int SchoolId { get; set; }
+    }
+}

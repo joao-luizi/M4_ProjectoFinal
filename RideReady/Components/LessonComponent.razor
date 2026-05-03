@@ -1,0 +1,29 @@
+﻿@using RepositoryLibrary.Models;
+@rendermode InteractiveServer
+@code {
+    [Parameter]
+    public Lesson lesson {get; set;}
+    
+}
+   
+@* <p>@lesson.BeginOfLesson.ToString("yyyy-MM-dd HH:mm") / @lesson.EndOfLesson.ToString("HH:mm") - @lesson.LessonType.Name - @lesson.LessonType.DurationInMinutes minutes </p> *@
+
+    <RadzenCard Variant="Variant.Filled" class="rz-my-12 rz-mx-auto" Style="max-width: 420px">
+        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Start" Gap="1rem" class="rz-p-4">
+            <RadzenStack Gap="1">
+                <RadzenText TextStyle="TextStyle.Overline" class="rz-display-flex rz-mt-2 rz-my-0">Dia</RadzenText>
+                <RadzenText TextStyle="TextStyle.Body1"><b>@(lesson.BeginOfLesson.ToString("yyyy-MM-dd"))</b></RadzenText>
+                <RadzenText TextStyle="TextStyle.Overline" class="rz-display-flex rz-mt-2 rz-my-0">Inicio</RadzenText>
+                <RadzenText TextStyle="TextStyle.Body1"><b>@(lesson.BeginOfLesson.ToString("HH:mm"))</b></RadzenText>
+                <RadzenText TextStyle="TextStyle.Overline" class="rz-display-flex rz-mt-4 rz-mb-0">Fim</RadzenText>
+                <RadzenText TextStyle="TextStyle.Body1"><b>@lesson.EndOfLesson.ToString("HH:mm")</b></RadzenText>
+            </RadzenStack>
+            <RadzenStack Gap="1">
+                <RadzenText TextStyle="TextStyle.Overline" class="rz-display-flex rz-mt-2 rz-my-0">Tipo</RadzenText>
+                <RadzenText TextStyle="TextStyle.Body1"><b>@(lesson.LessonType.Name)</b></RadzenText>
+                <RadzenText TextStyle="TextStyle.Overline" class="rz-display-flex rz-mt-4 rz-mb-0">Duração</RadzenText>
+                <RadzenText TextStyle="TextStyle.Body1"><b>@(lesson.LessonType.DurationInMinutes + "m")</b></RadzenText>
+                <RadzenButton>Book</RadzenButton>
+            </RadzenStack>
+        </RadzenStack>
+    </RadzenCard>

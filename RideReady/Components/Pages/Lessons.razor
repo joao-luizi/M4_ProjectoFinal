@@ -1,0 +1,135 @@
+﻿@page "/lessons"
+@rendermode InteractiveServer
+@inject DialogService DialogService
+@inject ILessonService lessonService
+@inject IBookingService bookingService
+@using Microsoft.AspNetCore.Authorization
+@inject AuthenticationStateProvider AuthStateProvider
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.IdentityModel.Tokens
+@using RepositoryLibrary.IServices
+@using RepositoryLibrary.Models
+@using System.Security.Claims
+@attribute [Authorize]
+
+
+
+@* <div class="border border-1">
+    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Start" AlignItems="AlignItems.Center" Gap="0.5rem" class="rz-p-12">
+        <RadzenLabel Text="Select Date" Component="RadzenDatePickerBindValue" />
+        <RadzenDatePicker @bind-Value=@value Name="RadzenDatePickerBindValue" ShowCalendarWeek />
+    </RadzenStack>
+
+<RadzenDataList 
+                     AllowPaging="true"
+                    Data="@lessons" TItem="Lesson" PageSize="5" PagerHorizontalAlign="HorizontalAlign.Left" ShowPagingSummary="true">
+        <Template Context="lesson">
+            <RadzenCard Variant="Variant.Outlined" class="rz-p-0" Style="width: 100%; overflow: hidden;">
+                <RadzenRow Gap="0">
+                    <RadzenColumn Size="12" SizeLG="3" class="rz-p-4 product-title">
+                        <RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" class="rz-color-on-secondary-lighter">@(lesson.School.SchoolName)</RadzenText>
+                    </RadzenColumn>
+                    <RadzenColumn Size="12" SizeLG="7" class="rz-p-4">
+                        <RadzenRow Gap="0">
+                            <RadzenColumn Size="12" SizeMD="2" SizeLG="2">
+                                <RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" class="rz-mb-0">Dia</RadzenText>
+                                <RadzenText TextStyle="TextStyle.Body2">@(lesson.BeginOfLesson.ToString("yyyy-MM-dd"))</RadzenText>
+                            </RadzenColumn>
+                            <RadzenColumn Size="12" SizeMD="2" SizeLG="2">
+                                <RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" class="rz-mb-0">Inicio</RadzenText>
+                                <RadzenText TextStyle="TextStyle.Body2">@(lesson.BeginOfLesson.ToString("HH:mm"))</RadzenText>
+                            </RadzenColumn>
+                            <RadzenColumn Size="12" SizeMD="2" SizeLG="2">
+                                <RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" class="rz-mb-0">Fim</RadzenText>
+                                <RadzenText TextStyle="TextStyle.Body2">@(lesson.EndOfLesson.ToString("HH:mm"))</RadzenText>
+                            </RadzenColumn>
+                            <RadzenColumn Size="12" SizeMD="2" SizeLG="2">
+                                <RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" class="rz-mb-0">Tipo de Aula</RadzenText>
+                                <RadzenText TextStyle="TextStyle.Body2">@(lesson.LessonType.Name)</RadzenText>
+                            </RadzenColumn>
+                            <RadzenColumn Size="2" SizeMD="2" SizeLG="2" class="rz-text-align-start rz-text-align-lg-end">
+                                <RadzenBadge BadgeStyle="BadgeStyle.Secondary" Shade="Shade.Lighter" class="price-badge" Text=@(lesson.LessonType.DurationInMinutes.ToString() + "mins") />
+                            </RadzenColumn>
+                        </RadzenRow>
+                    </RadzenColumn>
+                    <RadzenColumn Size="2" SizeLG="2" class="rz-p-4">
+                        <RadzenButton Text="Book" Click=@(args => BookLesson(lesson.LessonId)) Style="width: 100%" />
+                    </RadzenColumn>
+                </RadzenRow>
+            </RadzenCard>
+        </Template>
+    </RadzenDataList>
+</div>
+<style>
+.product-title {
+    min-height: 72px;
+    background-color: var(--rz-secondary-lighter);
+}
+.price-badge {
+    font-size: 16px;
+    font-weight: bold;
+    line-height: 20px;
+    padding: 8px;
+}
+</style> *@
+@if(userRole == "Administrator")
+{
+    <LessonListAdmin />
+}
+else if(userRole == "Teacher")
+{
+    <LessonListTeacher />
+}
+else
+{
+    <LessonList />
+}
+
+@* @if(!lessons.IsNullOrEmpty()){
+foreach(var lesson in lessons)
+{
+    <LessonComponent lesson="lesson" />
+}
+} *@
+
+
+
+@code {
+     DateOnly? value = DateOnly.FromDateTime(DateTime.Now);
+    IEnumerable<Lesson> lessons {get; set;}
+    private Task<AuthenticationState> authenticationStateTask { get; set; }
+    private string userRole {get;set;}
+    string? test {get; set;} = null;
+    List<Claim> Claims {get;set;}
+    string userId {get; set;} 
+    Variant variant = Variant.Filled;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        authenticationStateTask = AuthStateProvider.GetAuthenticationStateAsync();
+        var authState = await authenticationStateTask;
+        var user = authState.User;
+        userRole = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role).Value;
+        userId = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+        @* lessons = await lessonService.GetAllLessonsAsync(); *@
+        Claims = user.Claims.ToList();
+        // order = dbContext.Orders.Include("Customer").Include("Employee").FirstOrDefault();
+    }
+
+    private async Task BookLesson(int LessonId)
+    {
+        @* var userId = httpContext.User.Claims.FirstOrDefault(u=> u.Type == ClaimTypes.NameIdentifier).Value; *@
+        var authState = await authenticationStateTask;
+        var user = authState.User;
+        var userId = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+
+        if(userId is not null)
+        await bookingService.CreateBookingAsync(userId, LessonId);
+        @* test = LessonId.ToString(); *@
+        StateHasChanged();
+        @* userIdTest = userId; *@
+        
+    }
+}
+    

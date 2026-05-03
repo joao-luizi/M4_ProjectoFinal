@@ -1,0 +1,31 @@
+EPIC 1 — Autenticação e Gestão de Utilizadores
+- Login / registo
+- Roles (Admin, Aluno, Professor)
+- Integração com Identity
+
+EPIC 2 — Gestão de Entidades Core
+- Alunos
+- Professores
+- Cavalos
+
+EPIC 3 — Agendamento de Aulas
+- Criação de aulas
+- Reserva de aulas
+- Gestão de disponibilidade
+
+EPIC 4 — Interfaces por Role
+- Área Admin
+- Área Aluno
+- Área Professor
+
+EPIC 5 — Dashboard e Métricas
+- Indicadores administrativos
+
+EPIC 6 — Infraestrutura / Arquitetura
+- Setup Blazor + ASP.NET
+- Configuração DB
+- Integração Identity
+
+EPIC 7 — Melhorias / Futuro (já definido no doc)
+- Funcionalidades extra (repetição de aulas, fotos, etc.)
+

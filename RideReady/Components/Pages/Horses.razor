@@ -1,0 +1,37 @@
+﻿@page "/horses"
+@using RideReady.Components.Horses
+@rendermode InteractiveServer
+@using Microsoft.AspNetCore.Authorization
+@inject AuthenticationStateProvider AuthStateProvider
+@using System.Security.Claims
+@attribute [Authorize(Roles = "Administrator,Teacher")]
+
+
+@code
+{
+	private string userRole { get; set; }
+    private Task<AuthenticationState> authenticationStateTask { get; set; }
+    List<Claim> Claims { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        userRole = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role).Value;
+        Claims = user.Claims.ToList();
+    }
+}
+
+@switch (userRole)
+{
+    case "Administrator":
+        <AdminHorses />
+        break;
+    case "Teacher":
+        <TeacherHorses />
+        break;
+    default:
+        <p>Role not recognized</p>
+        break;
+}
