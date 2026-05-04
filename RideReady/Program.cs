@@ -30,11 +30,11 @@ builder.Services.AddAuthentication(options =>
     })
     .AddIdentityCookies();
 
-var connectionString = builder.Configuration.GetConnectionString("UsersContextConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+var connectionString = builder.Configuration.GetConnectionString("IdentityDb") ?? throw new InvalidOperationException("Connection string 'IdentityDb' not found.");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 
-var rrCnString = builder.Configuration.GetConnectionString("RRCnString") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+var rrCnString = builder.Configuration.GetConnectionString("RideReadyDB") ?? throw new InvalidOperationException("Connection string 'RideReadyDB' not found.");
 builder.Services.AddDbContext<EM_DbContext>(options =>
     options.UseSqlServer(rrCnString));
 
