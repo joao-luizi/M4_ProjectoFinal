@@ -39,8 +39,14 @@ Contem Logica	"/dashboard"
 Boilerplate	"/Error"
 Remover		"/home"
 Contem Logica	"/horses"
-Contem Logica	"/" - LandingPage.razor
+Sem logica	"/" - LandingPage.razor
 Contem Logica	"/lessons"
 Contem Logica	"/notification"
 Contem Logica	"/users"
 Remover		"/weather"
+
+"/" - LandingPage.razor
+	"/dashboard" 	: Home
+	"/features" 	: Features
+	"/pricing" 	: Pricing
+	"/home" 	: Get Started
