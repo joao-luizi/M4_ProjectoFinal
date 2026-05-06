@@ -1,0 +1,49 @@
+- Deviamos colocar um avanço no readme a documentar a crição do primeiro utilizador.
+
+Como Admin
+Username: admin@admin.pt
+Password: @SuperAdmin1
+
+A DB depois das primeiras migrações tam dados dos ultimos utilizadores
+
+Como Admin**************************************
+
+Endpontis: Aparentemente não tem swagger
+
+"root" : working
+
+"https://localhost:56116/Account/Login?ReturnUrl=%2Fhome" : Looks weird maybe just /login instead of something so verbose. Logins appears to work with correct claims
+
+
+Após login
+
+"home: When admin goes to a HelloWorld Page. Maybe change to dashboard?
+
+"dashboard" : Parece ok. analisar se queremos mais info.
+
+"Lessons" : Após entrar deixamos de perceber onde estamos. Alias os shared layouts parecem resumir-se à navbar. Select date talvez adicionar uma last date
+
+"users" : A tabela tem erro. Ultima coluna provavelmente é "Edit"
+
+
+Como teacher
+
+User: joao.silva@email.pt
+Pass: Joao@2024
+
+Como Student:
+user: maria.ferreira@email.pt
+pass: Maria#89
+
+
+
+"horses" :
+
+
+
+Loose:
+Os input model geralmente são utilizados e definidos na propra razor page
+
+RegisterConfirmation.razor tem um dummy emailconfirmation process - maybe change it
+
+As paginas do exemplo original da microsoft aind acá estão . Remover Counter, Weather, etc

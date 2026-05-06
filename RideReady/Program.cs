@@ -38,6 +38,7 @@ var rrCnString = builder.Configuration.GetConnectionString("RideReadyDB") ?? thr
 builder.Services.AddDbContext<EM_DbContext>(options =>
     options.UseSqlServer(rrCnString));
 
+//DEV Only
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddIdentityCore<EMUser>(options => options.SignIn.RequireConfirmedAccount = true)
