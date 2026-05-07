@@ -1,0 +1,78 @@
+1.	Autenticação e autorização 
+•	Verificar permissões por role:
+i.	Administrador 
+ii.	Professor 
+iii.	Aluno
+•	Confirmar proteção de todas as rotas/pages.
+•	Confirmar comportamento para utilizador não autenticado.
+•	Verificar alteração de roles.
+•	Validar fluxo de login/logout.
+•	Verificar integração correta com ASP.NET Core Identity.
+•	Confirmar separação entre DB Identity e DB principal.
+
+2.	Gestão de aulas 
+•	Validar criação de aulas.
+•	Verificar edição de aulas.
+•	Verificar cancelamento de aulas.
+•	Confirmar estados da aula
+i.	horário
+ii.	duração
+iii.	professor
+iv.	tipo
+v.	cavalo
+•	Validar conflitos de horários.
+•	Verificar restrição:
+i.	aulas apenas dentro do horário da escola
+ii.	aulas apenas dentro do horário do professor
+•	Confirmar repetição/duplicação de aulas (se já existir parcialmente).
+
+3.	Gestão de alunos 
+•	Verificar:
+i.	marcação de aulas
+ii.	cancelamento de aulas
+iii.	histórico de aulas
+iv.	controlo de faltas
+•	Confirmar bloqueio de marcação em caso de pagamento em atraso.
+•	Validar tracking de packs de aulas.
+•	Confirmar acesso admin à informação completa dos alunos.
+
+4.	Gestão de cavalos 
+•	Verificar regras de negócio:
+i.	máximo 2 aulas/dia
+ii.	descanso 2x por semana
+iii.	regras especiais para “passeios”
+•	Confirmar associação cavalo ↔ aula.
+•	Verificar disponibilidade automática do cavalo.
+•	Confirmar gestão de cavalos no painel admin.
+
+5.	Notificações
+•	Confirmar envio de email no:
+i.	cancelamento de aula
+ii.	alteração de horário
+•	Verificar destinatários corretos.
+•	Verificar templates/mensagens.
+
+6.	Dashboard e reporting 
+•	Verificar existência e precisão dos indicadores:
+i.	nº aulas por semana
+ii.	ocupação dos cavalos
+iii.	estado das mensalidades
+iv.	aulas mais frequentadas
+v.	faltas dos alunos
+
+7.	UI / UX
+•	Verificar responsividade/mobile compatibility.
+•	Confirmar consistência visual.
+•	Verificar feedback visual:
+i.	loading
+ii.	erros
+iii.	confirmações
+•	Confirmar usabilidade dos formulários.
+
+8.	API / Infraestrutura
+•	Verificar endpoints WebAPI.
+•	Validar tratamento de erros.
+•	Confirmar validação de inputs.
+•	Verificar deploy.
+•	Confirmar persistência correta.
+•	Verificar logs/debugging
