@@ -12,6 +12,8 @@ using RideReady.Components.Account;
 using RideReady.Data;
 using SharedLibrary;
 
+
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -86,18 +88,31 @@ app.MapRazorComponents<App>()
 // Add additional endpoints required by the Identity /Account Razor components.
 app.MapAdditionalIdentityEndpoints();
 
-using (var scope = app.Services.CreateScope())
+
+if (app.Environment.IsDevelopment())
 {
+    using var scope = app.Services.CreateScope();
     var services = scope.ServiceProvider;
-    await RoleSeed.SeedRolesAsync(services);
-    await UserSeed.UserSeedWithRole(services);
-    await SchoolSeed.SeedSchoolAsync(services);
-    await SchoolSeed.SeedSchoolUserAsync(services);
-    await LessonTypeSeed.SeedLessonTypeAsync(services);
-    await LessonSeed.SeedLessons(services);
-    await HorseSeed.SeedHorses(services);
-    await PackageSeed.SeedPackages(services);
-    await PaymentSeed.SeedPayments(services);
+
+    await SeedData.InitializeAsync(services);
 }
 
+
 app.Run();
+
+
+public static class SeedData
+{
+    public static async Task InitializeAsync(IServiceProvider services)
+    {
+        await RoleSeed.SeedRolesAsync(services);
+        await UserSeed.UserSeedWithRole(services);
+        await SchoolSeed.SeedSchoolAsync(services);
+        await SchoolSeed.SeedSchoolUserAsync(services);
+        await LessonTypeSeed.SeedLessonTypeAsync(services);
+        await LessonSeed.SeedLessons(services);
+        await HorseSeed.SeedHorses(services);
+        await PackageSeed.SeedPackages(services);
+        await PaymentSeed.SeedPayments(services);
+    }
+}

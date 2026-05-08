@@ -17,7 +17,7 @@ public static class HorseSeed
             var em_context = serviceProvider.GetRequiredService<EM_DbContext>();
             var userManager = serviceProvider.GetRequiredService<UserManager<EMUser>>();
             var school = await em_context.Schools.FirstOrDefaultAsync(s => s.SchoolId == 1);
-            if (!em_context.Horses.Any())
+            if (!em_context.Horses.Any())//AnyAsync
             {
                 List<Horse> horses =
                 [

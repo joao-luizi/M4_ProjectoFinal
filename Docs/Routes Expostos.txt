@@ -1,61 +1,3 @@
-- Deviamos colocar um avanço no readme a documentar a crição do primeiro utilizador.
-
-Como Admin
-Username: admin@admin.pt
-Password: @SuperAdmin1
-
-A DB depois das primeiras migrações tam dados dos ultimos utilizadores
-
-Como Admin**************************************
-
-Endpontis: Aparentemente não tem swagger
-
-"root" : working
-
-"https://localhost:56116/Account/Login?ReturnUrl=%2Fhome" : Looks weird maybe just /login instead of something so verbose. Logins appears to work with correct claims
-
-
-Após login
-
-"home: When admin goes to a HelloWorld Page. Maybe change to dashboard?
-
-"dashboard" : Parece ok. analisar se queremos mais info.
-
-"Lessons" : Após entrar deixamos de perceber onde estamos. Alias os shared layouts parecem resumir-se à navbar. Select date talvez adicionar uma last date
-
-"users" : A tabela tem erro. Ultima coluna provavelmente é "Edit"
-
-
-Como teacher
-
-User: joao.silva@email.pt
-Pass: Joao@2024
-
-Como Student:
-user: maria.ferreira@email.pt
-pass: Maria#89
-
-
-
-"horses" :
-
-
-
-Loose:
-Os input model geralmente são utilizados e definidos na propra razor page
-
-RegisterConfirmation.razor tem um dummy emailconfirmation process - maybe change it
-
-As paginas do exemplo original da microsoft aind acá estão . Remover Counter, Weather, etc
-
-As seeds correm em cada lançamento da aplicação. Tornar facultativo e ou first run only
-
-A pagina de chegada "/" é chamda landing page. Mudar para home e definir o route da pagina "/" e /home
-
-Seeds estão a correr todas as vezes que o programa corre. Deviam estar sobre a marca IsDeveoplment.
-As classes de seeds devem usar metodos Async sempre que possibel. Por exemplo .Any deve ser .AnyAsync
-
-Exposed routes:
 No Login:
 Reachable 	: /Account/AccessDenied		
 Not reachable	: /Account/ConfirmEmail				Goes to Root?
@@ -86,7 +28,7 @@ Reachable	: /Account/Register
 Reachable	: /Account/RegisterConfirmation			Goes to Home?
 Reachable	: /Account/ResendEmailConfirmation
 Reachable	: /Account/ResetPassword			Exception
-Reachable	: /Account/ResetPasswordConfirmation		*should go to login
+Reachable	: /Account/ResetPasswordConfirmation		*should go to login - no data can be public
 Reachable	: /createLesson 				*should not be reachable
 Reachable	: /editPresence/{lessonId}			Exception
 Reachable	: /createLessonTeacher/{selectedTeacherId}	*should not be reachable
@@ -101,14 +43,3 @@ Reachable	: /lessons 					Goes to Login
 Reachable	: /notification 				Does Nothing - Probably ok
 Reachable	: /users					Exception
 Reachable	: /weather					Faz parte do template da microsoft
-
-
-
-
-
-
-
-
-
-
-
