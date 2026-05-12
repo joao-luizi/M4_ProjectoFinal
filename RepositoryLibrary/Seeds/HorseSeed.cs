@@ -24,31 +24,31 @@ public static class HorseSeed
                 new Horse{
                     Name = "Relâmpago",
                     Breed = "Mangalarga Marchador",
-                    Age = 6,
+                    DateOfBirth = new DateTime(2020, 1, 1),
                     School = school
                 },
                 new Horse{
                     Name = "Estrela",
                     Breed = "Puro-Sangue Lusitano",
-                    Age = 4,
+                    DateOfBirth = new DateTime(2022, 1, 1),
                     School = school
                 },
                 new Horse{
                     Name = "Ventania",
                     Breed = "Crioulo",
-                    Age = 7,
+                    DateOfBirth = new DateTime(2019, 1, 1),
                     School = school
                 },
                 new Horse{
                     Name = "Fumaca",
                     Breed = "Quarto de Milha",
-                    Age = 5,
+                    DateOfBirth = new DateTime(2021, 1, 1),
                     School = school
                 },
                 new Horse{
                     Name = "Brisa",
                     Breed = "Árabe",
-                    Age = 3,
+                   DateOfBirth = new DateTime(2023, 1, 1),
                     School = school
                 }];
 

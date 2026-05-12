@@ -27,7 +27,10 @@ namespace RepositoryLibrary.Repository
 
         public async Task<Lesson?> GetLessonByIdAsync(int lessonId)
         {
-            return await _emContext.Lessons.Include(l => l.LessonType).Include(l => l.Bookings).Include(l => l.LessonProfs).FirstOrDefaultAsync(l => l.LessonId == lessonId);
+            return await _emContext.Lessons
+                .Include(l => l.LessonType)
+                .Include(l => l.Bookings)
+                .Include(l => l.LessonProfs).FirstOrDefaultAsync(l => l.LessonId == lessonId);
         }
 
         public async Task CreateLessonAsync(Lesson lesson)

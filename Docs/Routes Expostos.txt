@@ -7,9 +7,9 @@ Reachable	: /Account/ForgotPassword
 Reachable	: /Account/ForgotPasswordConfirmation
 Reachable	: /Account/InvalidPasswordReset
 Reachable	: /Account/InvalidUser
-Reachable	: /Account/Lockout
+Reachable	: /Account/Lockout	
 Reachable	: /Account/Login
-Reachable	: /Account/LoginWith2fa		 		Exception
+Reachable	: /Account/LoginWith2fa		 		Exception	OK
 Reachable	: /Account/LoginWithRecoveryCode 		Exception
 Reachable	: /Account/Manage/ChangePassword 		Goes to Login
 Reachable	: /Account/Manage/DeletePersonalData		Goes to Login
@@ -24,11 +24,11 @@ Reachable	: /Account/Manage/ProfileData			Goes to Login
 Reachable	: /Account/Manage/ResetAuthenticator		Goes to Login
 Reachable	: /Account/Manage/SetPassword			Goes to Login
 Reachable	: /Account/Manage/TwoFactorAuthentication	Goes to Login
-Reachable	: /Account/Register
+Reachable	: /Account/Register				Goes to Register (OK)
 Reachable	: /Account/RegisterConfirmation			Goes to Home?
-Reachable	: /Account/ResendEmailConfirmation
+Reachable	: /Account/ResendEmailConfirmation		Goes to Resend email confirmation
 Reachable	: /Account/ResetPassword			Exception
-Reachable	: /Account/ResetPasswordConfirmation		*should go to login - no data can be public
+Reachable	: /Account/ResetPasswordConfirmation		*should go to login 
 Reachable	: /createLesson 				*should not be reachable
 Reachable	: /editPresence/{lessonId}			Exception
 Reachable	: /createLessonTeacher/{selectedTeacherId}	*should not be reachable
@@ -37,7 +37,6 @@ Reachable	: /editLesson/{lessonId}			Exception
 Reachable	: /auth						Goes to Login
 Reachable	: /dashboard					Goes to Login
 Reachable	: /Error					Goes to Error (it's fine)
-Reachable	: /home						*Eu alterei is to no meu branch está a ir para home corretamente na versão original vai para o home do template da microsoft
 Reachable	: /horses					Goes to Login
 Reachable	: /lessons 					Goes to Login
 Reachable	: /notification 				Does Nothing - Probably ok

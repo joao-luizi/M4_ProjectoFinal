@@ -1,6 +1,8 @@
 ﻿@page "/users"
+@attribute [Authorize(Roles = "Administrator")]
 @rendermode InteractiveServer
 
+@using Microsoft.AspNetCore.Authorization
 @using Microsoft.EntityFrameworkCore
 @using RepositoryLibrary.IServices
 @using RepositoryLibrary.Models
@@ -58,7 +60,14 @@ SelectionMode="DataGridSelectionMode.Single">
         <RadzenDataGridColumn Title="State" Width="160px">
             <Template Context="user">
                 <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@(args => OpenRender(user))" @onclick:stopPropagation="true" />
-            </Template>
+                <RadzenButton Icon="delete"
+                              ButtonStyle="ButtonStyle.Danger"
+                              Variant="Variant.Flat"
+                              Size="ButtonSize.Medium"
+                              class="rz-my-1 rz-ms-1"
+                              Click="@(args => ConfirmDelete(user))"
+                              @onclick:stopPropagation="true" />
+               </Template>
         </RadzenDataGridColumn>
     </Columns>
 </RadzenDataGrid>
@@ -74,13 +83,16 @@ SelectionMode="DataGridSelectionMode.Single">
     private string SchoolName { get; set; }
     private string IsActiveColor { get; set; }
 
+    private int GetSchoolId()
+    {
+        var auth = AuthenticationStateProvider.GetAuthenticationStateAsync().Result;
+        return Convert.ToInt32(auth.User.FindFirst("SchoolId")?.Value);
+    }
 
     protected override async Task OnInitializedAsync()
     {
-        var authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        ClaimsPrincipal? claimsPrincipal = authenticationState.User;
 
-        int schoolId = Convert.ToInt32(claimsPrincipal.FindFirst("SchoolId")?.Value);
+        int schoolId = GetSchoolId();
         School school = await _schoolService.GetSchoolByIdAsync(schoolId);
         SchoolName = school.SchoolName;
         users = await _userService.GetAllUsers(schoolId);
@@ -160,6 +172,29 @@ SelectionMode="DataGridSelectionMode.Single">
         await JSRuntime.InvokeVoidAsync("window.localStorage.setItem", "DialogSettings", JsonSerializer.Serialize<DialogSettings>(Settings));
     }
 
+    private async Task ConfirmDelete(UpdateUserDto user)
+    {
+        bool? confirmed = await dialogService.Confirm(
+            $"Are you sure you want to delete {user.FirstName} {user.LastName}?",
+            "Delete User",
+            new ConfirmOptions()
+            {
+                OkButtonText = "Yes",
+                CancelButtonText = "No"
+            });
+
+        if (confirmed == true)
+        {
+            await DeleteUser(user);
+        }
+    }
+    private async Task DeleteUser(UpdateUserDto user)
+    {
+        await _userService.DeleteUserAsync(user.Id);
+
+        users = await _userService.GetAllUsers(GetSchoolId());
+        StateHasChanged();
+    }
     public class DialogSettings
     {
         public string Left { get; set; }

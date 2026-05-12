@@ -22,13 +22,18 @@
 
             TotalUserHorses = TotalHorses - TotalSchoolHorses;
 
+
             horses = allHorses.Select(h => new HorsesData
                 {
                     HorseId = h.HorseId,
                     Name = h.Name,
                     Breed = h.Breed,
-                    Age = h.Age,
+                    DateOfBirth = h.DateOfBirth,
+                    Photo = h.Photo,
+                    UserHorses = h.UserHorses?.FirstOrDefault()?.Relationship ?? "School"
                 }).ToList();
+
+
 
         }
         catch (Exception ex)
@@ -55,8 +60,12 @@
         public int HorseId { get; set; }
         public string Name { get; set; }
         public string Breed { get; set; }
-        public int Age { get; set; }
+        public DateTime DateOfBirth { get; set; }
         public string UserHorses { get; set; }
+        public byte[]? Photo { get; set; }
+
+        public int Age => (int)((DateTime.Today - DateOfBirth).TotalDays / 365.25);
+        public bool IsSchoolHorse => UserHorses == "School";
     }
 
     async Task ToggleAddHorseForm()
@@ -71,7 +80,9 @@
                 HorseId = horse.HorseId,
                 Name = horse.Name,
                 Breed = horse.Breed,
-                Age = horse.Age,
+                DateOfBirth = horse.DateOfBirth,
+                Photo = horse.Photo
+                
             };
 
         horses.Add(horseData);
@@ -81,7 +92,7 @@
         else
             TotalUserHorses++;
 
-        showAddHorseForm = true;
+        showAddHorseForm = false;
     }
 
     private Task HideAddHorseForm()
@@ -97,8 +108,9 @@
                 HorseId = horseData.HorseId,
                 Name = horseData.Name,
                 Breed = horseData.Breed,
-                Age = horseData.Age,
-                School = new School { SchoolId = schoolId }
+                DateOfBirth = horseData.DateOfBirth,
+                School = new School { SchoolId = schoolId },
+                Photo = horseData.Photo
             };
         showAddHorseForm = true;
     }
@@ -110,7 +122,8 @@
         {
             dto.Name = updated.Name;
             dto.Breed = updated.Breed;
-            dto.Age = updated.Age;
+            dto.DateOfBirth = updated.DateOfBirth;
+            dto.Photo = updated.Photo;
         }
 
         selectedHorse = null;
@@ -212,8 +225,16 @@
         <RadzenDataGridColumn TItem="HorsesData" Property="HorseId" Title="ID" />
         <RadzenDataGridColumn TItem="HorsesData" Property="Name" Title="Nome" />
         <RadzenDataGridColumn TItem="HorsesData" Property="Breed" Title="Raça" />
-        <RadzenDataGridColumn TItem="HorsesData" Property="Age" Title="Idade" />
-        <RadzenDataGridColumn TItem="HorsesData" Property="UserHorses" Title="Proprietário / Escola" />
+        <RadzenDataGridColumn TItem="HorsesData" Property="Age" Title="Idade">
+            <Template Context="h">
+                @h.Age
+            </Template>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="HorsesData" Title="Proprietário">
+            <Template Context="h">
+                @(h.IsSchoolHorse ? "Escola" : "Proprietário")
+            </Template>
+        </RadzenDataGridColumn>
         <RadzenDataGridColumn TItem="HorsesData" Title="Ações">
             <Template Context="horse">
                 <RadzenButton Icon="edit" Size="ButtonSize.Small" Style="margin-right: 8px;"

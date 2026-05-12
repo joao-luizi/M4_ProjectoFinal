@@ -1,6 +1,8 @@
-﻿@page "/editLesson/{lessonId}"
+﻿@page "/editLesson/{lessonId:int}"
+@attribute [Authorize(Roles = "Administrator,Teacher")]
 @rendermode InteractiveServer
 
+@using Microsoft.AspNetCore.Authorization
 @using Microsoft.EntityFrameworkCore
 @using RepositoryLibrary.IServices
 @using RepositoryLibrary.Models
@@ -11,7 +13,13 @@
 @inject IUserService userService
 @inject NavigationManager NavigationManager
 
-@if(lesson is null || lessonTypes is null || teachers is null)
+@if (
+    lesson is null ||
+    lessonTypes is null ||
+    teachers is null ||
+    lesson.School is null ||
+    lesson.LessonType is null
+)
 {
     <p>Loading...</p>
 }

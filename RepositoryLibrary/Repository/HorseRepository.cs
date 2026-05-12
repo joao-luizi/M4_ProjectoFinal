@@ -49,6 +49,13 @@ namespace RepositoryLibrary.Repository
             }
         }
 
+        // NOTE (legacy behaviour):
+        // - EditHorse is a manual patch method (field-by-field update, no mapper).
+        // - Photo is only updated when explicitly provided.
+        // - Current design does NOT allow removing an existing photo (no "clear" semantic).
+        // - A future improvement could introduce an explicit flag (e.g. PhotoChanged / RemovePhoto)
+        //   to distinguish between "no change", "update", and "delete" states.
+        // - Keep current behavior as-is to avoid breaking legacy UI flows.
         public async Task<Horse> EditHorse(Horse horse)
         {
             try
@@ -62,11 +69,16 @@ namespace RepositoryLibrary.Repository
 
                 existing.Name = horse.Name;
                 existing.Breed = horse.Breed;
-                existing.Age = horse.Age;
+                existing.DateOfBirth = horse.DateOfBirth;
+                if (horse.Photo != null)
+                {
+                    existing.Photo = horse.Photo;
+                }
 
                 var school = await _emContext.Schools.FindAsync(horse.School.SchoolId)
                             ?? throw new InvalidOperationException($"School {horse.School.SchoolId} not found.");
                 existing.School = school;
+
 
                 await _emContext.SaveChangesAsync();
                 return existing;
@@ -83,7 +95,7 @@ namespace RepositoryLibrary.Repository
         {
             try
             {
-                var horses = await _emContext.Horses.ToListAsync();
+                var horses = await _emContext.Horses.Include(h => h.UserHorses).ToListAsync();
                 return horses;
             }
             catch (Exception e)
