@@ -1,4 +1,4 @@
-#RideReady
+# RideReady
 
 RideReady is a web application built with ASP.NET Core designed to manage school-related transport and user services.
 
