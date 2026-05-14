@@ -1,19 +1,32 @@
-﻿using RepositoryLibrary.IServices;
+﻿using Microsoft.AspNetCore.Identity;
+using RepositoryLibrary.IRepository;
+using RepositoryLibrary.IServices;
 using RepositoryLibrary.Models.Context;
-using RepositoryLibrary.Repository;
-using Microsoft.AspNetCore.Identity;
-using SharedLibrary;
 using RepositoryLibrary.Models.DTOs;
+using RepositoryLibrary.Repository;
+using SharedLibrary;
 
 namespace RepositoryLibrary.Services
 {
     public class UserService : IUserService
     {
         private readonly UserRepository _userRepository;
+        private readonly PaymentRepository _paymentRepository;
+        private readonly BookingRepository _bookingRepository;
+        private readonly LessonRepository _lessonRepository;
+        private readonly HorseRepository _horseRepository;
+        private readonly SchoolUsersRepository _schoolUserRepository;
+        private readonly UserPhotoRepository _userPhotoRepository;
 
         public UserService(EM_DbContext emContext, UserManager<EMUser> userManager)
         {
             _userRepository = new UserRepository(emContext, userManager);
+            _paymentRepository = new PaymentRepository(emContext);
+            _bookingRepository = new BookingRepository(emContext);
+            _lessonRepository = new LessonRepository(emContext);
+            _horseRepository = new HorseRepository(emContext);
+            _schoolUserRepository = new SchoolUsersRepository(emContext);
+            _userPhotoRepository = new UserPhotoRepository(emContext);
         }
 
         public async Task<List<UpdateUserDto>> GetAllUsers(int schoolId)
@@ -56,11 +69,21 @@ namespace RepositoryLibrary.Services
         {
             try
             {
-                return await _userRepository.DeleteUserAsync(id);
+                // 1. apagar dependências primeiro (DB business)
+                int deletedPayments = await _paymentRepository.DeleteByUserIdAsync(id);
+                int deletedBookings = await _bookingRepository.DeleteByUserIdAsync(id);
+                int deletedHorses = await _horseRepository.DeleteByUserIdAsync(id);
+                int deletedUserPhotos = await _userPhotoRepository.DeletePhotoByUserIdAsync(id);
+                int deletedSchoolUsers = await _schoolUserRepository.DeleteUserAsync(id);
+
+                // 2. apagar user na identity por último
+                var deletedUser = await _userRepository.DeleteUserAsync(id);
+
+                return deletedUser;
             }
             catch (Exception e)
             {
-                throw new Exception(e.Message, e.InnerException);
+                throw new Exception(e.Message, e);
             }
         }
 

@@ -13,5 +13,7 @@ namespace RepositoryLibrary.IRepository
         Task<(bool weekly, int? amount)> IsWeekly(string userId);
         Task<string> LessonTypeBought(string userId);
         Task useClass(string userId);
+
+        Task<int> DeleteByUserIdAsync(string userId);
     }
 }

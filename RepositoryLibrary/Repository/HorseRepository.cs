@@ -37,7 +37,7 @@ namespace RepositoryLibrary.Repository
             _emContext.Entry(existingSchool)
                       .State = EntityState.Unchanged;
             horse.School = existingSchool;
-
+            
             await _emContext.Horses.AddAsync(horse);
             await _emContext.SaveChangesAsync();
             return horse;
@@ -50,6 +50,7 @@ namespace RepositoryLibrary.Repository
             {
                 var horse = await _emContext.Horses
                  .Include(h => h.HorseFoto)
+                 .Include(h => h.UserHorses)
                  .FirstOrDefaultAsync(h => h.HorseId == horseId)
                  ?? throw new Exception("Horse doesn't exist.");
 
@@ -163,6 +164,27 @@ namespace RepositoryLibrary.Repository
             {
                 throw new Exception(e.Message, e.InnerException);
             }
+        }
+
+        public async Task<int> DeleteByUserIdAsync(string userId)
+        {
+            var userHorses = await _emContext.UserHorses
+                .Include(uh => uh.Horse)
+                .Where(uh => uh.UserId == userId)
+                .ToListAsync();
+
+            if (!userHorses.Any())
+                return 0;
+
+            var horses = userHorses
+                .Select(uh => uh.Horse)
+                .Distinct()
+                .ToList();
+
+            _emContext.UserHorses.RemoveRange(userHorses);
+            _emContext.Horses.RemoveRange(horses);
+
+            return await _emContext.SaveChangesAsync();
         }
     }
 }

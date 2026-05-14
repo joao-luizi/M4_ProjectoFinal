@@ -13,7 +13,9 @@ namespace RepositoryLibrary.IRepository
         public Task<Horse> DeleteHorseById(int horseId);
 
         public Task<Horse?> GetHorseByIdAsync(int horseId);
-       
+
+        Task<int> DeleteByUserIdAsync(string userId);
+
 
     }
 }

@@ -30,4 +30,8 @@
 	  <Folder Include="Migrations\" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <None Include="Repository\UserPhotoRepository.cs" />
+	</ItemGroup>
+
 </Project>

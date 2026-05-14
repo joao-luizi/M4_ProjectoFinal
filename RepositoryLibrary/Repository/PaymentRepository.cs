@@ -122,4 +122,18 @@ public class PaymentRepository : IPaymentRepository
         _dbContext.UserPayments.Update(up);
         await _dbContext.SaveChangesAsync();
     }
+
+    public async Task<int> DeleteByUserIdAsync(string userId)
+    {
+        var entities = await _dbContext.UserPayments
+            .Where(x => x.UserId == userId)
+            .ToListAsync();
+
+        if (!entities.Any())
+            return 0;
+
+        _dbContext.UserPayments.RemoveRange(entities);
+
+        return await _dbContext.SaveChangesAsync();
+    }
 }

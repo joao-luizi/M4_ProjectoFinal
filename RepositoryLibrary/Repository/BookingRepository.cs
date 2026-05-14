@@ -158,5 +158,19 @@ namespace RepositoryLibrary.Repository
         {
             return await _emContext.Bookings.AnyAsync(b => b.LessonId == lessonId && b.UserId == userId);
         }
+
+        public async Task<int> DeleteByUserIdAsync(string userId)
+        {
+            var entities = await _emContext.UserPayments
+                .Where(x => x.UserId == userId)
+                .ToListAsync();
+
+            if (!entities.Any())
+                return 0;
+
+            _emContext.UserPayments.RemoveRange(entities);
+
+            return await _emContext.SaveChangesAsync();
+        }
     }
 }

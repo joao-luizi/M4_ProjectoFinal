@@ -1,0 +1,10 @@
+dotnet ef database drop --context ApplicationDbContext --project RideReady --startup-project RideReady --force
+
+dotnet ef database drop --context EM_DbContext --project RepositoryLibrary --startup-project RideReady --force
+
+
+
+
+dotnet ef database update --context ApplicationDbContext --project RideReady --startup-project RideReady
+
+dotnet ef database update --context EM_DbContext --project RepositoryLibrary --startup-project RideReady
