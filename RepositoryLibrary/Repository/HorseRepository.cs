@@ -13,6 +13,16 @@ namespace RepositoryLibrary.Repository
             _emContext = context;
         }
 
+        public async Task<Horse?> GetHorseByIdAsync(int horseId)
+        {
+           
+            return await _emContext.Horses
+                .Include(h => h.HorseFoto)
+                .Include(h => h.UserHorses)
+                .Include(h => h.School)
+                .FirstOrDefaultAsync(h => h.HorseId == horseId);
+        }
+
         public async Task<Horse> CreateHorse(Horse horse)
         {
             var existingSchool = await _emContext.Schools
@@ -38,7 +48,19 @@ namespace RepositoryLibrary.Repository
         {
             try
             {
-                var horse = await _emContext.Horses.FirstOrDefaultAsync(horse => horse.HorseId == horseId) ?? throw new Exception("Horse doesn't exist, can't delete.");
+                var horse = await _emContext.Horses
+                 .Include(h => h.HorseFoto)
+                 .FirstOrDefaultAsync(h => h.HorseId == horseId)
+                 ?? throw new Exception("Horse doesn't exist.");
+
+                if (horse.HorseFoto != null && horse.HorseFoto.FotoPath != null)
+                {
+                    var path = Path.Combine("wwwroot", horse.HorseFoto.FotoPath.TrimStart('/'));
+
+                    if (File.Exists(path))
+                        File.Delete(path);
+                }
+
                 _emContext.Horses.Remove(horse);
                 await _emContext.SaveChangesAsync();
                 return horse;
@@ -49,38 +71,49 @@ namespace RepositoryLibrary.Repository
             }
         }
 
-        // NOTE (legacy behaviour):
-        // - EditHorse is a manual patch method (field-by-field update, no mapper).
-        // - Photo is only updated when explicitly provided.
-        // - Current design does NOT allow removing an existing photo (no "clear" semantic).
-        // - A future improvement could introduce an explicit flag (e.g. PhotoChanged / RemovePhoto)
-        //   to distinguish between "no change", "update", and "delete" states.
-        // - Keep current behavior as-is to avoid breaking legacy UI flows.
+
         public async Task<Horse> EditHorse(Horse horse)
         {
             try
             {
                 var existing = await _emContext.Horses
                     .Include(h => h.School)
+                    .Include(h => h.HorseFoto)
                     .SingleOrDefaultAsync(h => h.HorseId == horse.HorseId);
 
                 if (existing == null)
-                    throw new InvalidOperationException($"Horse {horse.HorseId} not found.");
+                    throw new InvalidOperationException(
+                        $"Horse {horse.HorseId} not found.");
 
                 existing.Name = horse.Name;
                 existing.Breed = horse.Breed;
                 existing.DateOfBirth = horse.DateOfBirth;
-                if (horse.Photo != null)
+
+                // FOTO
+                if (horse.HorseFoto?.FotoPath != null)
                 {
-                    existing.Photo = horse.Photo;
+                    if (existing.HorseFoto == null)
+                    {
+                        existing.HorseFoto = new HorseFoto
+                        {
+                            HorseId = existing.HorseId,
+                            FotoPath = horse.HorseFoto.FotoPath
+                        };
+                    }
+                    else
+                    {
+                        existing.HorseFoto.FotoPath = horse.HorseFoto.FotoPath;
+                    }
                 }
 
                 var school = await _emContext.Schools.FindAsync(horse.School.SchoolId)
-                            ?? throw new InvalidOperationException($"School {horse.School.SchoolId} not found.");
+                             ?? throw new InvalidOperationException(
+                                 $"School {horse.School.SchoolId} not found.");
+
                 existing.School = school;
 
-
                 await _emContext.SaveChangesAsync();
+
                 return existing;
             }
             catch (Exception e)

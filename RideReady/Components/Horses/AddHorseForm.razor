@@ -14,13 +14,16 @@
     private bool isEdit => HorseToEdit?.HorseId > 0;
 
     private string? previewImage;
+    private IBrowserFile? selectedFile;
 
     private async Task OnFileSelected(InputFileChangeEventArgs e)
     {
         var file = e.File;
 
         if (file.ContentType != "image/png")
-            return; // ou validação UI mais tarde
+            return;
+
+        selectedFile = file;
 
         using var stream = file.OpenReadStream(maxAllowedSize: 5 * 1024 * 1024);
         using var ms = new MemoryStream();
@@ -29,44 +32,53 @@
 
         var bytes = ms.ToArray();
 
-        newHorse.Photo = bytes;
-
-        previewImage = $"data:image/png;base64,{Convert.ToBase64String(bytes)}";
+        previewImage =
+            $"data:image/png;base64,{Convert.ToBase64String(bytes)}";
     }
     
-        protected override async Task OnParametersSetAsync()
+    protected override async Task OnParametersSetAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        var claimValue = user.FindFirst("SchoolId")?.Value
+                      ?? user.FindFirst("schoolId")?.Value;
+
+        if (int.TryParse(claimValue, out var sid))
+            SchoolId = sid;
+
+        if (HorseToEdit != null)
         {
-            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
-            var user = authState.User;
-            var claimValue = user.FindFirst("SchoolId")?.Value
-                          ?? user.FindFirst("schoolId")?.Value;
-            if (int.TryParse(claimValue, out var sid))
-                SchoolId = sid;
-            // NOTE: manual mapping due to legacy model usage (do not auto-map without review)
-            if (HorseToEdit != null)
+            newHorse = new Horse
             {
-                newHorse = new Horse
-                {
-                    HorseId = HorseToEdit.HorseId,
-                    Name = HorseToEdit.Name,
-                    Breed = HorseToEdit.Breed,
-                    DateOfBirth = HorseToEdit.DateOfBirth,
-                    Photo = HorseToEdit.Photo,
-                    School = new School { SchoolId = SchoolId }
-                };
-            }
-            else
-            {
-                newHorse = new Horse
-                {
-                    School = new School { SchoolId = SchoolId }
-                };
-            }
-            if (HorseToEdit?.Photo != null)
-            {
-                previewImage = $"data:image/png;base64,{Convert.ToBase64String(HorseToEdit.Photo)}";
-            }
+                HorseId = HorseToEdit.HorseId,
+                Name = HorseToEdit.Name,
+                Breed = HorseToEdit.Breed,
+                DateOfBirth = HorseToEdit.DateOfBirth,
+
+               
+
+                School = new School { SchoolId = SchoolId }
+            };
         }
+        else
+        {
+            newHorse = new Horse
+            {
+                School = new School { SchoolId = SchoolId }
+            };
+        }
+
+        // preview logic atualizado
+        if (!string.IsNullOrWhiteSpace(HorseToEdit?.HorseFoto?.FotoPath))
+        {
+            previewImage = HorseToEdit.HorseFoto.FotoPath;
+        }
+        else
+        {
+            previewImage = "/images/default_horse.png";
+        }
+    }
     
 
 
@@ -76,13 +88,16 @@
 
         if (newHorse.HorseId == 0)
         {
-            var added = await HorseService.AddHorse(newHorse);
+            var added = await HorseService.AddHorse(newHorse, selectedFile);
+
             await OnHorseAdded.InvokeAsync(added);
-            newHorse = new Horse { School = new School { SchoolId = SchoolId } };
+
+            
         }
         else
         {
-            var updated = await HorseService.UpdateHorse(newHorse);
+            var updated = await HorseService.UpdateHorse(newHorse, selectedFile);
+
             await OnHorseUpdated.InvokeAsync(updated);
         }
     }

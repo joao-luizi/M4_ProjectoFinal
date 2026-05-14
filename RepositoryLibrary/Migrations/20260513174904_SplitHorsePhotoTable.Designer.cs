@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RepositoryLibrary.Models.Context;
 
@@ -11,9 +12,11 @@ using RepositoryLibrary.Models.Context;
 namespace RepositoryLibrary.Migrations
 {
     [DbContext(typeof(EM_DbContext))]
-    partial class EM_DbContextModelSnapshot : ModelSnapshot
+    [Migration("20260513174904_SplitHorsePhotoTable")]
+    partial class SplitHorsePhotoTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -72,8 +75,8 @@ namespace RepositoryLibrary.Migrations
                     b.Property<int>("HorseId")
                         .HasColumnType("int");
 
-                    b.Property<string>("FotoPath")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<byte[]>("Foto")
+                        .HasColumnType("varbinary(max)");
 
                     b.HasKey("HorseId");
 

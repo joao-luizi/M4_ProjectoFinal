@@ -1,4 +1,5 @@
-﻿using RepositoryLibrary.Models;
+﻿using Microsoft.EntityFrameworkCore;
+using RepositoryLibrary.Models;
 
 namespace RepositoryLibrary.IRepository
 {
@@ -10,5 +11,9 @@ namespace RepositoryLibrary.IRepository
         public Task<Horse> CreateHorse(Horse horse);
         public Task<Horse> EditHorse(Horse horse);
         public Task<Horse> DeleteHorseById(int horseId);
+
+        public Task<Horse?> GetHorseByIdAsync(int horseId);
+       
+
     }
 }

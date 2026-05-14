@@ -29,7 +29,6 @@
                     Name = h.Name,
                     Breed = h.Breed,
                     DateOfBirth = h.DateOfBirth,
-                    Photo = h.Photo,
                     UserHorses = h.UserHorses?.FirstOrDefault()?.Relationship ?? "School"
                 }).ToList();
 
@@ -62,7 +61,7 @@
         public string Breed { get; set; }
         public DateTime DateOfBirth { get; set; }
         public string UserHorses { get; set; }
-        public byte[]? Photo { get; set; }
+
 
         public int Age => (int)((DateTime.Today - DateOfBirth).TotalDays / 365.25);
         public bool IsSchoolHorse => UserHorses == "School";
@@ -70,6 +69,11 @@
 
     async Task ToggleAddHorseForm()
     {
+        if (!showAddHorseForm)
+        {
+            selectedHorse = null;
+        }
+
         showAddHorseForm = !showAddHorseForm;
     }
 
@@ -81,11 +85,10 @@
                 Name = horse.Name,
                 Breed = horse.Breed,
                 DateOfBirth = horse.DateOfBirth,
-                Photo = horse.Photo
-                
+
             };
 
-        horses.Add(horseData);
+        horses = horses.Append(horseData).ToList();
         TotalHorses++;
         if (horse.School?.SchoolId == schoolId)
             TotalSchoolHorses++;
@@ -101,30 +104,34 @@
         return Task.CompletedTask;
     }
 
-    void EditHorse(HorsesData horseData)
+    private async Task EditHorse(HorsesData horseData)
     {
-        selectedHorse = new Horse
-            {
-                HorseId = horseData.HorseId,
-                Name = horseData.Name,
-                Breed = horseData.Breed,
-                DateOfBirth = horseData.DateOfBirth,
-                School = new School { SchoolId = schoolId },
-                Photo = horseData.Photo
-            };
-        showAddHorseForm = true;
+        try
+        {
+            selectedHorse = await HorseService.GetHorseByIdAsync(horseData.HorseId);
+
+            showAddHorseForm = true;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erro ao carregar cavalo: {ex.Message}");
+        }
+
+
     }
 
     private async Task HandleHorseUpdated(Horse updated)
     {
-        var dto = horses.FirstOrDefault(h => h.HorseId == updated.HorseId);
-        if (dto != null)
+        horses = horses.Select(h =>
         {
-            dto.Name = updated.Name;
-            dto.Breed = updated.Breed;
-            dto.DateOfBirth = updated.DateOfBirth;
-            dto.Photo = updated.Photo;
-        }
+            if (h.HorseId == updated.HorseId)
+            {
+                h.Name = updated.Name;
+                h.Breed = updated.Breed;
+                h.DateOfBirth = updated.DateOfBirth;
+            }
+            return h;
+        }).ToList();
 
         selectedHorse = null;
         showAddHorseForm = false;
@@ -141,9 +148,13 @@
         {
             try
             {
-                await HorseService.RemoveHorse(new Horse { HorseId = horsesData.HorseId });
+                var backEndHorse = await HorseService.GetHorseByIdAsync(horsesData.HorseId);
 
-                horses.Remove(horsesData);
+                await HorseService.RemoveHorse(backEndHorse);
+
+                horses = horses
+                .Where(h => h.HorseId != horsesData.HorseId)
+                .ToList();
                 TotalHorses--;
                 if (horsesData.UserHorses == "Escola") TotalSchoolHorses--;
                 else TotalUserHorses--;

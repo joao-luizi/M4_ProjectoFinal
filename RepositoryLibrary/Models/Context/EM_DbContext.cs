@@ -26,6 +26,12 @@ namespace RepositoryLibrary.Models.Context
             modelBuilder.Entity<LessonHorse>().HasOne(lh => lh.Horse).WithMany(lh => lh.LessonHorses).HasForeignKey(lh => lh.HorseId).OnDelete(DeleteBehavior.Restrict);
             modelBuilder.Entity<UserHorse>().HasKey(k => new { k.UserId, k.HorseId });
             modelBuilder.Entity<Photo>().HasKey(k => k.UserId);
+            modelBuilder.Entity<Horse>()
+                .HasOne(h => h.HorseFoto)
+                .WithOne(p => p.Horse)
+                .HasForeignKey<HorseFoto>(p => p.HorseId)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.Cascade);
             modelBuilder.Entity<UserPayment>().HasKey(k => new { k.UserId, k.BuyDate });
 
             base.OnModelCreating(modelBuilder);

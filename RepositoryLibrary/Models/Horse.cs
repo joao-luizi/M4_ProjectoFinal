@@ -15,7 +15,7 @@ namespace RepositoryLibrary.Models
         [DataType(DataType.Date)]
         public DateTime DateOfBirth { get; set; }
 
-        public byte[]? Photo { get; set; }
+        public HorseFoto? HorseFoto { get; set; }
 
         public ICollection<LessonHorse> LessonHorses { get; set; }
 
