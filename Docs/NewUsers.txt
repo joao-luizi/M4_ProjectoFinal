@@ -1,0 +1,20 @@
+
+Administradores:
+Username: administrator.demo1@rideready.com	Password: Administrator#demo1
+
+Estudantes:
+Username: student.demo1@rideready.com	Password: Student#demo1
+Username: student.demo2@rideready.com	Password: Student#demo2
+Username: student.demo3@rideready.com	Password: Student#demo3
+Username: student.demo4@rideready.com	Password: Student#demo4
+Username: student.demo5@rideready.com	Password: Student#demo5
+Username: student.demo6@rideready.com	Password: Student#demo6
+Username: student.demo7@rideready.com	Password: Student#demo7
+Username: student.demo8@rideready.com	Password: Student#demo8
+Username: student.demo9@rideready.com	Password: Student#demo9
+Username: student.demo10@rideready.com	Password: Student#demo10
+
+Professores:
+Username: teacher.demo1@rideready.com	Password: Teacher#demo1
+Username: teacher.demo2@rideready.com	Password: Teacher#demo2
+Username: teacher.demo3@rideready.com	Password: Teacher#demo3
