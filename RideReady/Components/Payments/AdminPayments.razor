@@ -1,0 +1,221 @@
+﻿@using RepositoryLibrary.Models
+@using RepositoryLibrary.Models.DTOs
+@inject RepositoryLibrary.IServices.IUserService UserService
+@inject RepositoryLibrary.IServices.ISchoolService SchoolService
+@inject RepositoryLibrary.IServices.IPackageService PackageService
+@inject Radzen.DialogService DialogService
+
+<h3 class="mb-3">Payments Administration</h3>
+
+<div class="mb-3" style="max-width: 400px;">
+    <RadzenDropDown TValue="int"
+                    Data="@schools"
+                    TextProperty="Name"
+                    ValueProperty="Id"
+                    Placeholder="Select a school"
+                    @bind-Value="selectedSchoolId"
+                    Change="@OnSchoolChanged" />
+</div>
+
+@if (selectedStudent != null && showDetailPanel)
+{
+    <RadzenCard class="mb-3">
+        <h4>@selectedStudent.Name</h4>
+        <p>@selectedStudent.Email</p>
+
+        <RadzenButton Text="Close"
+                      ButtonStyle="ButtonStyle.Light"
+                      Click="@(() => showDetailPanel = false)" />
+    </RadzenCard>
+}
+
+@if (selectedStudent != null && showPaymentPanel)
+{
+    <PaymentPanel Student="@selectedStudent"
+                  Packages="@packages"
+                  OnClose="@ClosePaymentPanel"
+                  OnSubmit="@CreatePayment" />
+}
+
+@if (selectedSchoolId == 0)
+{
+    <p>Select a school to continue.</p>
+}
+else if (students is null)
+{
+    <p>Loading students...</p>
+}
+else
+{
+    <RadzenCard>
+        <h5>Students</h5>
+
+        <RadzenDataGrid Data="@students" TItem="StudentViewModel">
+            <Columns>
+
+                <RadzenDataGridColumn TItem="StudentViewModel" Property="Name" Title="Name" />
+                <RadzenDataGridColumn TItem="StudentViewModel" Property="Email" Title="Email" />
+
+                <RadzenDataGridColumn TItem="StudentViewModel" Title="Actions">
+                    <Template Context="student">
+
+                        <RadzenButton Icon="search"
+                                      ButtonStyle="ButtonStyle.Info"
+                                      Size="ButtonSize.Small"
+                                      Click="@(() => OpenStudentDetails(student))" />
+
+                        <RadzenButton Icon="add"
+                                      ButtonStyle="ButtonStyle.Success"
+                                      Size="ButtonSize.Small"
+                                      Style="margin-left: 5px"
+                                      Click="@(() => StartNewPayment(student))" />
+
+                    </Template>
+                </RadzenDataGridColumn>
+
+            </Columns>
+        </RadzenDataGrid>
+    </RadzenCard>
+}
+
+@code {
+
+    public static class PaymentAdminMapper
+    {
+        public static SchoolViewModel ToViewModel(School school)
+        {
+            return new SchoolViewModel
+            {
+                Id = school.SchoolId,
+                Name = school.SchoolName
+            };
+        }
+
+        public static StudentViewModel ToViewModel(UpdateUserDto user)
+        {
+            return new StudentViewModel
+            {
+                Id = user.Id,
+                Name = user.Name,
+                Email = user.Email
+            };
+        }
+    }
+
+    public class StudentViewModel
+    {
+        public string Id { get; set; } = "";
+        public string Name { get; set; } = "";
+        public string Email { get; set; } = "";
+    }
+
+    public class SchoolViewModel
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = "";
+    }
+
+    public class PaymentPreviewLine
+    {
+        public string Name { get; set; } = "";
+        public int Quantity { get; set; }
+        public decimal Total { get; set; }
+    }
+
+    private int selectedSchoolId;
+    private StudentViewModel? selectedStudent;
+
+    private bool showPaymentPanel = false;
+    private bool showDetailPanel = false;
+
+    private List<SchoolViewModel> schools = new();
+    private List<StudentViewModel>? students;
+    private List<Package> packages = new();
+
+    private void StartNewPayment(StudentViewModel student)
+    {
+        selectedStudent = student;
+
+        showPaymentPanel = true;
+        showDetailPanel = false;
+    }
+
+    private async Task CreatePayment(List<PaymentPanel.PackageLineInput> lines)
+    {
+        var selected = lines
+            .Where(x => x.Quantity > 0)
+            .ToList();
+
+        if (!selected.Any())
+            return;
+
+        var preview = selected.Select(x => new PaymentPreviewLine
+        {
+            Name = x.DisplayName,
+            Quantity = x.Quantity,
+            Total = x.Total
+        }).ToList();
+
+        var total = preview.Sum(x => x.Total);
+
+        var result = await DialogService.OpenAsync<PaymentConfirmationDialog>(
+            "Confirm Payment",
+            new Dictionary<string, object>
+            {
+                { "Lines", preview },
+                { "Total", total }
+            },
+            new DialogOptions
+            {
+                Width = "600px",
+                Height = "400px",
+                CloseDialogOnOverlayClick = true
+            });
+
+        if (result != true)
+            return;
+
+        // TODO: persistência real
+        // await PaymentService.CreateUserPayment(selectedStudent.Id, selected, total);
+    }
+
+    private void ClosePaymentPanel()
+    {
+        showPaymentPanel = false;
+        selectedStudent = null;
+    }
+
+    private void OpenStudentDetails(StudentViewModel student)
+    {
+        selectedStudent = student;
+        showDetailPanel = true;
+        showPaymentPanel = false;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        packages = await PackageService.GetAllPackages();
+
+        var modelSchool = await SchoolService.GetSchoolsAsync();
+
+        schools = modelSchool
+            .Select(PaymentAdminMapper.ToViewModel)
+            .ToList();
+
+        students = new List<StudentViewModel>();
+    }
+
+    private async Task OnSchoolChanged(object value)
+    {
+        selectedSchoolId = (int)value;
+
+        students = null;
+
+        var users = await UserService
+            .GetUsersBySchoolAndRole(selectedSchoolId, "Student");
+
+        students = users
+            .Select(PaymentAdminMapper.ToViewModel)
+            .ToList();
+    }
+}

@@ -15,6 +15,17 @@ namespace RepositoryLibrary.Repository
             _emContext = em_Context;
         }
 
+        public Task<List<Package>> GetAllAsync()
+        {
+            try
+            {
+                return _emContext.Packages.Include(x => x.LessonType).ToListAsync();
+            }
+            catch (Exception e)
+            {
+                throw new Exception(e.Message, e.InnerException);
+            }
+        }
         public async Task<Package> GetPackageByIdAsync(int id)
         {
             try

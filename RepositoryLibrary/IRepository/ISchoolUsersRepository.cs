@@ -13,7 +13,8 @@ namespace RepositoryLibrary.IRepository
 
     {
         public Task<List<SchoolUser>> GetAllUsers(int schoolId);
-        public Task<SchoolUser> GetUserById(string id);      
+        public Task<SchoolUser> GetUserById(string id);
+
         public Task<int> DeleteUserAsync(string id);
 
     }

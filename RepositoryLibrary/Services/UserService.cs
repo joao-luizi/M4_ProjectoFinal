@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using RepositoryLibrary.IRepository;
 using RepositoryLibrary.IServices;
+using RepositoryLibrary.Models;
 using RepositoryLibrary.Models.Context;
 using RepositoryLibrary.Models.DTOs;
 using RepositoryLibrary.Repository;
@@ -60,6 +61,26 @@ namespace RepositoryLibrary.Services
                 return await _userRepository.GetUsersByRole(role);
             }
             catch(Exception e)
+            {
+                throw new Exception(e.Message, e.InnerException);
+            }
+        }
+
+        public async Task<List<UpdateUserDto>> GetUsersBySchoolAndRole(int schoolId, string role)
+        {
+            try
+            {
+                var users = await _userRepository.GetUsersByRole(role);
+                var schoolUsers = await _schoolUserRepository.GetAllUsers(schoolId);
+
+                var schoolUserIds = schoolUsers
+                .Select(su => su.UserId)
+                .ToHashSet();
+
+               return users.Where(u => schoolUserIds.Contains(u.Id)).ToList();
+
+            }
+            catch (Exception e)
             {
                 throw new Exception(e.Message, e.InnerException);
             }

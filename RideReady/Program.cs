@@ -3,8 +3,10 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Radzen;
+using RepositoryLibrary.IRepository;
 using RepositoryLibrary.IServices;
 using RepositoryLibrary.Models.Context;
+using RepositoryLibrary.Repository;
 using RepositoryLibrary.Seeds;
 using RepositoryLibrary.Services;
 using RideReady.Components;
@@ -60,6 +62,8 @@ builder.Services.AddScoped<IHorseService, HorseService>();
 builder.Services.AddScoped<IImageService, ImageService>();
 builder.Services.AddScoped<ISchoolService, SchoolService>();
 builder.Services.AddScoped<ILessonTypeService, LessonTypeService>();
+builder.Services.AddScoped<IPackageService, PackageService>();
+builder.Services.AddScoped<IPackageRepository, PackageRepository>();
 
 builder.Services.AddRadzenComponents();
 

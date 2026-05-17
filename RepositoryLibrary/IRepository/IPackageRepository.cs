@@ -4,6 +4,7 @@ namespace RepositoryLibrary.IRepository
 {
     public interface IPackageRepository
     {
+        public Task<List<Package>> GetAllAsync();
         public Task<Package> GetPackageByIdAsync(int id);
         public Task<List<Package>> GetPackageByUserIdAsync(string userId);
         public Task<Package> AddNewPackageAsync(Package package);

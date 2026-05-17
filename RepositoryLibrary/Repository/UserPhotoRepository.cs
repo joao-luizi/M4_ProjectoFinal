@@ -25,7 +25,7 @@ namespace RepositoryLibrary.Repository
 
         public async Task<List<SchoolUser>> GetAllUsers(int schoolId)
         {
-            return await _emContext.SchoolUsers.ToListAsync();
+            return await _emContext.SchoolUsers.Where(x => x.SchoolId == schoolId).ToListAsync();
 
         }
         public async Task<SchoolUser?> GetUserById(string id)
@@ -33,6 +33,8 @@ namespace RepositoryLibrary.Repository
             return await _emContext.SchoolUsers
                  .FirstOrDefaultAsync(x => x.UserId == id);
         }
+
+        
         public async Task<int> DeleteUserAsync(string id)
         {
             var userToDelete = await _emContext.SchoolUsers
