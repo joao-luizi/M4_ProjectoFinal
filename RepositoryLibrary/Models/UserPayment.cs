@@ -5,7 +5,8 @@ namespace RepositoryLibrary.Models;
 
 public class UserPayment
 {
-    [DatabaseGenerated(DatabaseGeneratedOption.None)]
+   
+    public int Id { get; set; }
     public string UserId { get; set; }
     public int PackageId { get; set; }
     public Package PackageBought { get; set; }

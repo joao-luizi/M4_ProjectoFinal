@@ -32,7 +32,7 @@ namespace RepositoryLibrary.Models.Context
                 .HasForeignKey<HorseFoto>(p => p.HorseId)
                 .IsRequired(false)
                 .OnDelete(DeleteBehavior.Cascade);
-            modelBuilder.Entity<UserPayment>().HasKey(k => new { k.UserId, k.BuyDate });
+           
 
             base.OnModelCreating(modelBuilder);
             modelBuilder.Entity<Users_View>()

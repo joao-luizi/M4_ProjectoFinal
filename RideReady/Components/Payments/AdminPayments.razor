@@ -174,7 +174,7 @@ else
             return;
 
         // TODO: persistência real
-        await PaymentService.InsertPaymentsByUserId(selectedStudent.Id, preview);
+        await PaymentService.CreateUserPayments(selectedStudent.Id, preview);
     }
 
     private void ClosePaymentPanel()
