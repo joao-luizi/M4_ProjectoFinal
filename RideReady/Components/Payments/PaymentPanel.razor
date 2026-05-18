@@ -59,7 +59,7 @@
 
     [Parameter] public EventCallback OnClose { get; set; }
 
-    // 🔥 agora envia dados para o pai
+   
     [Parameter] public EventCallback<List<PackageLineInput>> OnSubmit { get; set; }
 
     private List<PackageLineInput> PackageLines = new();

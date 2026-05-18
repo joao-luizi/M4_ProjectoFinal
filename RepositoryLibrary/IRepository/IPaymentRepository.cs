@@ -1,4 +1,5 @@
 ﻿using RepositoryLibrary.Models;
+using RepositoryLibrary.Models.DTOs;
 
 namespace RepositoryLibrary.IRepository
 {
@@ -7,6 +8,7 @@ namespace RepositoryLibrary.IRepository
         Task<List<UserPayment>> GetPaymentsByUserId(string userId);
         Task<List<UserPayment>> GetPaymentsByMonth(DateOnly date);
         Task<List<UserPayment>> GetAllPayments();
+        Task<int> CreateAllPayments(List<UserPayment> payments);
         Task<UserPayment> CreatePayment(UserPayment payment);
         Task<UserPayment> DeletePayment(UserPayment payment);
         Task<UserPayment> EditPayment(UserPayment payment);

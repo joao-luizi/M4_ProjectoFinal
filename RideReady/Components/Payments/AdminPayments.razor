@@ -3,6 +3,7 @@
 @inject RepositoryLibrary.IServices.IUserService UserService
 @inject RepositoryLibrary.IServices.ISchoolService SchoolService
 @inject RepositoryLibrary.IServices.IPackageService PackageService
+@inject RepositoryLibrary.IServices.IPaymentService PaymentService
 @inject Radzen.DialogService DialogService
 
 <h3 class="mb-3">Payments Administration</h3>
@@ -115,12 +116,6 @@ else
         public string Name { get; set; } = "";
     }
 
-    public class PaymentPreviewLine
-    {
-        public string Name { get; set; } = "";
-        public int Quantity { get; set; }
-        public decimal Total { get; set; }
-    }
 
     private int selectedSchoolId;
     private StudentViewModel? selectedStudent;
@@ -149,11 +144,14 @@ else
         if (!selected.Any())
             return;
 
-        var preview = selected.Select(x => new PaymentPreviewLine
+        var preview = selected.Select(x => new PaymentPreviewLines
         {
+            PackageId = x.PackageId,
             Name = x.DisplayName,
             Quantity = x.Quantity,
-            Total = x.Total
+            UnitPrice = x.BaseValue,
+            ClassesIncluded = x.ClassesIncluded,
+            Weekly = x.Weekly
         }).ToList();
 
         var total = preview.Sum(x => x.Total);
@@ -176,7 +174,7 @@ else
             return;
 
         // TODO: persistência real
-        // await PaymentService.CreateUserPayment(selectedStudent.Id, selected, total);
+        await PaymentService.InsertPaymentsByUserId(selectedStudent.Id, preview);
     }
 
     private void ClosePaymentPanel()

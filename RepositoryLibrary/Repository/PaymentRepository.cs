@@ -136,4 +136,14 @@ public class PaymentRepository : IPaymentRepository
 
         return await _dbContext.SaveChangesAsync();
     }
+
+    public async Task<int> CreateAllPayments(List<UserPayment> payments)
+    {
+        if (payments == null || !payments.Any())
+            return 0;
+
+        await _dbContext.UserPayments.AddRangeAsync(payments);
+
+        return await _dbContext.SaveChangesAsync();
+    }
 }
