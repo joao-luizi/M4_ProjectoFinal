@@ -1,0 +1,15 @@
+rideready.duckdns.org
+NEt$Jifa9eb@qg9
+
+4AT5&cUcc4yaw@aq
+
+rideready.duckdns.org (1533031)
+
+SQL Server User E Databases
+so
+w67ms&65T
+
+Database=RideReadyDBV0
+
+Data Source=66.23.224.138;Initial Catalog=Database=IdentityDbV0; Persist Security Info=True;User ID=so;Password=w67ms&65T;Pooling=False;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=True;
+Data Source=66.23.224.138;Initial Catalog=Database=RideReadyDBV0; Persist Security Info=True;User ID=so;Password=w67ms&65T;Pooling=False;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=True;
