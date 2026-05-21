@@ -15,6 +15,6 @@ namespace RepositoryLibrary.IRepository
 
     	public Task<bool> IsLessonBookedAsync(int lessonId, string studentId);
 
-        Task<int> DeleteByUserIdAsync(string userId);
+ 
     }
 }

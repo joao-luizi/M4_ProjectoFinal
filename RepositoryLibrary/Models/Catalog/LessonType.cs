@@ -2,8 +2,10 @@
 {
     public class LessonType
     {
-        public int LessonTypeId { get; set; }
-        public string Name { get; set; }
+        public int Id { get; set; }
+
+        public string Name { get; set; } = null!;
+
         public int DurationInMinutes { get; set; }
     }
 }

@@ -12,7 +12,7 @@ namespace RepositoryLibrary.Services
     public class UserService : IUserService
     {
         private readonly UserRepository _userRepository;
-        private readonly PaymentRepository _paymentRepository;
+
         private readonly BookingRepository _bookingRepository;
         private readonly LessonRepository _lessonRepository;
         private readonly HorseRepository _horseRepository;
@@ -22,7 +22,7 @@ namespace RepositoryLibrary.Services
         public UserService(EM_DbContext emContext, UserManager<EMUser> userManager)
         {
             _userRepository = new UserRepository(emContext, userManager);
-            _paymentRepository = new PaymentRepository(emContext);
+
             _bookingRepository = new BookingRepository(emContext);
             _lessonRepository = new LessonRepository(emContext);
             _horseRepository = new HorseRepository(emContext);
@@ -91,8 +91,8 @@ namespace RepositoryLibrary.Services
             try
             {
                 // 1. apagar dependências primeiro (DB business)
-                int deletedPayments = await _paymentRepository.DeleteByUserIdAsync(id);
-                int deletedBookings = await _bookingRepository.DeleteByUserIdAsync(id);
+                
+               
                 int deletedHorses = await _horseRepository.DeleteByUserIdAsync(id);
                 int deletedUserPhotos = await _userPhotoRepository.DeletePhotoByUserIdAsync(id);
                 int deletedSchoolUsers = await _schoolUserRepository.DeleteUserAsync(id);

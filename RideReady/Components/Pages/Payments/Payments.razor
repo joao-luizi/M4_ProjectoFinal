@@ -1,0 +1,6 @@
+﻿@page "/payments"
+@using Microsoft.AspNetCore.Authorization
+@rendermode InteractiveServer
+@attribute [Authorize(Roles = "Administrator,Student")]
+
+<RolePaymentsRouter />

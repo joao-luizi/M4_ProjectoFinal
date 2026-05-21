@@ -1,0 +1,140 @@
+﻿@using Microsoft.AspNetCore.Authorization
+@using Radzen.Blazor
+@using RepositoryLibrary.IServices
+@using RepositoryLibrary.Models
+@rendermode InteractiveServer
+@attribute [Authorize(Roles = "Administrator")]
+
+@inject IUserService UserService
+@inject ISchoolService SchoolService
+@inject NavigationManager Navigation
+
+<RadzenStack Gap="1rem">
+
+    <!-- SCHOOL DROPDOWN -->
+    <RadzenDropDown Data="@_schools"
+                    TextProperty="Name"
+                    ValueProperty="SchoolId"
+                    @bind-Value="_selectedSchoolId"
+                    Change="@OnSchoolChanged"
+                    Placeholder="Select a school"
+                    Style="width: 300px" />
+
+    <!-- STUDENTS GRID -->
+    @if (_students?.Any() == true)
+    {
+        <RadzenDataGrid Data="@_students"
+                        TItem="UserView"
+                        RowSelect="@OnUserSelected">
+
+            <Columns>
+
+                <RadzenDataGridColumn TItem="UserView"
+                                      Property="name"
+                                      Title="Name" />
+
+                <RadzenDataGridColumn TItem="UserView"
+                                      Property="email"
+                                      Title="Email" />
+
+                <!-- ACTIONS -->
+                <RadzenDataGridColumn TItem="UserView"
+                                      Title="Actions"
+                                      Sortable="false"
+                                      Filterable="false"
+                                      TextAlign="TextAlign.Center"
+                                      Width="140px">
+
+                    <Template Context="student">
+
+                        <RadzenStack Orientation="Orientation.Horizontal"
+                                     Gap="0.5rem"
+                                     JustifyContent="JustifyContent.Center">
+
+                            <!-- VIEW PAYMENTS -->
+                            <RadzenButton Icon="visibility"
+                                          ButtonStyle="ButtonStyle.Light"
+                                          Variant="Variant.Flat"
+                                          Size="ButtonSize.Small"
+                                          Click="@(() => ViewPayments(student.userId))" />
+
+                            <!-- CREATE PAYMENT -->
+                            <RadzenButton Icon="add"
+                                          ButtonStyle="ButtonStyle.Primary"
+                                          Variant="Variant.Flat"
+                                          Size="ButtonSize.Small"
+                                          Click="@(() => CreatePayment(student.userId))" />
+
+                        </RadzenStack>
+
+                    </Template>
+
+                </RadzenDataGridColumn>
+
+            </Columns>
+
+        </RadzenDataGrid>
+    }
+
+</RadzenStack>
+
+@code {
+
+    private sealed record UserView(string userId, string name, string email);
+    private sealed record SchoolView(int SchoolId, string Name);
+
+    private List<UserView> _students = new();
+    private List<SchoolView> _schools = new();
+
+    private int? _selectedSchoolId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadSchools();
+    }
+
+    private async Task LoadSchools()
+    {
+        _schools = (await SchoolService.GetSchoolsAsync())
+            .Select(x => new SchoolView(x.SchoolId, x.SchoolName))
+            .ToList();
+    }
+
+    private async Task OnSchoolChanged(object value)
+    {
+        _selectedSchoolId = value as int?;
+
+        if (_selectedSchoolId is null)
+        {
+            _students.Clear();
+            return;
+        }
+
+        await LoadStudents(_selectedSchoolId.Value);
+    }
+
+    private async Task LoadStudents(int schoolId)
+    {
+        _students = (await UserService.GetUsersBySchoolAndRole(schoolId, "Student"))
+            .Where(x => x.IsActive)
+            .Select(x => new UserView(x.Id, x.Name, x.Email))
+            .ToList();
+    }
+
+    private void OnUserSelected(UserView user)
+    {
+        selectedUserId = user.userId;
+    }
+
+    private string? selectedUserId;
+
+    private void ViewPayments(string studentId)
+    {
+        Navigation.NavigateTo($"/admin/payments/{studentId}");
+    }
+
+    private void CreatePayment(string studentId)
+    {
+        Navigation.NavigateTo($"/admin/payments/{studentId}/new");
+    }
+}

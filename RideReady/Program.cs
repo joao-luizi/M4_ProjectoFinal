@@ -62,10 +62,8 @@ builder.Services.AddScoped<IHorseService, HorseService>();
 builder.Services.AddScoped<IImageService, ImageService>();
 builder.Services.AddScoped<ISchoolService, SchoolService>();
 builder.Services.AddScoped<ILessonTypeService, LessonTypeService>();
-builder.Services.AddScoped<IPackageService, PackageService>();
-builder.Services.AddScoped<IPackageRepository, PackageRepository>();
-builder.Services.AddScoped<IPaymentService, PaymentService>();
-builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
+builder.Services.AddScoped<IPurchaseService, PurchaseService>();
+
 builder.Services.AddRadzenComponents();
 
 var app = builder.Build();
@@ -117,7 +115,7 @@ public static class SeedData
         await LessonTypeSeed.SeedLessonTypeAsync(services);
         await LessonSeed.SeedLessons(services);
         await HorseSeed.SeedHorses(services);
-        await PackageSeed.SeedPackages(services);
-        await PaymentSeed.SeedPayments(services);
+        await ProductSeed.SeedProductsAsync(services);
+
     }
 }
