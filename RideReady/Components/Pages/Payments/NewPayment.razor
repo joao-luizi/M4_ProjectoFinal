@@ -1,0 +1,261 @@
+﻿@page "/admin/payments/{StudentId}/new"
+
+@using Microsoft.AspNetCore.Authorization
+@using Radzen
+@using Radzen.Blazor
+@using RepositoryLibrary.IServices
+@using RepositoryLibrary.Services
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
+@using SharedLibrary.Models.Static_Class
+@rendermode InteractiveServer
+@inject IProductService ProductService
+@inject AuthenticationStateProvider AuthStateProvider
+@inject IUserService UserService
+@inject DialogService DialogService
+@attribute [Authorize]
+
+
+
+<h3>Pagamento</h3>
+@if (!_authorized)
+{
+    <h3>Acesso negado</h3>
+}
+else if (_loading)
+{
+    <p>Loading...</p>
+}
+else if (_productsSubscription.Any() || _productsNoSubscription.Any())
+{
+    <RadzenStack Gap="1.5rem">
+
+        <!-- SUBSCRIÇÃO -->
+        <RadzenCard Style="padding:1rem">
+
+            <RadzenStack Gap="1rem">
+
+                <h4>Subscrição</h4>
+
+                <RadzenDropDown Data="@_productsSubscription"
+                                TextProperty="productName"
+                                ValueProperty="productId"
+                                @bind-Value="_selectedProductId"
+                                Placeholder="Selecione uma subscrição"
+                                Style="width:300px" />
+
+                <RadzenRow AlignItems="AlignItems.End" Gap="1rem">
+
+                    <RadzenColumn Size="4">
+                        <RadzenLabel Text="Subscrição ativa até" />
+                        <RadzenDatePicker @bind-Value="endSubscription"
+                                          DateFormat="dd/MM/yyyy"
+                                          Style="width:100%" />
+                    </RadzenColumn>
+
+                    <RadzenColumn Size="3">
+                        <RadzenLabel Text="Adicionar meses" />
+                        <RadzenNumeric @bind-Value="subscriptionQuantity"
+                                       TValue="int"
+                                       Min="0"
+                                       Step="1"
+                                       Style="width:100%" />
+                    </RadzenColumn>
+
+                    <RadzenColumn Size="5">
+                        <RadzenLabel Text="Nova data final" />
+
+                        <RadzenTextBox Value="@GetNewEndSubscription().ToString("dd/MM/yyyy")"
+                                       ReadOnly="true"
+                                       Style="width:100%" />
+                    </RadzenColumn>
+
+                </RadzenRow>
+
+            </RadzenStack>
+
+        </RadzenCard>
+
+        <!-- PRODUTOS AVULSO -->
+        <RadzenCard Style="padding:1rem">
+
+            <RadzenStack Gap="1rem">
+
+                <h4>Pacotes / Créditos</h4>
+
+                @foreach (ProductView productView in _productsNoSubscription)
+                {
+                    <RadzenRow AlignItems="AlignItems.Center" Gap="1rem">
+
+                        <RadzenColumn Size="6">
+                            <b>@productView.productName</b>
+                        </RadzenColumn>
+
+                        <RadzenColumn Size="3">
+                            @productView.price.ToString("0.00") €
+                        </RadzenColumn>
+
+                        <RadzenColumn Size="3">
+                            <RadzenNumeric TValue="int"
+                                           Min="0"
+                                           Step="1"
+                                           Style="width:100%" />
+                        </RadzenColumn>
+
+                    </RadzenRow>
+                }
+                <RadzenButton Text="Criar pagamento"
+                              Icon="payment"
+                              Click="@OpenPaymentModal"
+                              Style="margin-top:1rem" />
+            </RadzenStack>
+
+        </RadzenCard>
+
+    </RadzenStack>
+}
+
+@code {
+
+    [Parameter]
+    public string StudentId { get; set; } = string.Empty;
+
+    private sealed record ProductView(
+        int productId,
+        string productName,
+        decimal price,
+        int quantity);
+
+    private List<ProductView> _productsSubscription = new();
+    private List<ProductView> _productsNoSubscription = new();
+
+    private bool _authorized = false;
+
+    private bool _loading = true;
+
+    private int _selectedProductId = 0;
+
+    private DateTime startSubscription = DateTime.Now.Date;
+
+    private DateTime endSubscription = DateTime.Now.Date;
+
+    private int subscriptionQuantity = 0;
+
+    private DateTime GetNewEndSubscription()
+    {
+        return endSubscription.AddMonths(subscriptionQuantity);
+    }
+
+    private async Task LoadProducts()
+    {
+        var allProducts = await ProductService.GetAll();
+
+        _productsSubscription.Add(
+            new ProductView(0,
+            "Selecione uma subscrição",
+            0,
+            0));
+
+        _productsSubscription.AddRange(
+            allProducts
+            .Where(t => t.Entitlements.Any(e =>
+                e.WeeklyFrequency.HasValue &&
+                e.WeeklyFrequency > 0))
+            .Select(x => new ProductView(
+                x.Id,
+                x.Name,
+                x.Price,
+                quantity: 0))
+            .ToList());
+
+        _productsNoSubscription = allProducts
+            .Where(t => t.Entitlements.Any(e =>
+                e.CreditsGranted.HasValue &&
+                e.CreditsGranted > 0))
+            .Select(x => new ProductView(
+                x.Id,
+                x.Name,
+                x.Price,
+                quantity: 0))
+            .ToList();
+
+        _loading = false;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity == null || !user.Identity.IsAuthenticated)
+            return;
+
+        var userId = user.FindFirst("sub")?.Value
+                     ?? user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        var isAdmin = user.IsInRole(StaticRole.Admin);
+
+        // regra: admin OU dono do studentId
+        if (isAdmin || userId == StudentId)
+        {
+            _authorized = true;
+            await LoadProducts();
+        }
+        else
+        {
+            _authorized = false;
+            return;
+        }
+    }
+
+    private async Task OpenPaymentModal()
+    {
+        var result = await DialogService.OpenAsync<PaymentSummaryDialog>(
+            "Confirmar pagamento",
+            new Dictionary<string, object>
+            {
+            { "SubscriptionProductId", _selectedProductId },
+            { "SubscriptionEndDate", GetNewEndSubscription() },
+            { "SubscriptionMonths", subscriptionQuantity },
+            { "Items", _productsNoSubscription }
+            },
+            new DialogOptions
+            {
+                Width = "600px",
+                Height = "auto"
+            });
+
+        if (result is true)
+        {
+            await CreatePayment();
+        }
+    }
+
+    private async Task CreatePayment()
+    {
+        try
+        {
+            var result = await Payments.CreatePaymentAsync(
+                studentId: StudentId,
+                subscriptionProductId: _selectedProductId,
+                endDate: GetNewEndSubscription(),
+                items: _productsNoSubscription
+                    .Where(x => x.quantity > 0)
+                    .ToList());
+
+            await DialogService.OpenAsync<PaymentResultDialog>(
+                "Resultado do pagamento",
+                new Dictionary<string, object>
+                {
+                { "Success", result.Success },
+                { "Message", result.Message }
+                });
+
+        }
+        catch (Exception ex)
+        {
+            await DialogService.Alert($"Erro ao criar pagamento: {ex.Message}");
+        }
+    }
+
+}

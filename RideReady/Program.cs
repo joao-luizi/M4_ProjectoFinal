@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Radzen;
 using RepositoryLibrary.IRepository;
 using RepositoryLibrary.IServices;
+using RepositoryLibrary.Models;
 using RepositoryLibrary.Models.Context;
 using RepositoryLibrary.Repository;
 using RepositoryLibrary.Seeds;
@@ -63,7 +64,7 @@ builder.Services.AddScoped<IImageService, ImageService>();
 builder.Services.AddScoped<ISchoolService, SchoolService>();
 builder.Services.AddScoped<ILessonTypeService, LessonTypeService>();
 builder.Services.AddScoped<IPurchaseService, PurchaseService>();
-
+builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddRadzenComponents();
 
 var app = builder.Build();
@@ -116,6 +117,7 @@ public static class SeedData
         await LessonSeed.SeedLessons(services);
         await HorseSeed.SeedHorses(services);
         await ProductSeed.SeedProductsAsync(services);
+        await EntitlementSeed.SeedEntitlementsAsync(services);
 
     }
 }
