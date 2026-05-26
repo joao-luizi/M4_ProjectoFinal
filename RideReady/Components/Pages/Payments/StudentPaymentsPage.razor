@@ -5,7 +5,7 @@
 @using RepositoryLibrary.Models
 @using RepositoryLibrary.IServices
 @using RepositoryLibrary.Services
-
+@rendermode InteractiveServer
 @inject NavigationManager Navigation
 @inject IUserService UserService
 @inject IPurchaseService PurchaseService
@@ -137,7 +137,7 @@
     private async Task LoadPurchases()
     {
         _purchases = await PurchaseService.GetPurchasesByUserId(StudentId);
-        
+
     }
 
     private void CalculateSummary()
@@ -152,6 +152,6 @@
 
     private void CreatePurchase()
     {
-        Navigation.NavigateTo($"/admin/payments/{StudentId}/new");
+        Navigation.NavigateTo($"/students/payments/{StudentId}/new");
     }
 }

@@ -52,7 +52,7 @@ namespace RepositoryLibrary.Services
 
                 if (requestLine.Kind == PurchaseLineKind.Subscription)
                 {
-                    purchase.MonthlyRecurringAmount += unitPrice;
+                    purchase.MonthlyRecurringAmount += lineTotal;
                 }
                 else
                 {
@@ -66,8 +66,6 @@ namespace RepositoryLibrary.Services
 
             await _context.SaveChangesAsync();
             return purchase;
-            //_purchases.Add(purchase);
-            //return Task.FromResult(purchase);
 
         }
 
@@ -159,9 +157,7 @@ namespace RepositoryLibrary.Services
 
             return new PurchaseEntitlementSnapshot(userSubscription, userCreditsLedger);
         }
-        //=> Task.FromResult(new PurchaseEntitlementSnapshot(
-        //    _subscriptions.Where(s => s.UserId == userId).ToList(),
-        //    _creditLedgerEntries.Where(e => e.UserId == userId).ToList()));
+        
 
         /// <summary>
         /// Routes each paid purchase line to the matching entitlement provisioning path.

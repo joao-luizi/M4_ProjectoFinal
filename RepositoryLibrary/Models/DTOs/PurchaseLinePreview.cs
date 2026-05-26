@@ -1,6 +1,6 @@
 ﻿namespace RepositoryLibrary.Models.DTOs
 {
-    public class PaymentPreviewLines
+    public class PurchaseLinePreview
     {
         public int PackageId { get; set; }
 

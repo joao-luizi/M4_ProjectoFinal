@@ -86,21 +86,21 @@ namespace RepositoryLibrary.Services
             }
         }
 
-        public async Task<UserDTO> DeleteUserAsync(string id)
+        public async Task DeleteUserAsync(string id)
         {
             try
             {
-                // 1. apagar dependências primeiro (DB business)
-                
+
+
+                //não apagar destrutivamente
+                //int deletedHorses = await _horseRepository.DeleteByUserIdAsync(id);
+                //int deletedUserPhotos = await _userPhotoRepository.DeletePhotoByUserIdAsync(id);
+                //int deletedSchoolUsers = await _schoolUserRepository.DeleteUserAsync(id);
+
+                // 2. inativar user
+
+               await _userRepository.InactivateUser(id);
                
-                int deletedHorses = await _horseRepository.DeleteByUserIdAsync(id);
-                int deletedUserPhotos = await _userPhotoRepository.DeletePhotoByUserIdAsync(id);
-                int deletedSchoolUsers = await _schoolUserRepository.DeleteUserAsync(id);
-
-                // 2. apagar user na identity por último
-                var deletedUser = await _userRepository.DeleteUserAsync(id);
-
-                return deletedUser;
             }
             catch (Exception e)
             {

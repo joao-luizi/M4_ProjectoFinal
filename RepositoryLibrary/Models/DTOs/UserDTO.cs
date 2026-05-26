@@ -11,5 +11,6 @@
         public long SocialHealthNumber { get; set; }
         public int TaxIdentificationNumber { get; set; }
         public Photo? Photo { get; set; }
+        public bool IsActive { get; set; }
     }
 }
