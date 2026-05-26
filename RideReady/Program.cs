@@ -3,8 +3,11 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Radzen;
+using RepositoryLibrary.IRepository;
 using RepositoryLibrary.IServices;
+using RepositoryLibrary.Models;
 using RepositoryLibrary.Models.Context;
+using RepositoryLibrary.Repository;
 using RepositoryLibrary.Seeds;
 using RepositoryLibrary.Services;
 using RideReady.Components;
@@ -45,6 +48,7 @@ var rrCnString = builder.Configuration.GetConnectionString("RideReadyDBV0") ?? t
 builder.Services.AddDbContext<EM_DbContext>(options =>
     options.UseSqlServer(rrCnString));
 
+//DEV Only
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddIdentityCore<EMUser>(options => options.SignIn.RequireConfirmedAccount = true)
@@ -64,7 +68,8 @@ builder.Services.AddScoped<IHorseService, HorseService>();
 builder.Services.AddScoped<IImageService, ImageService>();
 builder.Services.AddScoped<ISchoolService, SchoolService>();
 builder.Services.AddScoped<ILessonTypeService, LessonTypeService>();
-
+builder.Services.AddScoped<IPurchaseService, PurchaseService>();
+builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddRadzenComponents();
 
 var app = builder.Build();
@@ -92,18 +97,32 @@ app.MapRazorComponents<App>()
 // Add additional endpoints required by the Identity /Account Razor components.
 app.MapAdditionalIdentityEndpoints();
 
-using (var scope = app.Services.CreateScope())
+
+if (app.Environment.IsDevelopment())
 {
+    using var scope = app.Services.CreateScope();
     var services = scope.ServiceProvider;
-    await RoleSeed.SeedRolesAsync(services);
-    await UserSeed.UserSeedWithRole(services);
-    await SchoolSeed.SeedSchoolAsync(services);
-    await SchoolSeed.SeedSchoolUserAsync(services);
-    await LessonTypeSeed.SeedLessonTypeAsync(services);
-    await LessonSeed.SeedLessons(services);
-    await HorseSeed.SeedHorses(services);
-    await PackageSeed.SeedPackages(services);
-    await PaymentSeed.SeedPayments(services);
+
+    await SeedData.InitializeAsync(services);
 }
 
+
 app.Run();
+
+
+public static class SeedData
+{
+    public static async Task InitializeAsync(IServiceProvider services)
+    {
+        await RoleSeed.SeedRolesAsync(services);
+        await UserSeed.UserSeedWithRole(services);
+        await SchoolSeed.SeedSchoolAsync(services);
+        await SchoolSeed.SeedSchoolUserAsync(services);
+        await LessonTypeSeed.SeedLessonTypeAsync(services);
+        await LessonSeed.SeedLessons(services);
+        await HorseSeed.SeedHorses(services);
+        await ProductSeed.SeedProductsAsync(services);
+        await EntitlementSeed.SeedEntitlementsAsync(services);
+
+    }
+}

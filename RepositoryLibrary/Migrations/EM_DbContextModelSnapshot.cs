@@ -35,7 +35,7 @@ namespace RepositoryLibrary.Migrations
 
                     b.HasKey("LessonId", "UserId");
 
-                    b.ToTable("Bookings", (string)null);
+                    b.ToTable("Bookings");
                 });
 
             modelBuilder.Entity("RepositoryLibrary.Models.Horse", b =>
@@ -46,12 +46,12 @@ namespace RepositoryLibrary.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("HorseId"));
 
-                    b.Property<int>("Age")
-                        .HasColumnType("int");
-
                     b.Property<string>("Breed")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("DateOfBirth")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -64,7 +64,20 @@ namespace RepositoryLibrary.Migrations
 
                     b.HasIndex("SchoolId");
 
-                    b.ToTable("Horses", (string)null);
+                    b.ToTable("Horses");
+                });
+
+            modelBuilder.Entity("RepositoryLibrary.Models.HorseFoto", b =>
+                {
+                    b.Property<int>("HorseId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("FotoPath")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("HorseId");
+
+                    b.ToTable("HorseFoto");
                 });
 
             modelBuilder.Entity("RepositoryLibrary.Models.Lesson", b =>
@@ -96,7 +109,7 @@ namespace RepositoryLibrary.Migrations
 
                     b.HasIndex("SchoolId");
 
-                    b.ToTable("Lessons", (string)null);
+                    b.ToTable("Lessons");
                 });
 
             modelBuilder.Entity("RepositoryLibrary.Models.LessonHorse", b =>
@@ -111,7 +124,7 @@ namespace RepositoryLibrary.Migrations
 
                     b.HasIndex("HorseId");
 
-                    b.ToTable("LessonHorses", (string)null);
+                    b.ToTable("LessonHorses");
                 });
 
             modelBuilder.Entity("RepositoryLibrary.Models.LessonProf", b =>
@@ -124,16 +137,16 @@ namespace RepositoryLibrary.Migrations
 
                     b.HasKey("LessonId", "UserId");
 
-                    b.ToTable("LessonProfs", (string)null);
+                    b.ToTable("LessonProfs");
                 });
 
             modelBuilder.Entity("RepositoryLibrary.Models.LessonType", b =>
                 {
-                    b.Property<int>("LessonTypeId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("LessonTypeId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("DurationInMinutes")
                         .HasColumnType("int");
@@ -142,9 +155,9 @@ namespace RepositoryLibrary.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("LessonTypeId");
+                    b.HasKey("Id");
 
-                    b.ToTable("LessonTypes", (string)null);
+                    b.ToTable("LessonTypes");
                 });
 
             modelBuilder.Entity("RepositoryLibrary.Models.Logo", b =>
@@ -164,38 +177,7 @@ namespace RepositoryLibrary.Migrations
                     b.HasIndex("SchoolId")
                         .IsUnique();
 
-                    b.ToTable("Logos", (string)null);
-                });
-
-            modelBuilder.Entity("RepositoryLibrary.Models.Package", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("ClassesIncluded")
-                        .HasColumnType("int");
-
-                    b.Property<int>("LessonTypeId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("Valor")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("Weekly")
-                        .HasColumnType("bit");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("LessonTypeId");
-
-                    b.ToTable("Packages", (string)null);
+                    b.ToTable("Logos");
                 });
 
             modelBuilder.Entity("RepositoryLibrary.Models.Photo", b =>
@@ -209,7 +191,147 @@ namespace RepositoryLibrary.Migrations
 
                     b.HasKey("UserId");
 
-                    b.ToTable("Photos", (string)null);
+                    b.ToTable("Photos");
+                });
+
+            modelBuilder.Entity("RepositoryLibrary.Models.Product", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("Price")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Products");
+                });
+
+            modelBuilder.Entity("RepositoryLibrary.Models.ProductEntitlement", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("CreditsGranted")
+                        .HasColumnType("int");
+
+                    b.Property<int>("LessonTypeId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("WeeklyFrequency")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LessonTypeId");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("ProductEntitlements");
+                });
+
+            modelBuilder.Entity("RepositoryLibrary.Models.Purchase", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("MonthlyRecurringAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("OneOffAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("PurchasedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("TotalAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId", "PurchasedAtUtc");
+
+                    b.ToTable("Purchases");
+                });
+
+            modelBuilder.Entity("RepositoryLibrary.Models.PurchaseLine", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("Kind")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("LineTotal")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ProductName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("PurchaseId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("SubscriptionMonths")
+                        .HasColumnType("int");
+
+                    b.Property<DateOnly?>("SubscriptionPeriodEnd")
+                        .HasColumnType("date");
+
+                    b.Property<DateOnly?>("SubscriptionPeriodStart")
+                        .HasColumnType("date");
+
+                    b.Property<decimal>("UnitPrice")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("PurchaseId");
+
+                    b.ToTable("PurchaseLines");
                 });
 
             modelBuilder.Entity("RepositoryLibrary.Models.School", b =>
@@ -247,7 +369,7 @@ namespace RepositoryLibrary.Migrations
                     b.HasIndex("Email")
                         .IsUnique();
 
-                    b.ToTable("Schools", (string)null);
+                    b.ToTable("Schools");
                 });
 
             modelBuilder.Entity("RepositoryLibrary.Models.SchoolUser", b =>
@@ -260,7 +382,54 @@ namespace RepositoryLibrary.Migrations
 
                     b.HasKey("SchoolId", "UserId");
 
-                    b.ToTable("SchoolUsers", (string)null);
+                    b.ToTable("SchoolUsers");
+                });
+
+            modelBuilder.Entity("RepositoryLibrary.Models.UserCreditLedgerEntry", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("CreditsDelta")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("ExpiresAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("LessonTypeId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("PurchaseLineId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LessonTypeId");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("PurchaseLineId");
+
+                    b.HasIndex("UserId", "LessonTypeId", "CreatedAtUtc");
+
+                    b.ToTable("UserCreditLedgerEntries");
                 });
 
             modelBuilder.Entity("RepositoryLibrary.Models.UserHorse", b =>
@@ -279,31 +448,74 @@ namespace RepositoryLibrary.Migrations
 
                     b.HasIndex("HorseId");
 
-                    b.ToTable("UserHorses", (string)null);
+                    b.ToTable("UserHorses");
                 });
 
-            modelBuilder.Entity("RepositoryLibrary.Models.UserPayment", b =>
+            modelBuilder.Entity("RepositoryLibrary.Models.UserSubscription", b =>
                 {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateOnly>("PeriodEnd")
+                        .HasColumnType("date");
+
+                    b.Property<DateOnly>("PeriodStart")
+                        .HasColumnType("date");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("PurchaseLineId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PurchasedMonths")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
                     b.Property<string>("UserId")
+                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<DateOnly>("BuyDate")
-                        .HasColumnType("date");
+                    b.HasKey("Id");
 
-                    b.Property<int?>("AmountOfClasses")
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("PurchaseLineId");
+
+                    b.HasIndex("UserId", "PeriodStart", "PeriodEnd", "Status");
+
+                    b.ToTable("UserSubscriptions");
+                });
+
+            modelBuilder.Entity("RepositoryLibrary.Models.UserSubscriptionEntitlement", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    b.Property<DateOnly>("DueDate")
-                        .HasColumnType("date");
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("PackageId")
+                    b.Property<int>("LessonTypeId")
                         .HasColumnType("int");
 
-                    b.HasKey("UserId", "BuyDate");
+                    b.Property<int>("UserSubscriptionId")
+                        .HasColumnType("int");
 
-                    b.HasIndex("PackageId");
+                    b.Property<int>("WeeklyFrequency")
+                        .HasColumnType("int");
 
-                    b.ToTable("UserPayments", (string)null);
+                    b.HasKey("Id");
+
+                    b.HasIndex("LessonTypeId");
+
+                    b.HasIndex("UserSubscriptionId");
+
+                    b.ToTable("UserSubscriptionEntitlements");
                 });
 
             modelBuilder.Entity("RepositoryLibrary.Models.Views.Users_View", b =>
@@ -392,6 +604,16 @@ namespace RepositoryLibrary.Migrations
                     b.Navigation("School");
                 });
 
+            modelBuilder.Entity("RepositoryLibrary.Models.HorseFoto", b =>
+                {
+                    b.HasOne("RepositoryLibrary.Models.Horse", "Horse")
+                        .WithOne("HorseFoto")
+                        .HasForeignKey("RepositoryLibrary.Models.HorseFoto", "HorseId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("Horse");
+                });
+
             modelBuilder.Entity("RepositoryLibrary.Models.Lesson", b =>
                 {
                     b.HasOne("RepositoryLibrary.Models.LessonType", "LessonType")
@@ -452,7 +674,7 @@ namespace RepositoryLibrary.Migrations
                     b.Navigation("School");
                 });
 
-            modelBuilder.Entity("RepositoryLibrary.Models.Package", b =>
+            modelBuilder.Entity("RepositoryLibrary.Models.ProductEntitlement", b =>
                 {
                     b.HasOne("RepositoryLibrary.Models.LessonType", "LessonType")
                         .WithMany()
@@ -460,7 +682,34 @@ namespace RepositoryLibrary.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("RepositoryLibrary.Models.Product", "Product")
+                        .WithMany("Entitlements")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("LessonType");
+
+                    b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("RepositoryLibrary.Models.PurchaseLine", b =>
+                {
+                    b.HasOne("RepositoryLibrary.Models.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("RepositoryLibrary.Models.Purchase", "Purchase")
+                        .WithMany("Lines")
+                        .HasForeignKey("PurchaseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+
+                    b.Navigation("Purchase");
                 });
 
             modelBuilder.Entity("RepositoryLibrary.Models.SchoolUser", b =>
@@ -474,6 +723,31 @@ namespace RepositoryLibrary.Migrations
                     b.Navigation("School");
                 });
 
+            modelBuilder.Entity("RepositoryLibrary.Models.UserCreditLedgerEntry", b =>
+                {
+                    b.HasOne("RepositoryLibrary.Models.LessonType", "LessonType")
+                        .WithMany()
+                        .HasForeignKey("LessonTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("RepositoryLibrary.Models.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("RepositoryLibrary.Models.PurchaseLine", "PurchaseLine")
+                        .WithMany()
+                        .HasForeignKey("PurchaseLineId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("LessonType");
+
+                    b.Navigation("Product");
+
+                    b.Navigation("PurchaseLine");
+                });
+
             modelBuilder.Entity("RepositoryLibrary.Models.UserHorse", b =>
                 {
                     b.HasOne("RepositoryLibrary.Models.Horse", "Horse")
@@ -485,19 +759,47 @@ namespace RepositoryLibrary.Migrations
                     b.Navigation("Horse");
                 });
 
-            modelBuilder.Entity("RepositoryLibrary.Models.UserPayment", b =>
+            modelBuilder.Entity("RepositoryLibrary.Models.UserSubscription", b =>
                 {
-                    b.HasOne("RepositoryLibrary.Models.Package", "PackageBought")
+                    b.HasOne("RepositoryLibrary.Models.Product", "Product")
                         .WithMany()
-                        .HasForeignKey("PackageId")
+                        .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("PackageBought");
+                    b.HasOne("RepositoryLibrary.Models.PurchaseLine", "PurchaseLine")
+                        .WithMany()
+                        .HasForeignKey("PurchaseLineId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Product");
+
+                    b.Navigation("PurchaseLine");
+                });
+
+            modelBuilder.Entity("RepositoryLibrary.Models.UserSubscriptionEntitlement", b =>
+                {
+                    b.HasOne("RepositoryLibrary.Models.LessonType", "LessonType")
+                        .WithMany()
+                        .HasForeignKey("LessonTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("RepositoryLibrary.Models.UserSubscription", "UserSubscription")
+                        .WithMany("Entitlements")
+                        .HasForeignKey("UserSubscriptionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("LessonType");
+
+                    b.Navigation("UserSubscription");
                 });
 
             modelBuilder.Entity("RepositoryLibrary.Models.Horse", b =>
                 {
+                    b.Navigation("HorseFoto");
+
                     b.Navigation("LessonHorses");
 
                     b.Navigation("UserHorses");
@@ -512,12 +814,27 @@ namespace RepositoryLibrary.Migrations
                     b.Navigation("LessonProfs");
                 });
 
+            modelBuilder.Entity("RepositoryLibrary.Models.Product", b =>
+                {
+                    b.Navigation("Entitlements");
+                });
+
+            modelBuilder.Entity("RepositoryLibrary.Models.Purchase", b =>
+                {
+                    b.Navigation("Lines");
+                });
+
             modelBuilder.Entity("RepositoryLibrary.Models.School", b =>
                 {
                     b.Navigation("Logo")
                         .IsRequired();
 
                     b.Navigation("SchoolUsers");
+                });
+
+            modelBuilder.Entity("RepositoryLibrary.Models.UserSubscription", b =>
+                {
+                    b.Navigation("Entitlements");
                 });
 #pragma warning restore 612, 618
         }

@@ -1,0 +1,157 @@
+﻿@page "/admin/payments/{studentId}"
+
+@using Radzen
+@using Radzen.Blazor
+@using RepositoryLibrary.Models
+@using RepositoryLibrary.IServices
+@using RepositoryLibrary.Services
+@rendermode InteractiveServer
+@inject NavigationManager Navigation
+@inject IUserService UserService
+@inject IPurchaseService PurchaseService
+
+<RadzenStack Gap="1.5rem">
+
+    <!-- HEADER -->
+    <RadzenCard>
+        <RadzenStack Gap="0.5rem">
+
+            <h3>@_studentName</h3>
+            <span>@_studentEmail</span>
+
+            <RadzenStack Orientation="Orientation.Horizontal" Gap="2rem" Style="margin-top:1rem">
+
+                <div>
+                    <b>Active Subscription</b><br />
+                    <span>@_activeSubscription</span>
+                </div>
+
+                <div>
+                    <b>Credits</b><br />
+                    <span>@_credits</span>
+                </div>
+
+                <div>
+                    <b>Total Spent</b><br />
+                    <span>@_totalSpent €</span>
+                </div>
+
+            </RadzenStack>
+
+        </RadzenStack>
+    </RadzenCard>
+
+    <!-- ACTION BAR -->
+    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween">
+
+        <RadzenButton Icon="add"
+                      Text="New Purchase"
+                      ButtonStyle="ButtonStyle.Primary"
+                      Click="@CreatePurchase" />
+
+    </RadzenStack>
+
+    <!-- PURCHASE GRID -->
+    <RadzenDataGrid Data="@_purchases"
+                    TItem="Purchase"
+                    AllowPaging="true"
+                    PageSize="10">
+
+        <Columns>
+
+            <RadzenDataGridColumn TItem="Purchase"
+                                  Property="PurchasedAtUtc"
+                                  Title="Date" />
+
+            <RadzenDataGridColumn TItem="Purchase"
+                                  Property="Status"
+                                  Title="Status" />
+
+            <RadzenDataGridColumn TItem="Purchase"
+                                  Property="TotalAmount"
+                                  Title="Total (€)" />
+
+            <RadzenDataGridColumn TItem="Purchase"
+                                  Title="Subscription (€)">
+                <Template Context="p">
+                    @p.MonthlyRecurringAmount
+                </Template>
+            </RadzenDataGridColumn>
+
+            <RadzenDataGridColumn TItem="Purchase"
+                                  Title="Credits (€)">
+                <Template Context="p">
+                    @p.OneOffAmount
+                </Template>
+            </RadzenDataGridColumn>
+
+            <RadzenDataGridColumn TItem="Purchase"
+                                  Title="Actions"
+                                  Width="120px"
+                                  TextAlign="TextAlign.Center">
+
+                <Template Context="p">
+                    <RadzenButton Icon="visibility"
+                                  Size="ButtonSize.Small"
+                                  ButtonStyle="ButtonStyle.Light"
+                                  Click="@(() => ViewPurchase(p.Id))" />
+                </Template>
+
+            </RadzenDataGridColumn>
+
+        </Columns>
+
+    </RadzenDataGrid>
+
+</RadzenStack>
+
+@code {
+
+    [Parameter]
+    public string StudentId { get; set; } = null!;
+
+    private string? _studentName;
+    private string? _studentEmail;
+
+    private decimal _totalSpent;
+    private string _activeSubscription = "-";
+    private int _credits = 0;
+
+    private List<Purchase> _purchases = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadStudent();
+        await LoadPurchases();
+        CalculateSummary();
+    }
+
+    private async Task LoadStudent()
+    {
+        var student = await UserService.GetUserById(StudentId);
+
+        _studentName = student.UserName;
+        _studentEmail = student.Email;
+    }
+
+    private async Task LoadPurchases()
+    {
+        _purchases = await PurchaseService.GetPurchasesByUserId(StudentId);
+
+    }
+
+    private void CalculateSummary()
+    {
+        _totalSpent = _purchases.Sum(x => x.TotalAmount);
+    }
+
+    private void ViewPurchase(int purchaseId)
+    {
+        Navigation.NavigateTo($"/admin/purchases/{purchaseId}");
+    }
+
+    private void CreatePurchase()
+    {
+        Navigation.NavigateTo($"/students/payments/{StudentId}/new");
+    }
+}

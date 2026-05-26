@@ -158,5 +158,7 @@ namespace RepositoryLibrary.Repository
         {
             return await _emContext.Bookings.AnyAsync(b => b.LessonId == lessonId && b.UserId == userId);
         }
+
+
     }
 }

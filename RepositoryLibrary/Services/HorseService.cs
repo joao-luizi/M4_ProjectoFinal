@@ -1,9 +1,12 @@
+using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.EntityFrameworkCore;
 using RepositoryLibrary.IRepository;
 using RepositoryLibrary.IServices;
 using RepositoryLibrary.Models;
 using RepositoryLibrary.Models.Context;
 using RepositoryLibrary.Models.DTOs;
 using RepositoryLibrary.Repository;
+using System.ComponentModel.DataAnnotations;
 
 namespace RepositoryLibrary.Services;
 
@@ -18,18 +21,77 @@ public class HorseService : IHorseService
         _schoolService = schoolService;
         _lessonService = lessonService;
     }
-    public async Task<Horse> AddHorse(Horse horse)
+
+    public async Task<Horse> GetHorseByIdAsync(int horseId)
+    {
+        Horse? backendHorse = await _horseRepo.GetHorseByIdAsync(horseId);
+
+        if (backendHorse == null)
+        {
+            throw new InvalidOperationException(
+                $"Horse with id {horseId} was not found.");
+        }
+
+        return backendHorse;
+
+    }
+
+    public async Task<Horse> AddHorse(Horse horse, IBrowserFile? file)
     {
 
         try
         {
             await _horseRepo.CreateHorse(horse);
+
+            if (file != null)
+            {
+                var photo = await SavePhoto(file, horse.HorseId);
+
+                horse.HorseFoto = photo;
+                await _horseRepo.EditHorse(horse);
+
+            }
             return horse;
         }
         catch (Exception e)
         {
             throw new Exception(e.Message, e.InnerException);
         }
+    }
+
+    private async Task<HorseFoto> SavePhoto(IBrowserFile file, int horseId)
+    {
+        const long maxFileSize = 5 * 1024 * 1024;
+
+        string uploadsFolder = Path.Combine(
+            Directory.GetCurrentDirectory(),
+            "wwwroot",
+            "Images",
+            "horsephotos");
+
+        if (!Directory.Exists(uploadsFolder))
+            Directory.CreateDirectory(uploadsFolder);
+
+        string extension = Path.GetExtension(file.Name).ToLowerInvariant();
+
+        var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp" };
+        if (!allowedExtensions.Contains(extension))
+            throw new InvalidOperationException("Invalid image format.");
+
+        // Nome fixo por cavalo (1 foto por cavalo)
+        string fileName = $"{horseId}{extension}";
+        string fullPath = Path.Combine(uploadsFolder, fileName);
+
+        await using (var fs = new FileStream(fullPath, FileMode.Create, FileAccess.Write))
+        {
+            await file.OpenReadStream(maxFileSize).CopyToAsync(fs);
+        }
+
+        return new HorseFoto
+        {
+            HorseId = horseId,
+            FotoPath = $"/Images/horsephotos/{fileName}"
+        };
     }
 
     public async Task<List<Horse>> GetHorsesAsync()
@@ -62,10 +124,7 @@ public class HorseService : IHorseService
         {
             var horseList = new List<Horse>();
             horseList.AddRange(await _horseRepo.GetHorsesByUser(user.Id));
-            // foreach (var school in user.SchoolUsers)
-            // {
-            //     horseList.AddRange(await _horseRepo.GetHorsesBySchool(school.SchoolId));
-            // }
+
             var schools = await _schoolService.GetUserSchoolsAsync(user.Id);
             foreach (var school in schools)
             {
@@ -130,15 +189,28 @@ public class HorseService : IHorseService
         }
     }
 
-    public async Task<Horse> UpdateHorse(Horse horse)
+    public async Task<Horse> UpdateHorse(Horse horse, IBrowserFile? file)
     {
         try
         {
-            return await _horseRepo.EditHorse(horse);
+            var updatedHorse = await _horseRepo.EditHorse(horse);
+
+            if (file == null)
+                return updatedHorse;
+
+            var photo = await SavePhoto(file, horse.HorseId);
+
+            // só atualizas isto se quiseres suportar mudança de extensão
+            if (updatedHorse.HorseFoto == null)
+                    updatedHorse.HorseFoto = photo;
+            else
+                updatedHorse.HorseFoto.FotoPath = photo.FotoPath;
+
+            return await _horseRepo.EditHorse(updatedHorse);
         }
         catch (Exception e)
         {
-            throw new Exception(e.Message, e.InnerException);
+            throw new Exception(e.Message, e);
         }
     }
 

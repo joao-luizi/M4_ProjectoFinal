@@ -1,6 +1,8 @@
-﻿@page "/editPresence/{lessonId}"
+﻿@page "/editPresence/{LessonId:int}"
+@attribute [Authorize(Roles = "Administrator,Teacher")]
 @rendermode InteractiveServer
 
+@using Microsoft.AspNetCore.Authorization
 @using Microsoft.EntityFrameworkCore
 @using RepositoryLibrary.IServices
 @using RepositoryLibrary.Models

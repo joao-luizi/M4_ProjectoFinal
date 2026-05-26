@@ -7,7 +7,10 @@ namespace RepositoryLibrary.IServices
         public Task<List<UpdateUserDto>> GetAllUsers(int schoolId);
         public Task<UserDTO> GetUserById(string id);
         public Task<List<UpdateUserDto>> GetUsersByRole(string role);
-        public Task<UserDTO> DeleteUserAsync(string id);
+
+        Task<List<UpdateUserDto>> GetUsersBySchoolAndRole(int schoolId, string role);
+
+        public Task DeleteUserAsync(string id);
 
         public Task<UpdateUserDto> GetEditUserAsync(string id);
 

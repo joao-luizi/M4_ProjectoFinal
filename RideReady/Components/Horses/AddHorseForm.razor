@@ -13,36 +13,73 @@
     private Horse newHorse = new();
     private bool isEdit => HorseToEdit?.HorseId > 0;
 
-    @code {
-        protected override async Task OnParametersSetAsync()
-        {
-            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
-            var user = authState.User;
-            var claimValue = user.FindFirst("SchoolId")?.Value
-                          ?? user.FindFirst("schoolId")?.Value;
-            if (int.TryParse(claimValue, out var sid))
-                SchoolId = sid;
+    private string? previewImage;
+    private IBrowserFile? selectedFile;
 
-            if (HorseToEdit != null)
+    private async Task OnFileSelected(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+
+        if (file.ContentType != "image/png")
+            return;
+
+        selectedFile = file;
+
+        using var stream = file.OpenReadStream(maxAllowedSize: 5 * 1024 * 1024);
+        using var ms = new MemoryStream();
+
+        await stream.CopyToAsync(ms);
+
+        var bytes = ms.ToArray();
+
+        previewImage =
+            $"data:image/png;base64,{Convert.ToBase64String(bytes)}";
+    }
+    
+    protected override async Task OnParametersSetAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        var claimValue = user.FindFirst("SchoolId")?.Value
+                      ?? user.FindFirst("schoolId")?.Value;
+
+        if (int.TryParse(claimValue, out var sid))
+            SchoolId = sid;
+
+        if (HorseToEdit != null)
+        {
+            newHorse = new Horse
             {
-                newHorse = new Horse
-                {
-                    HorseId = HorseToEdit.HorseId,
-                    Name = HorseToEdit.Name,
-                    Breed = HorseToEdit.Breed,
-                    Age = HorseToEdit.Age,
-                    School = new School { SchoolId = SchoolId }
-                };
-            }
-            else
+                HorseId = HorseToEdit.HorseId,
+                Name = HorseToEdit.Name,
+                Breed = HorseToEdit.Breed,
+                DateOfBirth = HorseToEdit.DateOfBirth,
+
+               
+
+                School = new School { SchoolId = SchoolId }
+            };
+        }
+        else
+        {
+            newHorse = new Horse
             {
-                newHorse = new Horse
-                {
-                    School = new School { SchoolId = SchoolId }
-                };
-            }
+                School = new School { SchoolId = SchoolId }
+            };
+        }
+
+        // preview logic atualizado
+        if (!string.IsNullOrWhiteSpace(HorseToEdit?.HorseFoto?.FotoPath))
+        {
+            previewImage = HorseToEdit.HorseFoto.FotoPath;
+        }
+        else
+        {
+            previewImage = "/images/default_horse.png";
         }
     }
+    
 
 
     private async Task HandleSubmit()
@@ -51,13 +88,16 @@
 
         if (newHorse.HorseId == 0)
         {
-            var added = await HorseService.AddHorse(newHorse);
+            var added = await HorseService.AddHorse(newHorse, selectedFile);
+
             await OnHorseAdded.InvokeAsync(added);
-            newHorse = new Horse { School = new School { SchoolId = SchoolId } };
+
+            
         }
         else
         {
-            var updated = await HorseService.UpdateHorse(newHorse);
+            var updated = await HorseService.UpdateHorse(newHorse, selectedFile);
+
             await OnHorseUpdated.InvokeAsync(updated);
         }
     }
@@ -65,32 +105,49 @@
 
 <RadzenCard Style="margin-top: 20px; border-radius: 8px;">
     <RadzenTemplateForm Data="@newHorse" TItem="Horse" Submit="@HandleSubmit">
-        <ChildContent>
-            <RadzenFieldset Text="@(isEdit ? "Editar Cavalo" : "Adicionar Cavalo")">
-                <RadzenLabel Text="Nome" />
-                <RadzenTextBox @bind-Value="newHorse.Name" Name="Name" Style="width:100%" />
-                <RadzenRequiredValidator Component="Name" Text="Nome é obrigatório" />
 
-                <RadzenLabel Text="Raça" />
-                <RadzenTextBox @bind-Value="newHorse.Breed" Name="Breed" Style="width:100%" />
-                <RadzenRequiredValidator Component="Breed" Text="Raça é obrigatória" />
+        <RadzenFieldset Text="@(isEdit ? "Editar Cavalo" : "Adicionar Cavalo")">
 
-                <RadzenLabel Text="Idade" />
-                <RadzenNumeric TValue="int" @bind-Value="newHorse.Age" Name="Age" Style="width:100%" />
-                <RadzenRequiredValidator Component="Age" Text="Idade é obrigatória" />
+            <RadzenLabel Text="Nome" />
+            <RadzenTextBox @bind-Value="newHorse.Name" Name="Name" Style="width:100%" />
+            <RadzenRequiredValidator Component="Name" Text="Nome é obrigatório" />
 
-                <div class="mt-4">
-                    <RadzenButton Text="@(isEdit ? "Guardar Alterações" : "Adicionar")"
-                                  Icon="check"
-                                  ButtonStyle="ButtonStyle.Primary"
-                                  Type="Submit" />
-                    <RadzenButton Text="Cancelar"
-                                  Icon="cancel"
-                                  ButtonStyle="ButtonStyle.Light"
-                                  Click="@(async () => await OnCancel.InvokeAsync())"
-                                  Style="margin-left: 1rem;" />
+            <RadzenLabel Text="Raça" />
+            <RadzenTextBox @bind-Value="newHorse.Breed" Name="Breed" Style="width:100%" />
+            <RadzenRequiredValidator Component="Breed" Text="Raça é obrigatória" />
+
+            <RadzenLabel Text="Data de Nascimento" />
+            <RadzenDatePicker @bind-Value="newHorse.DateOfBirth"
+                              Name="DateOfBirth"
+                              DateFormat="yyyy-MM-dd"
+                              Style="width:100%" />
+            <RadzenRequiredValidator Component="DateOfBirth" Text="Data de nascimento é obrigatória" />
+
+            <RadzenLabel Text="Foto (PNG)" Style="margin-top: 1rem;" />
+
+            <InputFile OnChange="@OnFileSelected" accept=".png,image/png" />
+
+            @if (previewImage != null)
+            {
+                <div style="margin-top:10px;">
+                    <img src="@previewImage" style="max-width:200px; border-radius:8px;" />
                 </div>
-            </RadzenFieldset>
-        </ChildContent>
+            }
+
+            <div class="mt-4">
+                <RadzenButton Text="@(isEdit ? "Guardar Alterações" : "Adicionar")"
+                              Icon="check"
+                              ButtonStyle="ButtonStyle.Primary"
+                              Type="Submit" />
+
+                <RadzenButton Text="Cancelar"
+                              Icon="cancel"
+                              ButtonStyle="ButtonStyle.Light"
+                              Click="@(async () => await OnCancel.InvokeAsync())"
+                              Style="margin-left: 1rem;" />
+            </div>
+
+        </RadzenFieldset>
+
     </RadzenTemplateForm>
 </RadzenCard>

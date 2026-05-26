@@ -1,0 +1,25 @@
+﻿@inject AuthenticationStateProvider AuthStateProvider
+@using System.Security.Claims
+
+@code {
+    private string role = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        var state = await AuthStateProvider.GetAuthenticationStateAsync();
+        role = state.User.FindFirst(ClaimTypes.Role)?.Value ?? "";
+    }
+}
+
+@if (role == "Administrator")
+{
+    <AdminPayments />
+}
+else if (role == "Student")
+{
+    <StudentPayments />
+}
+else
+{
+    <p>Role not recognized</p>
+}

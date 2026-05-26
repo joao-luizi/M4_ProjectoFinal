@@ -50,11 +50,11 @@ namespace RepositoryLibrary.Repository
         {
             try
             {
-                LessonType? typeToUpdate = await _emContext.LessonTypes.FirstOrDefaultAsync(lt => lt.LessonTypeId == lessonType.LessonTypeId);
+                LessonType? typeToUpdate = await _emContext.LessonTypes.FirstOrDefaultAsync(lt => lt.Id == lessonType.Id);
 
                 if (typeToUpdate is null)
                 {
-                    throw new Exception($"There's no type of lesson with the Id = {lessonType.LessonTypeId}");
+                    throw new Exception($"There's no type of lesson with the Id = {lessonType.Id}");
                 }
 
                 typeToUpdate.Name = lessonType.Name;
@@ -74,7 +74,7 @@ namespace RepositoryLibrary.Repository
         {
             try
             {
-                LessonType? type = await _emContext.LessonTypes.FirstOrDefaultAsync(lt => lt.LessonTypeId == lessonTypeId);
+                LessonType? type = await _emContext.LessonTypes.FirstOrDefaultAsync(lt => lt.Id == lessonTypeId);
 
                 if (type is null)
                 {

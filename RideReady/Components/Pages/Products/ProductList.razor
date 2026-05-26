@@ -1,0 +1,105 @@
+﻿
+@using Radzen.Blazor
+@using RepositoryLibrary.Models
+@using RepositoryLibrary.Services
+@rendermode InteractiveServer
+@inject IProductService ProductService
+
+<RadzenCard Style="padding: 1rem">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem;">
+        <h3 style="margin: 0;">Products</h3>
+        @if (_products != null)
+        {
+            <span style="font-size: 0.8rem; color: #888;">@_products.Count product@(_products.Count != 1 ? "s" : "")</span>
+        }
+    </div>
+
+    @if (_loading)
+    {
+        <p>Loading...</p>
+    }
+    else if (_products != null)
+    {
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+            @foreach (var product in _products)
+            {
+                var isExpanded = _expandedIds.Contains(product.Id);
+                var hasEntitlements = product.Entitlements?.Any() == true;
+
+                <div class="product-card @(isExpanded ? "expanded" : "")">
+                    <div class="product-header"
+                         @onclick="() => ToggleExpand(product.Id, hasEntitlements)"
+                         style="cursor: @(hasEntitlements ? "pointer" : "default")">
+
+                        <span class="status-dot" style="background: @(product.IsActive ? "#1D9E75" : "#888780")"></span>
+
+                        <div style="flex: 1;">
+                            <div class="product-name">@product.Name</div>
+                            <div class="product-meta">
+                                @(product.IsActive ? "Active" : "Inactive")
+                                &middot;
+                                @(product.Entitlements?.Count ?? 0) entitlement@(product.Entitlements?.Count != 1 ? "s" : "")
+                            </div>
+                        </div>
+
+                        <span class="product-price">@product.Price.ToString("C")</span>
+
+                        @if (hasEntitlements)
+                        {
+                            <i class="chevron @(isExpanded ? "open" : "")">&#8964;</i>
+                        }
+                        else
+                        {
+                            <span style="width: 1rem;"></span>
+                        }
+                    </div>
+
+                    @if (isExpanded && hasEntitlements)
+                    {
+                        <div class="entitlements-body">
+                            @foreach (var e in product.Entitlements!)
+                            {
+                                <div class="entitlement-row">
+                                    <span class="type-badge">@e.LessonType?.Name</span>
+                                    <span class="entitlement-detail">
+                                        @if (e.CreditsGranted.HasValue)
+                                        {
+                                            <span>@e.CreditsGranted credits</span>
+                                        }
+                                        @if (e.WeeklyFrequency.HasValue)
+                                        {
+                                            <span>@e.WeeklyFrequency&times; per week</span>
+                                        }
+                                        @if (!e.CreditsGranted.HasValue && !e.WeeklyFrequency.HasValue)
+                                        {
+                                            <span>No limits</span>
+                                        }
+                                    </span>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    }
+</RadzenCard>
+
+@code {
+    private List<Product>? _products;
+    private bool _loading = true;
+    private HashSet<int> _expandedIds = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _products = await ProductService.GetAll();
+        _loading = false;
+    }
+
+    private void ToggleExpand(int productId, bool hasEntitlements)
+    {
+        if (!hasEntitlements) return;
+        if (!_expandedIds.Remove(productId))
+            _expandedIds.Add(productId);
+    }
+}

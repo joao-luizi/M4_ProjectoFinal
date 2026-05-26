@@ -158,41 +158,22 @@ namespace RepositoryLibrary.Repository
             }
         }
 
-        public async Task<UserDTO> DeleteUserAsync(string id)
+        public async Task InactivateUser(string id)
         {
-            try
+            var userToInactivate = await _userManager.FindByIdAsync(id);
+
+            if (userToInactivate is null)
             {
-                var userToDelete = await _userManager.FindByIdAsync(id);
-
-                if (userToDelete is null)
-                {
-                    throw new Exception($"The user does not exist. Id = {id}");
-                }
-
-                UserDTO userDeleted = new UserDTO
-                {
-                    UserName = userToDelete.UserName,
-                    Email = userToDelete.Email,
-                    PhoneNumber = userToDelete.PhoneNumber,
-                    Address = userToDelete.Address,
-                    Birthdate = userToDelete.Birthdate,
-                    CitizenNumber = userToDelete.CitizenNumber,
-                    SocialHealthNumber = userToDelete.SocialHealthNumber,
-                    TaxIdentificationNumber = userToDelete.TaxIdentificationNumber
-                };
-
-                var result = await _userManager.DeleteAsync(userToDelete);
-
-                if (!result.Succeeded)
-                {
-                    throw new Exception($"There was an error while trying to delete the user with Id = {id}");
-                }
-
-                return userDeleted;
+                throw new Exception($"The user does not exist. Id = {id}");
             }
-            catch (Exception e)
+
+            userToInactivate.IsActive = false;
+
+            var result = await _userManager.UpdateAsync(userToInactivate);
+
+            if (!result.Succeeded)
             {
-                throw new Exception(e.Message, e.InnerException);
+                throw new Exception(string.Join(", ", result.Errors.Select(e => e.Description)));
             }
         }
 

@@ -46,7 +46,7 @@
 
 @code {
     private string? message;
-    private EMUser user = default!;
+    private EMUser? user = default;
 
     [SupplyParameterFromForm]
     private InputModel Input { get; set; } = new();
@@ -59,16 +59,25 @@
 
     protected override async Task OnInitializedAsync()
     {
-        // Ensure the user has gone through the username & password screen first
-        user = await SignInManager.GetTwoFactorAuthenticationUserAsync() ??
-            throw new InvalidOperationException("Unable to load two-factor authentication user.");
+        user = await SignInManager.GetTwoFactorAuthenticationUserAsync();
+
+        if (user is null)
+        {
+            Logger.LogWarning("2FA page accessed without a valid pending 2FA login.");
+
+            RedirectManager.RedirectTo("Account/Login");
+            return;
+        }
     }
+
 
     private async Task OnValidSubmitAsync()
     {
         var authenticatorCode = Input.TwoFactorCode!.Replace(" ", string.Empty).Replace("-", string.Empty);
         var result = await SignInManager.TwoFactorAuthenticatorSignInAsync(authenticatorCode, RememberMe, Input.RememberMachine);
-        var userId = await UserManager.GetUserIdAsync(user);
+        string userId = "";
+        if (user is not null)
+            userId = await UserManager.GetUserIdAsync(user);
 
         if (result.Succeeded)
         {

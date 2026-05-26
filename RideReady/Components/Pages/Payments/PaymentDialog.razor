@@ -1,0 +1,110 @@
+﻿@using Radzen
+@using Radzen.Blazor
+@using RepositoryLibrary.Models
+@using RepositoryLibrary.Models.DTOs
+
+@inject DialogService DialogService
+
+<RadzenCard Style="padding:1rem;">
+
+    <RadzenStack Gap="1rem">
+
+        <h3>Criar pagamento</h3>
+
+        <!-- RESUMO LINHAS -->
+        <div>
+            <h4>Resumo</h4>
+
+            @if (Model?.Lines?.Any() == true)
+            {
+                @foreach (var line in Model.Lines)
+                {
+                    <RadzenRow Style="margin-bottom:0.5rem;">
+                        <RadzenColumn Size="7">
+                            @line.Product.Name
+                        </RadzenColumn>
+
+                        <RadzenColumn Size="2">
+                            x @line.Quantity
+                        </RadzenColumn>
+
+                        <RadzenColumn Size="3" Style="text-align:right;">
+                            @((line.Product.Price * line.Quantity).ToString("0.00")) €
+                        </RadzenColumn>
+                    </RadzenRow>
+                }
+
+                <hr />
+
+                <div style="text-align:right;">
+                    <b>Total: @TotalAmount.ToString("0.00") €</b>
+                </div>
+            }
+            else
+            {
+                <p>Sem linhas selecionadas.</p>
+            }
+        </div>
+
+        <!-- TOGGLE PAGAMENTO -->
+        <RadzenStack Orientation="Orientation.Horizontal"
+                     AlignItems="AlignItems.Center"
+                     Gap="0.5rem">
+
+            <RadzenSwitch @bind-Value="PaymentReceived" />
+
+            <RadzenLabel Text="Pagamento já recebido" />
+        </RadzenStack>
+
+        <!-- AÇÕES -->
+        <RadzenStack Orientation="Orientation.Horizontal"
+                     JustifyContent="JustifyContent.End"
+                     Gap="0.5rem">
+
+            <RadzenButton Text="Cancelar"
+                          ButtonStyle="ButtonStyle.Light"
+                          Click="@Cancel" />
+
+            <RadzenButton Text="Confirmar"
+                          Icon="check"
+                          ButtonStyle="ButtonStyle.Primary"
+                          Click="@Confirm" />
+
+        </RadzenStack>
+
+    </RadzenStack>
+
+</RadzenCard>
+
+@code {
+
+    [Parameter]
+    public CreatePaymentDialogModel Model { get; set; } = null!;
+
+    private bool PaymentReceived
+    {
+        get => Model.PaymentReceived;
+        set => Model.PaymentReceived = value;
+    }
+
+    private decimal TotalAmount =>
+        Model.Lines.Sum(x => x.Product.Price * x.Quantity);
+
+    private void Cancel()
+    {
+        DialogService.Close(null);
+    }
+
+    private void Confirm()
+    {
+        DialogService.Close(new PaymentDialogResult
+        {
+            PaymentReceived = Model.PaymentReceived
+        });
+    }
+
+    public class PaymentDialogResult
+    {
+        public bool PaymentReceived { get; set; }
+    }
+}

@@ -1,5 +1,7 @@
 ﻿@page "/teacher-dashboard"
+@attribute [Authorize(Roles = "Teacher")]
 @using System.Globalization
+@using Microsoft.AspNetCore.Authorization
 
 @code {
 

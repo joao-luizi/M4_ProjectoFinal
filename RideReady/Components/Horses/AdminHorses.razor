@@ -22,13 +22,17 @@
 
             TotalUserHorses = TotalHorses - TotalSchoolHorses;
 
+
             horses = allHorses.Select(h => new HorsesData
                 {
                     HorseId = h.HorseId,
                     Name = h.Name,
                     Breed = h.Breed,
-                    Age = h.Age,
+                    DateOfBirth = h.DateOfBirth,
+                    UserHorses = h.UserHorses?.FirstOrDefault()?.Relationship ?? "School"
                 }).ToList();
+
+
 
         }
         catch (Exception ex)
@@ -55,12 +59,21 @@
         public int HorseId { get; set; }
         public string Name { get; set; }
         public string Breed { get; set; }
-        public int Age { get; set; }
+        public DateTime DateOfBirth { get; set; }
         public string UserHorses { get; set; }
+
+
+        public int Age => (int)((DateTime.Today - DateOfBirth).TotalDays / 365.25);
+        public bool IsSchoolHorse => UserHorses == "School";
     }
 
     async Task ToggleAddHorseForm()
     {
+        if (!showAddHorseForm)
+        {
+            selectedHorse = null;
+        }
+
         showAddHorseForm = !showAddHorseForm;
     }
 
@@ -71,17 +84,19 @@
                 HorseId = horse.HorseId,
                 Name = horse.Name,
                 Breed = horse.Breed,
-                Age = horse.Age,
+                DateOfBirth = horse.DateOfBirth,
+                UserHorses = "School",
+
             };
 
-        horses.Add(horseData);
+        horses = horses.Append(horseData).ToList();
         TotalHorses++;
         if (horse.School?.SchoolId == schoolId)
             TotalSchoolHorses++;
         else
             TotalUserHorses++;
 
-        showAddHorseForm = true;
+        showAddHorseForm = false;
     }
 
     private Task HideAddHorseForm()
@@ -90,28 +105,34 @@
         return Task.CompletedTask;
     }
 
-    void EditHorse(HorsesData horseData)
+    private async Task EditHorse(HorsesData horseData)
     {
-        selectedHorse = new Horse
-            {
-                HorseId = horseData.HorseId,
-                Name = horseData.Name,
-                Breed = horseData.Breed,
-                Age = horseData.Age,
-                School = new School { SchoolId = schoolId }
-            };
-        showAddHorseForm = true;
+        try
+        {
+            selectedHorse = await HorseService.GetHorseByIdAsync(horseData.HorseId);
+
+            showAddHorseForm = true;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erro ao carregar cavalo: {ex.Message}");
+        }
+
+
     }
 
     private async Task HandleHorseUpdated(Horse updated)
     {
-        var dto = horses.FirstOrDefault(h => h.HorseId == updated.HorseId);
-        if (dto != null)
+        horses = horses.Select(h =>
         {
-            dto.Name = updated.Name;
-            dto.Breed = updated.Breed;
-            dto.Age = updated.Age;
-        }
+            if (h.HorseId == updated.HorseId)
+            {
+                h.Name = updated.Name;
+                h.Breed = updated.Breed;
+                h.DateOfBirth = updated.DateOfBirth;
+            }
+            return h;
+        }).ToList();
 
         selectedHorse = null;
         showAddHorseForm = false;
@@ -128,9 +149,13 @@
         {
             try
             {
-                await HorseService.RemoveHorse(new Horse { HorseId = horsesData.HorseId });
+                var backEndHorse = await HorseService.GetHorseByIdAsync(horsesData.HorseId);
 
-                horses.Remove(horsesData);
+                await HorseService.RemoveHorse(backEndHorse);
+
+                horses = horses
+                .Where(h => h.HorseId != horsesData.HorseId)
+                .ToList();
                 TotalHorses--;
                 if (horsesData.UserHorses == "Escola") TotalSchoolHorses--;
                 else TotalUserHorses--;
@@ -212,8 +237,16 @@
         <RadzenDataGridColumn TItem="HorsesData" Property="HorseId" Title="ID" />
         <RadzenDataGridColumn TItem="HorsesData" Property="Name" Title="Nome" />
         <RadzenDataGridColumn TItem="HorsesData" Property="Breed" Title="Raça" />
-        <RadzenDataGridColumn TItem="HorsesData" Property="Age" Title="Idade" />
-        <RadzenDataGridColumn TItem="HorsesData" Property="UserHorses" Title="Proprietário / Escola" />
+        <RadzenDataGridColumn TItem="HorsesData" Property="Age" Title="Idade">
+            <Template Context="h">
+                @h.Age
+            </Template>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="HorsesData" Title="Proprietário">
+            <Template Context="h">
+                @(h.IsSchoolHorse ? "Escola" : "Proprietário")
+            </Template>
+        </RadzenDataGridColumn>
         <RadzenDataGridColumn TItem="HorsesData" Title="Ações">
             <Template Context="horse">
                 <RadzenButton Icon="edit" Size="ButtonSize.Small" Style="margin-right: 8px;"

@@ -1,9 +1,11 @@
-﻿using RepositoryLibrary.IServices;
+﻿using Microsoft.AspNetCore.Identity;
+using RepositoryLibrary.IRepository;
+using RepositoryLibrary.IServices;
+using RepositoryLibrary.Models;
 using RepositoryLibrary.Models.Context;
-using RepositoryLibrary.Repository;
-using Microsoft.AspNetCore.Identity;
-using SharedLibrary;
 using RepositoryLibrary.Models.DTOs;
+using RepositoryLibrary.Repository;
+using SharedLibrary;
 
 namespace RepositoryLibrary.Services
 {
@@ -11,9 +13,21 @@ namespace RepositoryLibrary.Services
     {
         private readonly UserRepository _userRepository;
 
+        private readonly BookingRepository _bookingRepository;
+        private readonly LessonRepository _lessonRepository;
+        private readonly HorseRepository _horseRepository;
+        private readonly SchoolUsersRepository _schoolUserRepository;
+        private readonly UserPhotoRepository _userPhotoRepository;
+
         public UserService(EM_DbContext emContext, UserManager<EMUser> userManager)
         {
             _userRepository = new UserRepository(emContext, userManager);
+
+            _bookingRepository = new BookingRepository(emContext);
+            _lessonRepository = new LessonRepository(emContext);
+            _horseRepository = new HorseRepository(emContext);
+            _schoolUserRepository = new SchoolUsersRepository(emContext);
+            _userPhotoRepository = new UserPhotoRepository(emContext);
         }
 
         public async Task<List<UpdateUserDto>> GetAllUsers(int schoolId)
@@ -52,15 +66,45 @@ namespace RepositoryLibrary.Services
             }
         }
 
-        public async Task<UserDTO> DeleteUserAsync(string id)
+        public async Task<List<UpdateUserDto>> GetUsersBySchoolAndRole(int schoolId, string role)
         {
             try
             {
-                return await _userRepository.DeleteUserAsync(id);
+                var users = await _userRepository.GetUsersByRole(role);
+                var schoolUsers = await _schoolUserRepository.GetAllUsers(schoolId);
+
+                var schoolUserIds = schoolUsers
+                .Select(su => su.UserId)
+                .ToHashSet();
+
+               return users.Where(u => schoolUserIds.Contains(u.Id)).ToList();
+
             }
             catch (Exception e)
             {
                 throw new Exception(e.Message, e.InnerException);
+            }
+        }
+
+        public async Task DeleteUserAsync(string id)
+        {
+            try
+            {
+
+
+                //não apagar destrutivamente
+                //int deletedHorses = await _horseRepository.DeleteByUserIdAsync(id);
+                //int deletedUserPhotos = await _userPhotoRepository.DeletePhotoByUserIdAsync(id);
+                //int deletedSchoolUsers = await _schoolUserRepository.DeleteUserAsync(id);
+
+                // 2. inativar user
+
+               await _userRepository.InactivateUser(id);
+               
+            }
+            catch (Exception e)
+            {
+                throw new Exception(e.Message, e);
             }
         }
 

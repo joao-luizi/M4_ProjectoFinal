@@ -17,6 +17,8 @@ namespace RepositoryLibrary.IRepository
         Task<IEnumerable<Lesson>> GetLessonsByHorseIdAsync(int horseId);
         Task<IEnumerable<Lesson>> GetLessonsByDateAsync(DateTime date);
         Task<List<Lesson>> GetLessonByHorseAndDate(int horseId, DateTime date);
+
+
     }
 
 }

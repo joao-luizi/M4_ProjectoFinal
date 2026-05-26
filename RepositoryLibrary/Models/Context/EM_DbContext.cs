@@ -26,12 +26,112 @@ namespace RepositoryLibrary.Models.Context
             modelBuilder.Entity<LessonHorse>().HasOne(lh => lh.Horse).WithMany(lh => lh.LessonHorses).HasForeignKey(lh => lh.HorseId).OnDelete(DeleteBehavior.Restrict);
             modelBuilder.Entity<UserHorse>().HasKey(k => new { k.UserId, k.HorseId });
             modelBuilder.Entity<Photo>().HasKey(k => k.UserId);
-            modelBuilder.Entity<UserPayment>().HasKey(k => new { k.UserId, k.BuyDate });
+            modelBuilder.Entity<Horse>()
+                .HasOne(h => h.HorseFoto)
+                .WithOne(p => p.Horse)
+                .HasForeignKey<HorseFoto>(p => p.HorseId)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.Cascade);
+           
 
             base.OnModelCreating(modelBuilder);
             modelBuilder.Entity<Users_View>()
                 .ToView("Users_View")
                 .HasKey(k => k.Id);
+
+            modelBuilder.Entity<Product>()
+               .Property(p => p.Price)
+               .HasColumnType("decimal(18,2)")
+               .HasPrecision(18, 2);
+
+            modelBuilder.Entity<Purchase>()
+                .Property(p => p.TotalAmount)
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<Purchase>()
+                .Property(p => p.MonthlyRecurringAmount)
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<Purchase>()
+                .Property(p => p.OneOffAmount)
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<Purchase>()
+                .HasMany(p => p.Lines)
+                .WithOne(l => l.Purchase)
+                .HasForeignKey(l => l.PurchaseId);
+
+            modelBuilder.Entity<Purchase>()
+                .HasIndex(p => new { p.UserId, p.PurchasedAtUtc });
+
+            modelBuilder.Entity<PurchaseLine>()
+                .Property(l => l.UnitPrice)
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<PurchaseLine>()
+                .Property(l => l.LineTotal)
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<PurchaseLine>()
+                .HasOne(l => l.Product)
+                .WithMany()
+                .HasForeignKey(l => l.ProductId);
+
+            modelBuilder.Entity<UserSubscription>()
+                .HasOne(s => s.Product)
+                .WithMany()
+                .HasForeignKey(s => s.ProductId);
+
+            modelBuilder.Entity<UserSubscription>()
+                .HasOne(s => s.PurchaseLine)
+                .WithMany()
+                .HasForeignKey(s => s.PurchaseLineId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<UserSubscription>()
+                .HasMany(s => s.Entitlements)
+                .WithOne(e => e.UserSubscription)
+                .HasForeignKey(e => e.UserSubscriptionId);
+
+            modelBuilder.Entity<UserSubscription>()
+                .HasIndex(s => new { s.UserId, s.PeriodStart, s.PeriodEnd, s.Status });
+
+            modelBuilder.Entity<UserSubscriptionEntitlement>()
+                .HasOne(e => e.LessonType)
+                .WithMany()
+                .HasForeignKey(e => e.LessonTypeId);
+
+            modelBuilder.Entity<UserCreditLedgerEntry>()
+                .HasOne(e => e.LessonType)
+                .WithMany()
+                .HasForeignKey(e => e.LessonTypeId);
+
+            modelBuilder.Entity<UserCreditLedgerEntry>()
+                .HasOne(e => e.Product)
+                .WithMany()
+                .HasForeignKey(e => e.ProductId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<UserCreditLedgerEntry>()
+                .HasOne(e => e.PurchaseLine)
+                .WithMany()
+                .HasForeignKey(e => e.PurchaseLineId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<UserCreditLedgerEntry>()
+                .HasIndex(e => new { e.UserId, e.LessonTypeId, e.CreatedAtUtc });
+
+            modelBuilder.Entity<ProductEntitlement>()
+                .HasOne(pe => pe.Product)
+                .WithMany(p => p.Entitlements)
+                .HasForeignKey(pe => pe.ProductId);
+
+            modelBuilder.Entity<ProductEntitlement>()
+                .HasOne(pe => pe.LessonType)
+                .WithMany()
+                .HasForeignKey(pe => pe.LessonTypeId);
+
+
         }
 
         public DbSet<Booking> Bookings { get; set; }
@@ -46,7 +146,12 @@ namespace RepositoryLibrary.Models.Context
         public DbSet<SchoolUser> SchoolUsers { get; set; }
         public DbSet<UserHorse> UserHorses { get; set; }
         public DbSet<Users_View> Users_Views { get; set; }
-        public DbSet<Package> Packages { get; set; }
-        public DbSet<UserPayment> UserPayments { get; set; }
+        public DbSet<Product> Products => Set<Product>();
+        public DbSet<ProductEntitlement> ProductEntitlements => Set<ProductEntitlement>();
+        public DbSet<Purchase> Purchases => Set<Purchase>();
+        public DbSet<PurchaseLine> PurchaseLines => Set<PurchaseLine>();
+        public DbSet<UserSubscription> UserSubscriptions => Set<UserSubscription>();
+        public DbSet<UserSubscriptionEntitlement> UserSubscriptionEntitlements => Set<UserSubscriptionEntitlement>();
+        public DbSet<UserCreditLedgerEntry> UserCreditLedgerEntries => Set<UserCreditLedgerEntry>();
     }
 }

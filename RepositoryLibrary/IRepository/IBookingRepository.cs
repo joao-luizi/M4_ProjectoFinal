@@ -14,5 +14,7 @@ namespace RepositoryLibrary.IRepository
         public Task<List<Booking>> GetBookingsByLessonId(int lessonId);
 
     	public Task<bool> IsLessonBookedAsync(int lessonId, string studentId);
+
+ 
     }
 }
