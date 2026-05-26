@@ -1,12 +1,20 @@
 ﻿@page "/createLesson"
 @using Microsoft.AspNetCore.Authorization
+@using RepositoryLibrary.Features.Lessons.Entities
+@using RepositoryLibrary.Features.Lessons.Interfaces
+@using RepositoryLibrary.Features.Products
+@using RepositoryLibrary.Features.Products.Entities
+@using RepositoryLibrary.Features.Products.Interfaces
+@using RepositoryLibrary.Features.Schools
+@using RepositoryLibrary.Features.Schools.Entities
+@using RepositoryLibrary.Features.Schools.Interfaces
+@using RepositoryLibrary.Features.Users.DTOs
+@using RepositoryLibrary.Features.Users.Interfaces
 @attribute [Authorize(Roles = "Administrator,Teacher")]
 @rendermode InteractiveServer
 
 @using Microsoft.EntityFrameworkCore
 @using RepositoryLibrary.IServices
-@using RepositoryLibrary.Models
-@using RepositoryLibrary.Models.DTOs
 @inject ILessonService lessonService
 @inject ISchoolService schoolService
 @inject Radzen.DialogService dialogService

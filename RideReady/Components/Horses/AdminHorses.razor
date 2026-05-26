@@ -1,8 +1,10 @@
 ﻿@using System.Globalization
-@using RepositoryLibrary.Models
+@using RepositoryLibrary.Features.Horses
+@using RepositoryLibrary.Features.Horses.Entities
+@using RepositoryLibrary.Features.Horses.Interfaces
 @rendermode InteractiveServer
 
-@inject RepositoryLibrary.IServices.IHorseService HorseService
+@inject IHorseService HorseService
 @inject Radzen.DialogService DialogService
 @inject AuthenticationStateProvider AuthStateProvider
 

@@ -3,12 +3,20 @@
 @inject ILessonService lessonService
 @inject IBookingService bookingService
 @using Microsoft.AspNetCore.Authorization
+@using RepositoryLibrary.Features.Bookings
+@using RepositoryLibrary.Features.Bookings.Entities
+@using RepositoryLibrary.Features.Bookings.Interfaces
+@using RepositoryLibrary.Features.Lessons.Interfaces
+@using RepositoryLibrary.Features.Schools
+@using RepositoryLibrary.Features.Schools.Entities
 @inject AuthenticationStateProvider AuthStateProvider
 @using Microsoft.EntityFrameworkCore
 @using Microsoft.IdentityModel.Tokens
 @using RepositoryLibrary.IServices
-@using RepositoryLibrary.Models
 @using System.Security.Claims
+@using RepositoryLibrary.Features.Lessons
+@using RepositoryLibrary.Features.Lessons.Entities
+@using RepositoryLibrary.Features.Lessons.Interfaces
 @inject NavigationManager NavigationManager
 
 @if(lessons is null){

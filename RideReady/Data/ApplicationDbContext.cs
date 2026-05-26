@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using SharedLibrary;
+using RepositoryLibrary.Features.Users.Entities;
 
 namespace RideReady.Data
 {

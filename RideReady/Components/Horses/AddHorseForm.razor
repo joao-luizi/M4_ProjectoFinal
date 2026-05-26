@@ -1,6 +1,9 @@
-﻿@using RepositoryLibrary.Models
-@using Microsoft.AspNetCore.Components.Authorization
-@inject RepositoryLibrary.IServices.IHorseService HorseService
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@using RepositoryLibrary.Features.Horses
+@using RepositoryLibrary.Features.Horses.Entities
+@using RepositoryLibrary.Features.Horses.Interfaces
+@using RepositoryLibrary.Features.Schools.Entities
+@inject IHorseService HorseService
 @inject AuthenticationStateProvider AuthStateProvider
 
 @code {

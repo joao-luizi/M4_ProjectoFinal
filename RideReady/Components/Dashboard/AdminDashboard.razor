@@ -1,7 +1,11 @@
 ﻿@using System.Globalization
-@inject RepositoryLibrary.IServices.IUserService UserService
-@inject RepositoryLibrary.IServices.ILessonService LessonService
-@inject RepositoryLibrary.IServices.IHorseService HorseService
+@using RepositoryLibrary.Features.Horses
+@using RepositoryLibrary.Features.Horses.Interfaces
+@using RepositoryLibrary.Features.Lessons.Interfaces
+@using RepositoryLibrary.Features.Users.Interfaces
+@inject IUserService UserService
+@inject ILessonService LessonService
+@inject IHorseService HorseService
 
 
 @code {

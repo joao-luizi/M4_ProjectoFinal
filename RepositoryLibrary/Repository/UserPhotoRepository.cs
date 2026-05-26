@@ -1,13 +1,10 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using RepositoryLibrary.IRepository;
-using RepositoryLibrary.Models;
-using RepositoryLibrary.Models.Context;
-using RepositoryLibrary.Models.DTOs;
-using SharedLibrary;
+using RepositoryLibrary.Data.Context;
+using RepositoryLibrary.Features.Schools.Interfaces;
+using RepositoryLibrary.Features.Users.Entities;
 using System.Data;
-using System.Threading.Tasks;
 
 
 

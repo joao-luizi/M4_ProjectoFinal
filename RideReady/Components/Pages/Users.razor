@@ -2,15 +2,18 @@
 @attribute [Authorize(Roles = "Administrator")]
 @rendermode InteractiveServer
 
+@using System.Security.Claims
+@using System.Text.Json
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.EntityFrameworkCore
+@using RepositoryLibrary.Features.Schools
+@using RepositoryLibrary.Features.Schools.Entities
+@using RepositoryLibrary.Features.Schools.Interfaces
+@using RepositoryLibrary.Features.Users.DTOs
+@using RepositoryLibrary.Features.Users.Interfaces
 @using RepositoryLibrary.IServices
-@using RepositoryLibrary.Models
-@using RepositoryLibrary.Models.DTOs
 @using RepositoryLibrary.Services
-@using System.Security.Claims
 @using RideReady.Components.Modals
-@using System.Text.Json
 
 @inject IUserService _userService
 @inject ISchoolService _schoolService

@@ -1,7 +1,8 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
-using RepositoryLibrary.IServices;
-using SharedLibrary;
+using RepositoryLibrary.Features.Schools.Interfaces;
+using RepositoryLibrary.Features.Users.Entities;
+
 using System.Security.Claims;
 
 namespace RideReady.Components.Account

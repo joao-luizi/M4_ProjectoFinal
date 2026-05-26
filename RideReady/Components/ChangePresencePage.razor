@@ -4,9 +4,17 @@
 
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.EntityFrameworkCore
+@using RepositoryLibrary.Features.Bookings
+@using RepositoryLibrary.Features.Bookings.Entities
+@using RepositoryLibrary.Features.Bookings.Interfaces
+@using RepositoryLibrary.Features.Lessons.Entities
+@using RepositoryLibrary.Features.Lessons.Interfaces
+@using RepositoryLibrary.Features.Products
+@using RepositoryLibrary.Features.Products.Entities
+@using RepositoryLibrary.Features.Products.Interfaces
+@using RepositoryLibrary.Features.Users.DTOs
+@using RepositoryLibrary.Features.Users.Interfaces
 @using RepositoryLibrary.IServices
-@using RepositoryLibrary.Models
-@using RepositoryLibrary.Models.DTOs
 @using RepositoryLibrary.Services
 @inject IBookingService bookingService
 @inject ILessonService lessonService

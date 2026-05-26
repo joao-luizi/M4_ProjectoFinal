@@ -1,9 +1,11 @@
 ﻿using RepositoryLibrary.IServices;
-using RepositoryLibrary.Models;
-using RepositoryLibrary.Models.Context;
-using RepositoryLibrary.Repository;
 using Microsoft.AspNetCore.Identity;
-using SharedLibrary;
+using RepositoryLibrary.Data.Context;
+using RepositoryLibrary.Features.Users.Repository;
+using RepositoryLibrary.Features.Users;
+using RepositoryLibrary.Features.Schools.Entities;
+using RepositoryLibrary.Features.Schools.Repositories;
+using RepositoryLibrary.Features.Users.Entities;
 
 namespace RepositoryLibrary.Services
 {

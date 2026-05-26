@@ -1,6 +1,6 @@
 ﻿namespace SharedLibrary.Models.Static_Class
 {
-    public static class StaticRole
+    public static class SharedStaticRole
     {
         public const string Student = "Student";
         public const string Teacher = "Teacher";

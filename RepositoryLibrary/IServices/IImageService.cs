@@ -1,5 +1,6 @@
 ﻿using System.Drawing;
-using RepositoryLibrary.Models;
+using RepositoryLibrary.Features.Schools.Entities;
+using RepositoryLibrary.Features.Users;
 
 namespace RepositoryLibrary.IServices
 {

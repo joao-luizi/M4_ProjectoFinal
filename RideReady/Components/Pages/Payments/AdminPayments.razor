@@ -1,7 +1,9 @@
 ﻿@using Microsoft.AspNetCore.Authorization
 @using Radzen.Blazor
+@using RepositoryLibrary.Features.Schools
+@using RepositoryLibrary.Features.Schools.Interfaces
+@using RepositoryLibrary.Features.Users.Interfaces
 @using RepositoryLibrary.IServices
-@using RepositoryLibrary.Models
 @rendermode InteractiveServer
 @attribute [Authorize(Roles = "Administrator")]
 

@@ -1,7 +1,8 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
-using RideReady.Data;
-using SharedLibrary;
+using RepositoryLibrary.Features.Users.Entities;
+
+ 
 
 namespace RideReady.Components.Account
 {

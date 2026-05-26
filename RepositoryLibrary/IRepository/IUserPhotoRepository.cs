@@ -1,4 +1,4 @@
-﻿using RepositoryLibrary.Models;
+﻿using RepositoryLibrary.Features.Users;
 using System;
 using System.Collections.Generic;
 using System.Linq;

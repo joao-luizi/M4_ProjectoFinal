@@ -1,0 +1,21 @@
+﻿using RepositoryLibrary.Features.Users.DTOs;
+
+namespace RepositoryLibrary.Features.Users.Interfaces
+{
+    public interface IUserService
+    {
+        public Task<List<UpdateUserDto>> GetAllUsers(int schoolId);
+        public Task<UserDTO> GetUserById(string id);
+        public Task<List<UpdateUserDto>> GetUsersByRole(string role);
+
+        Task<List<UpdateUserDto>> GetUsersBySchoolAndRole(int schoolId, string role);
+
+        public Task DeleteUserAsync(string id);
+
+        public Task<UpdateUserDto> GetEditUserAsync(string id);
+
+        public Task<UpdateUserDto> EditUserAsync(UpdateUserDto user);
+
+        public Task<IList<string>> GetUserRole(string userId);
+    }
+}

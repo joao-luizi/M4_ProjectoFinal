@@ -4,9 +4,14 @@
 
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.EntityFrameworkCore
+@using RepositoryLibrary.Features.Lessons.Entities
+@using RepositoryLibrary.Features.Lessons.Interfaces
+@using RepositoryLibrary.Features.Products
+@using RepositoryLibrary.Features.Products.Entities
+@using RepositoryLibrary.Features.Products.Interfaces
+@using RepositoryLibrary.Features.Users.DTOs
+@using RepositoryLibrary.Features.Users.Interfaces
 @using RepositoryLibrary.IServices
-@using RepositoryLibrary.Models
-@using RepositoryLibrary.Models.DTOs
 @inject ILessonService lessonService
 @inject Radzen.DialogService dialogService
 @inject ILessonTypeService lessonTypeService

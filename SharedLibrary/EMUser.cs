@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Identity;
 
 namespace SharedLibrary
 {
-    public class EMUser : IdentityUser
+    public class SharedEMUser : IdentityUser
     {
         public string FirstName { get; set; }
         public string LastName { get; set; }

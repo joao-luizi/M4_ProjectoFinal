@@ -1,20 +1,33 @@
-using EquestrianManagement.Seeds;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Radzen;
+using RepositoryLibrary.Data.Context;
+using RepositoryLibrary.Data.Seeds;
+using RepositoryLibrary.Features.Bookings.Interfaces;
+using RepositoryLibrary.Features.Bookings.Services;
+using RepositoryLibrary.Features.Horses.Interfaces;
+using RepositoryLibrary.Features.Horses.Services;
+using RepositoryLibrary.Features.Lessons.Interfaces;
+using RepositoryLibrary.Features.Lessons.Services;
+using RepositoryLibrary.Features.Products;
+using RepositoryLibrary.Features.Products.Interfaces;
+using RepositoryLibrary.Features.Products.Services;
+using RepositoryLibrary.Features.Purchases.Interfaces;
+using RepositoryLibrary.Features.Purchases.Services;
+using RepositoryLibrary.Features.Schools;
+using RepositoryLibrary.Features.Schools.Interfaces;
+using RepositoryLibrary.Features.Users.Entities;
+using RepositoryLibrary.Features.Users.Interfaces;
+using RepositoryLibrary.Features.Users.Service;
 using RepositoryLibrary.IRepository;
 using RepositoryLibrary.IServices;
-using RepositoryLibrary.Models;
-using RepositoryLibrary.Models.Context;
 using RepositoryLibrary.Repository;
-using RepositoryLibrary.Seeds;
 using RepositoryLibrary.Services;
 using RideReady.Components;
 using RideReady.Components.Account;
 using RideReady.Data;
 using Serilog;
-using SharedLibrary;
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
@@ -40,11 +53,11 @@ builder.Services.AddAuthentication(options =>
     })
     .AddIdentityCookies();
 
-var connectionString = builder.Configuration.GetConnectionString("IdentityDbV0") ?? throw new InvalidOperationException("Connection string 'IdentityDb' not found.");
+var connectionString = builder.Configuration.GetConnectionString("IdentityDb") ?? throw new InvalidOperationException("Connection string 'IdentityDb' not found.");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 
-var rrCnString = builder.Configuration.GetConnectionString("RideReadyDBV0") ?? throw new InvalidOperationException("Connection string 'RideReadyDB' not found.");
+var rrCnString = builder.Configuration.GetConnectionString("RideReadyDB") ?? throw new InvalidOperationException("Connection string 'RideReadyDB' not found.");
 builder.Services.AddDbContext<EM_DbContext>(options =>
     options.UseSqlServer(rrCnString));
 

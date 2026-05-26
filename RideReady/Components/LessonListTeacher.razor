@@ -3,11 +3,15 @@
 @inject ILessonService lessonService
 @inject IBookingService bookingService
 @using Microsoft.AspNetCore.Authorization
+@using RepositoryLibrary.Features.Bookings
+@using RepositoryLibrary.Features.Bookings.Interfaces
 @inject AuthenticationStateProvider AuthStateProvider
 @using Microsoft.EntityFrameworkCore
 @using Microsoft.IdentityModel.Tokens
+@using RepositoryLibrary.Features.Lessons
+@using RepositoryLibrary.Features.Lessons.Entities
+@using RepositoryLibrary.Features.Lessons.Interfaces
 @using RepositoryLibrary.IServices
-@using RepositoryLibrary.Models
 @inject NavigationManager NavigationManager
 @using System.Security.Claims
 

@@ -6,10 +6,11 @@ using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Primitives;
+using RepositoryLibrary.Features.Users.Entities;
 using RideReady.Components.Account.Pages;
 using RideReady.Components.Account.Pages.Manage;
 using RideReady.Data;
-using SharedLibrary;
+ 
 
 namespace Microsoft.AspNetCore.Routing
 {

@@ -3,8 +3,9 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
+using RepositoryLibrary.Features.Users.Entities;
 using RideReady.Data;
-using SharedLibrary;
+ 
 
 namespace RideReady.Components.Account
 {

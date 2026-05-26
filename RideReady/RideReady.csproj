@@ -28,7 +28,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\RepositoryLibrary\RepositoryLibrary.csproj" />
-    <ProjectReference Include="..\SharedLibrary\SharedLibrary.csproj" />
   </ItemGroup>
 
 </Project>
