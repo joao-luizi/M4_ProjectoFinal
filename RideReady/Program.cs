@@ -10,9 +10,16 @@ using RepositoryLibrary.Services;
 using RideReady.Components;
 using RideReady.Components.Account;
 using RideReady.Data;
+using Serilog;
 using SharedLibrary;
 
+Log.Logger = new LoggerConfiguration()
+    .WriteTo.Console()
+    .WriteTo.File("Logs/rideready-.log", rollingInterval: RollingInterval.Day)
+    .CreateLogger();
+
 var builder = WebApplication.CreateBuilder(args);
+builder.Host.UseSerilog();
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
