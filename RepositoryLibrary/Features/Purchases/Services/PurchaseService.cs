@@ -13,8 +13,8 @@ namespace RepositoryLibrary.Features.Purchases.Services
 {
     public class PurchaseService : IPurchaseService
     {
-        private readonly EM_DbContext _context;
-        public PurchaseService(EM_DbContext context)
+        private readonly RideReadyDbContext _context;
+        public PurchaseService(RideReadyDbContext context)
         {
             _context = context;
         }

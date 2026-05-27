@@ -12,9 +12,9 @@ using RepositoryLibrary.Data.Context;
 
 namespace RepositoryLibrary.Migrations
 {
-    [DbContext(typeof(EM_DbContext))]
-    [Migration("20260514095608_filepathHorsFoto")]
-    partial class filepathHorsFoto
+    [DbContext(typeof(RideReadyDbContext))]
+    [Migration("20260518152341_FixUserPaymentPrimaryKey")]
+    partial class FixUserPaymentPrimaryKey
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -301,14 +301,17 @@ namespace RepositoryLibrary.Migrations
 
             modelBuilder.Entity("RepositoryLibrary.Models.UserPayment", b =>
                 {
-                    b.Property<string>("UserId")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
 
-                    b.Property<DateOnly>("BuyDate")
-                        .HasColumnType("date");
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int?>("AmountOfClasses")
                         .HasColumnType("int");
+
+                    b.Property<DateOnly>("BuyDate")
+                        .HasColumnType("date");
 
                     b.Property<DateOnly>("DueDate")
                         .HasColumnType("date");
@@ -316,7 +319,11 @@ namespace RepositoryLibrary.Migrations
                     b.Property<int>("PackageId")
                         .HasColumnType("int");
 
-                    b.HasKey("UserId", "BuyDate");
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
 
                     b.HasIndex("PackageId");
 
@@ -413,7 +420,8 @@ namespace RepositoryLibrary.Migrations
                 {
                     b.HasOne("RepositoryLibrary.Models.Horse", "Horse")
                         .WithOne("HorseFoto")
-                        .HasForeignKey("RepositoryLibrary.Models.HorseFoto", "HorseId");
+                        .HasForeignKey("RepositoryLibrary.Models.HorseFoto", "HorseId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("Horse");
                 });

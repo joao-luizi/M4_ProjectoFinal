@@ -12,9 +12,9 @@ using RepositoryLibrary.Data.Context;
 
 namespace RepositoryLibrary.Migrations
 {
-    [DbContext(typeof(EM_DbContext))]
-    [Migration("20260512104002_RefactorHorseModel")]
-    partial class RefactorHorseModel
+    [DbContext(typeof(RideReadyDbContext))]
+    [Migration("20250422095556_new_database")]
+    partial class new_database
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -50,19 +50,16 @@ namespace RepositoryLibrary.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("HorseId"));
 
+                    b.Property<int>("Age")
+                        .HasColumnType("int");
+
                     b.Property<string>("Breed")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("DateOfBirth")
-                        .HasColumnType("datetime2");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<byte[]>("Photo")
-                        .HasColumnType("varbinary(max)");
 
                     b.Property<int>("SchoolId")
                         .HasColumnType("int");

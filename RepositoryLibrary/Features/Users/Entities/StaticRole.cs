@@ -1,4 +1,4 @@
-﻿namespace SharedLibrary.Models.Static_Class
+﻿namespace RepositoryLibrary.Features.Users.Entities
 {
     public static class StaticRole
     {

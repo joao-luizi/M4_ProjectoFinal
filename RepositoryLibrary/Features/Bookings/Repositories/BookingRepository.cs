@@ -7,9 +7,9 @@ namespace RepositoryLibrary.Features.Bookings.Repositories
 {
     public class BookingRepository : IBookingRepository
     {
-        public readonly EM_DbContext _emContext;
+        public readonly RideReadyDbContext _emContext;
 
-        public BookingRepository(EM_DbContext context)
+        public BookingRepository(RideReadyDbContext context)
         {
             _emContext = context;
         }

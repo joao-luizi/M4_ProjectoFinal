@@ -1,0 +1,6 @@
+@RideReadyAPI_HostAddress = http://localhost:5147
+
+GET {{RideReadyAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

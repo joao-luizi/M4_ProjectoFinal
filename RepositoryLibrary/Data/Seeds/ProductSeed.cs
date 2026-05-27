@@ -15,7 +15,7 @@ namespace RepositoryLibrary.Data.Seeds
         {
             try
             {
-                var context = serviceProvider.GetRequiredService<EM_DbContext>();
+                var context = serviceProvider.GetRequiredService<RideReadyDbContext>();
 
                 if (!context.Products.Any())
                 {

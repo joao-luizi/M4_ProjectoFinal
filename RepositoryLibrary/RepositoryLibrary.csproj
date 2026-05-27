@@ -23,11 +23,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\SharedLibrary\SharedLibrary.csproj" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Folder Include="Data\Migrations\" />
+	  <Folder Include="Data\Migrations\Identity\" />
+	  <Folder Include="Data\Migrations\RideReady\" />
 	  <Folder Include="Features\Bookings\DTOs\" />
 	  <Folder Include="Features\Bookings\Snapshots\" />
 	  <Folder Include="Features\Bookings\Views\" />

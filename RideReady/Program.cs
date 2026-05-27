@@ -37,38 +37,44 @@ Log.Logger = new LoggerConfiguration()
 var builder = WebApplication.CreateBuilder(args);
 builder.Host.UseSerilog();
 
-// Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 builder.Services.AddCascadingAuthenticationState();
+
 builder.Services.AddScoped<IdentityUserAccessor>();
 builder.Services.AddScoped<IdentityRedirectManager>();
 builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
 
 builder.Services.AddAuthentication(options =>
-    {
-        options.DefaultScheme = IdentityConstants.ApplicationScheme;
-        options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
-    })
-    .AddIdentityCookies();
+{
+    options.DefaultScheme = IdentityConstants.ApplicationScheme;
+    options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
+})
+.AddIdentityCookies();
 
-var connectionString = builder.Configuration.GetConnectionString("IdentityDb") ?? throw new InvalidOperationException("Connection string 'IdentityDb' not found.");
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(connectionString));
+var identityConn = builder.Configuration.GetConnectionString("IdentityDb")
+    ?? throw new InvalidOperationException("IdentityDb not found");
 
-var rrCnString = builder.Configuration.GetConnectionString("RideReadyDB") ?? throw new InvalidOperationException("Connection string 'RideReadyDB' not found.");
-builder.Services.AddDbContext<EM_DbContext>(options =>
-    options.UseSqlServer(rrCnString));
+var rideConn = builder.Configuration.GetConnectionString("RideReadyDB")
+    ?? throw new InvalidOperationException("RideReadyDB not found");
 
-//DEV Only
-builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+builder.Services.AddDbContext<AppIdentityDbContext>(options =>
+    options.UseSqlServer(identityConn, x =>
+        x.MigrationsHistoryTable("__EFMigrationsHistory_Identity")));
 
-builder.Services.AddIdentityCore<EMUser>(options => options.SignIn.RequireConfirmedAccount = true)
-    .AddRoles<IdentityRole>()
-    .AddEntityFrameworkStores<ApplicationDbContext>()
-    .AddSignInManager()
-    .AddDefaultTokenProviders();
+builder.Services.AddDbContext<RideReadyDbContext>(options =>
+    options.UseSqlServer(rideConn, x =>
+        x.MigrationsHistoryTable("__EFMigrationsHistory_RideReady")));
+
+builder.Services.AddIdentityCore<EMUser>(options =>
+{
+    options.SignIn.RequireConfirmedAccount = true;
+})
+.AddRoles<IdentityRole>()
+.AddEntityFrameworkStores<AppIdentityDbContext>()
+.AddSignInManager()
+.AddDefaultTokenProviders();
 
 builder.Services.AddScoped<IUserClaimsPrincipalFactory<EMUser>, CustomUserClaimsPrincipalFactory>();
 
@@ -86,6 +92,7 @@ builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddRadzenComponents();
 
 var app = builder.Build();
+
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

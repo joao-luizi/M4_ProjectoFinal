@@ -15,9 +15,9 @@ namespace RepositoryLibrary.Features.Schools.Repositories
 {
     public class UserPhotoRepository : IUserPhotoRepository
     {
-        private readonly EM_DbContext _emContext;
+        private readonly RideReadyDbContext _emContext;
 
-        public UserPhotoRepository(EM_DbContext context)
+        public UserPhotoRepository(RideReadyDbContext context)
         {
             _emContext = context;
         }

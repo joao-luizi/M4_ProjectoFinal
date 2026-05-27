@@ -17,7 +17,7 @@ public class BookingService : IBookingService
   
     private readonly ILessonService _lessonService;
     private readonly ISchoolService _schoolService;
-    public BookingService(EM_DbContext _context, IUserService userService, ILessonService lessonService)
+    public BookingService(RideReadyDbContext _context, IUserService userService, ILessonService lessonService)
     {
         _bookingRepo = new BookingRepository(_context);
       

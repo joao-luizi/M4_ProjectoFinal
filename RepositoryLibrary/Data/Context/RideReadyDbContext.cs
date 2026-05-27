@@ -12,9 +12,9 @@ using RepositoryLibrary.Features.Lessons.Entities;
 
 namespace RepositoryLibrary.Data.Context
 {
-    public class EM_DbContext : DbContext
+    public class RideReadyDbContext : DbContext
     {
-        public EM_DbContext(DbContextOptions<EM_DbContext> options) : base(options)
+        public RideReadyDbContext(DbContextOptions<RideReadyDbContext> options) : base(options)
         {
         }
 
