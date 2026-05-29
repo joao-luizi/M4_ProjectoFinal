@@ -25,7 +25,7 @@ namespace RepositoryLibrary.Features.Users.Service
         private readonly UserPhotoRepository _userPhotoRepository;
         private readonly ILogger<UserService> _logger;
 
-        public UserService(RideReadyDbContext emContext, UserManager<EMUser> userManager, ILogger<UserService> logger, ILogger<UserRepository> userRepoLogger, ILogger<LessonRepository> lessonRepoLogger, ILogger<HorseRepository> horseRepoLogger, ILogger<SchoolUsersRepository> schoolUsersRepoLogger)
+        public UserService(RideReadyDbContext emContext, UserManager<EMUser> userManager, ILogger<UserService> logger, ILogger<UserRepository> userRepoLogger, ILogger<LessonRepository> lessonRepoLogger, ILogger<HorseRepository> horseRepoLogger, ILogger<SchoolUsersRepository> schoolUsersRepoLogger, ILogger<UserPhotoRepository> userPhotoRepoLogger)
         {
             _userRepository = new UserRepository(emContext, userManager, userRepoLogger);
 
@@ -33,7 +33,7 @@ namespace RepositoryLibrary.Features.Users.Service
             _lessonRepository = new LessonRepository(emContext, lessonRepoLogger);
             _horseRepository = new HorseRepository(emContext, horseRepoLogger);
             _schoolUserRepository = new SchoolUsersRepository(emContext, schoolUsersRepoLogger);
-            _userPhotoRepository = new UserPhotoRepository(emContext);
+            _userPhotoRepository = new UserPhotoRepository(emContext, userPhotoRepoLogger);
             _logger = logger;
         }
 
