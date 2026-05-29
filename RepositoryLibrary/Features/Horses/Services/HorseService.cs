@@ -20,9 +20,9 @@ public class HorseService : IHorseService
     private readonly ILessonService _lessonService;
     private readonly ILogger<HorseService> _logger;
 
-    public HorseService(RideReadyDbContext dbContext, ISchoolService schoolService, ILessonService lessonService, ILogger<HorseService> logger)
+    public HorseService(RideReadyDbContext dbContext, ISchoolService schoolService, ILessonService lessonService, ILogger<HorseService> logger, ILogger<HorseRepository> repoLogger)
     {
-        _horseRepo = new HorseRepository(dbContext);
+        _horseRepo = new HorseRepository(dbContext, repoLogger);
         _schoolService = schoolService;
         _lessonService = lessonService;
         _logger = logger;
