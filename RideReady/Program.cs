@@ -40,11 +40,11 @@ builder.Services.AddAuthentication(options =>
     })
     .AddIdentityCookies();
 
-var connectionString = builder.Configuration.GetConnectionString("IdentityDbV0") ?? throw new InvalidOperationException("Connection string 'IdentityDb' not found.");
+var connectionString = builder.Configuration.GetConnectionString("IdentityDb") ?? throw new InvalidOperationException("Connection string 'IdentityDb' not found.");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 
-var rrCnString = builder.Configuration.GetConnectionString("RideReadyDBV0") ?? throw new InvalidOperationException("Connection string 'RideReadyDB' not found.");
+var rrCnString = builder.Configuration.GetConnectionString("RideReadyDB") ?? throw new InvalidOperationException("Connection string 'RideReadyDB' not found.");
 builder.Services.AddDbContext<EM_DbContext>(options =>
     options.UseSqlServer(rrCnString));
 
