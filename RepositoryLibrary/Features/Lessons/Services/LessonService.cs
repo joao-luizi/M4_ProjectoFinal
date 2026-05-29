@@ -16,9 +16,9 @@ namespace RepositoryLibrary.Features.Lessons.Services
         private readonly IUserService _userService;
         private readonly ILogger<LessonService> _logger;
 
-        public LessonService(RideReadyDbContext context, IUserService userService, ILogger<LessonService> logger)
+        public LessonService(RideReadyDbContext context, IUserService userService, ILogger<LessonService> logger, ILogger<LessonRepository> repoLogger)
         {
-            _lessonRepository = new LessonRepository(context);
+            _lessonRepository = new LessonRepository(context, repoLogger);
             _userService = userService;
             _logger = logger;
         }
