@@ -25,9 +25,9 @@ namespace RepositoryLibrary.Features.Users.Service
         private readonly UserPhotoRepository _userPhotoRepository;
         private readonly ILogger<UserService> _logger;
 
-        public UserService(RideReadyDbContext emContext, UserManager<EMUser> userManager, ILogger<UserService> logger)
+        public UserService(RideReadyDbContext emContext, UserManager<EMUser> userManager, ILogger<UserService> logger, ILogger<UserRepository> userRepoLogger)
         {
-            _userRepository = new UserRepository(emContext, userManager);
+            _userRepository = new UserRepository(emContext, userManager, userRepoLogger);
 
             _bookingRepository = new BookingRepository(emContext);
             _lessonRepository = new LessonRepository(emContext);
