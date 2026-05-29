@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using RepositoryLibrary.Data.Context;
 using RepositoryLibrary.Features.Schools.Entities;
 using RepositoryLibrary.Features.Schools.Repositories;
@@ -20,13 +19,13 @@ namespace RepositoryLibrary.Services
         public ImageService(
             RideReadyDbContext emContext,
             UserManager<EMUser> userManager,
-            ILogger<ImageService>? logger = null,
-            ILogger<UserRepository>? userRepoLogger = null,
-            ILogger<SchoolRepository>? schoolRepoLogger = null)
+            ILogger<ImageService> logger,
+            ILogger<UserRepository> userRepoLogger,
+            ILogger<SchoolRepository> schoolRepoLogger)
         {
             _userRepository = new UserRepository(emContext, userManager, userRepoLogger);
             _schoolRepository = new SchoolRepository(emContext, schoolRepoLogger);
-            _logger = logger ?? NullLogger<ImageService>.Instance;
+            _logger = logger;
         }
 
         public async Task<Photo> AddUserPhotoAsync(string userId, string filepath)
