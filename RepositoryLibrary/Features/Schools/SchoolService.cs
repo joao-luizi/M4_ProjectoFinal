@@ -11,9 +11,9 @@ public class SchoolService : ISchoolService
     private readonly SchoolRepository _schoolRepo;
     private readonly ILogger<SchoolService> _logger;
 
-    public SchoolService(RideReadyDbContext context, ILogger<SchoolService> logger)
+    public SchoolService(RideReadyDbContext context, ILogger<SchoolService> logger, ILogger<SchoolRepository> repoLogger)
     {
-        _schoolRepo = new SchoolRepository(context);
+        _schoolRepo = new SchoolRepository(context, repoLogger);
         _logger = logger;
     }
 
