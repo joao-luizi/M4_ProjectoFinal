@@ -25,12 +25,14 @@
             <Authorized>
                 <RadzenPanelMenuItem Path="/users" Text="Users" Icon="account_box" Style="font-size: 1.2rem" Click="@(() => sidebarExpanded = !sidebarExpanded)" />
                 <RadzenPanelMenuItem Path="/horses" Text="Horses" Icon="motorcycle" Style="font-size: 1.2rem" Click="@(() => sidebarExpanded = !sidebarExpanded)" />
+            </Authorized>
+        </AuthorizeView>
+        <AuthorizeView Roles=@($"{StaticRole.Admin},{StaticRole.Student}")>
                 <RadzenPanelMenuItem Path="/payments"
                                      Text="Payments"
                                      Icon="payments"
                                      Style="font-size: 1.2rem"
                                      Click="@(() => sidebarExpanded = !sidebarExpanded)" />
-            </Authorized>
         </AuthorizeView>
     </RadzenPanelMenu>
 </RadzenSidebar>

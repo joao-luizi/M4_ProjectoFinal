@@ -1,5 +1,5 @@
 ﻿@page "/admin/payments/{studentId}"
-
+@page "/student/payments/{studentId}"
 @using Radzen
 @using Radzen.Blazor
 @using RepositoryLibrary.Features.Purchases
@@ -150,6 +150,7 @@
 
     private void ViewPurchase(int purchaseId)
     {
+        
         Navigation.NavigateTo($"/admin/purchases/{purchaseId}");
     }
 
