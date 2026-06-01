@@ -20,9 +20,11 @@
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject DialogService dialogService
 @inject IJSRuntime JSRuntime
+@inject IStudentExportService _studentExportService
 
 
 <h1>@SchoolName</h1>
+<RadzenButton Text="Exportar alunos para Excel" Icon="download" ButtonStyle="ButtonStyle.Success" Click="@(args => ExportToExcel())" class="rz-mb-3" />
 
 <RadzenDataGrid AllowFiltering="false" AllowColumnResize="true" AllowAlternatingRows="false" FilterMode="FilterMode.Advanced" AllowSorting="true" PageSize="10" AllowPaging="true" PagerHorizontalAlign="HorizontalAlign.Left" ShowPagingSummary="true"
 Data="@users" TItem="UpdateUserDto" ColumnWidth="300px" LogicalFilterOperator="LogicalFilterOperator.Or" 
@@ -99,6 +101,14 @@ SelectionMode="DataGridSelectionMode.Single">
         School school = await _schoolService.GetSchoolByIdAsync(schoolId);
         SchoolName = school.SchoolName;
         users = await _userService.GetAllUsers(schoolId);
+    }
+
+    private async Task ExportToExcel()
+    {
+        int schoolId = GetSchoolId();
+        byte[] fileBytes = await _studentExportService.ExportStudentsToExcelAsync(schoolId);
+        string base64 = Convert.ToBase64String(fileBytes);
+        await JSRuntime.InvokeVoidAsync("downloadFileFromBytes", "Alunos.xlsx", base64);
     }
 
     private string CellRender(bool isActive) 

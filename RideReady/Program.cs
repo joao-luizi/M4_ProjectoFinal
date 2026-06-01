@@ -81,6 +81,7 @@ builder.Services.AddScoped<IUserClaimsPrincipalFactory<EMUser>, CustomUserClaims
 builder.Services.AddSingleton<IEmailSender<EMUser>, IdentityNoOpEmailSender>();
 
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IStudentExportService, StudentExportService>();
 builder.Services.AddScoped<ILessonService, LessonService>();
 builder.Services.AddScoped<IBookingService, BookingService>();
 builder.Services.AddScoped<IHorseService, HorseService>();
