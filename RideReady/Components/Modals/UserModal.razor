@@ -3,10 +3,12 @@
 @using RepositoryLibrary.Features.Users.Entities
 @using RepositoryLibrary.Features.Users.Interfaces
 @using RepositoryLibrary.IServices
+@using RideReady.Services
 
 @inject Radzen.DialogService dialogService
 @inject IUserService _userService
 @inject UserManager<EMUser> _userManager
+@inject IToastService _toast
 
 <RadzenStack Gap="1rem" 
 Orientation="Orientation.Vertical" 
@@ -134,10 +136,18 @@ Style="height: 100%;">
 
     async Task OnSubmit(UpdateUserDto user)
     {
-        var isActive = user.IsActive;
-        user.Roles.Clear();
-        user.Roles.Add(UserRole);
-        var update = await _userService.EditUserAsync(user);
-        dialogService.Close(true);
+        try
+        {
+            var isActive = user.IsActive;
+            user.Roles.Clear();
+            user.Roles.Add(UserRole);
+            var update = await _userService.EditUserAsync(user);
+            _toast.ShowSuccess($"Utilizador {user.FirstName} {user.LastName} atualizado.");
+            dialogService.Close(true);
+        }
+        catch (Exception)
+        {
+            _toast.ShowError("Não foi possível atualizar o utilizador.");
+        }
     }
 }

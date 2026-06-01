@@ -13,6 +13,7 @@
 @using RepositoryLibrary.Features.Users.Interfaces
 @using RepositoryLibrary.IServices
 @using RepositoryLibrary.Services
+@using RideReady.Services
 @using RideReady.Components.Modals
 
 @inject IUserService _userService
@@ -21,6 +22,7 @@
 @inject DialogService dialogService
 @inject IJSRuntime JSRuntime
 @inject IStudentExportService _studentExportService
+@inject IToastService _toast
 
 
 <h1>@SchoolName</h1>
@@ -203,10 +205,17 @@ SelectionMode="DataGridSelectionMode.Single">
     }
     private async Task DeleteUser(UpdateUserDto user)
     {
-        await _userService.DeleteUserAsync(user.Id);
-
-        users = await _userService.GetAllUsers(GetSchoolId());
-        StateHasChanged();
+        try
+        {
+            await _userService.DeleteUserAsync(user.Id);
+            users = await _userService.GetAllUsers(GetSchoolId());
+            StateHasChanged();
+            _toast.ShowSuccess($"Utilizador {user.FirstName} {user.LastName} eliminado.");
+        }
+        catch (Exception)
+        {
+            _toast.ShowError("Não foi possível eliminar o utilizador.");
+        }
     }
     public class DialogSettings
     {
