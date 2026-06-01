@@ -27,6 +27,7 @@ using RepositoryLibrary.Services;
 using RideReady.Components;
 using RideReady.Components.Account;
 using RideReady.Data;
+using RideReady.Services;
 using Serilog;
 
 Log.Logger = new LoggerConfiguration()
@@ -91,6 +92,7 @@ builder.Services.AddScoped<ILessonTypeService, LessonTypeService>();
 builder.Services.AddScoped<IPurchaseService, PurchaseService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddRadzenComponents();
+builder.Services.AddScoped<IToastService, ToastService>();
 
 var app = builder.Build();
 
