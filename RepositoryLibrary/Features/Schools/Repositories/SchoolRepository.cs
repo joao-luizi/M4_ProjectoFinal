@@ -10,9 +10,9 @@ namespace RepositoryLibrary.Features.Schools.Repositories
 {
     public class SchoolRepository : ISchoolRepository
     {
-        private readonly EM_DbContext _emContext;
+        private readonly RideReadyDbContext _emContext;
 
-        public SchoolRepository(EM_DbContext context)
+        public SchoolRepository(RideReadyDbContext context)
         {
             _emContext = context;
         }

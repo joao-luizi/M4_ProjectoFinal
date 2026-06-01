@@ -9,7 +9,7 @@ namespace RepositoryLibrary.Features.Products;
 public class LessonTypeService : ILessonTypeService
 {
     private readonly ILessonTypeRepository _lessonTypeRepository;
-    public LessonTypeService(EM_DbContext context)
+    public LessonTypeService(RideReadyDbContext context)
     {
         _lessonTypeRepository = new LessonTypeRepository(context);
     }

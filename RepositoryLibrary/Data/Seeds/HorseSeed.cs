@@ -4,7 +4,6 @@ using Microsoft.Extensions.DependencyInjection;
 using RepositoryLibrary.Data.Context;
 using RepositoryLibrary.Features.Horses.Entities;
 using RepositoryLibrary.Features.Users.Entities;
-using SharedLibrary.Models.Static_Class;
 
 namespace RepositoryLibrary.Data.Seeds;
 
@@ -15,7 +14,7 @@ public static class HorseSeed
     {
         try
         {
-            var em_context = serviceProvider.GetRequiredService<EM_DbContext>();
+            var em_context = serviceProvider.GetRequiredService<RideReadyDbContext>();
             var userManager = serviceProvider.GetRequiredService<UserManager<EMUser>>();
 
             if (await em_context.Horses.AnyAsync())

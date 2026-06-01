@@ -7,8 +7,8 @@ namespace RepositoryLibrary.Features.Horses.Entities
 {
     public class HorseRepository : IHorseRepository
     {
-        private readonly EM_DbContext _emContext;
-        public HorseRepository(EM_DbContext context)
+        private readonly RideReadyDbContext _emContext;
+        public HorseRepository(RideReadyDbContext context)
         {
             _emContext = context;
         }

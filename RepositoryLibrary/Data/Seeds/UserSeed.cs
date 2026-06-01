@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Extensions.DependencyInjection;
-using SharedLibrary.Models.Static_Class;
 using RepositoryLibrary.Data.Context;
 using RepositoryLibrary.Features.Users.Entities;
 
@@ -101,7 +100,7 @@ namespace RepositoryLibrary.Data.Seeds
             try
             {
                 var userManager = serviceProvider.GetRequiredService<UserManager<EMUser>>();
-                var emContext = serviceProvider.GetRequiredService<EM_DbContext>();
+                var emContext = serviceProvider.GetRequiredService<RideReadyDbContext>();
 
                 if (userManager.Users.Any())
                 {

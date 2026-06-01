@@ -24,7 +24,7 @@ namespace RepositoryLibrary.Features.Users.Service
         private readonly SchoolUsersRepository _schoolUserRepository;
         private readonly UserPhotoRepository _userPhotoRepository;
         
-        public UserService(EM_DbContext emContext, UserManager<EMUser> userManager)
+        public UserService(RideReadyDbContext emContext, UserManager<EMUser> userManager)
         {
             _userRepository = new UserRepository(emContext, userManager);
 

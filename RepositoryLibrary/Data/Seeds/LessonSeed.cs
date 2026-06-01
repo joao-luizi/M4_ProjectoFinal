@@ -12,7 +12,7 @@ namespace RepositoryLibrary.Data.Seeds
         {
             try
             {
-                var em_context = serviceProvider.GetRequiredService<EM_DbContext>();
+                var em_context = serviceProvider.GetRequiredService<RideReadyDbContext>();
 
                 if (await em_context.Lessons.AnyAsync())
                     return;

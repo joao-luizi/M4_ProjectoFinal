@@ -3,9 +3,9 @@ using RepositoryLibrary.Features.Lessons;
 using RepositoryLibrary.Features.Lessons.Entities;
 using RepositoryLibrary.Features.Lessons.Interfaces;
 using RepositoryLibrary.Features.Lessons.Repositories;
+using RepositoryLibrary.Features.Users.Entities;
 using RepositoryLibrary.Features.Users.Interfaces;
 using RepositoryLibrary.IRepository;
-using SharedLibrary.Models.Static_Class;
 
 namespace RepositoryLibrary.Features.Lessons.Services
 {
@@ -14,7 +14,7 @@ namespace RepositoryLibrary.Features.Lessons.Services
         private readonly LessonRepository _lessonRepository;
         private readonly IUserService _userService;
 
-        public LessonService(EM_DbContext context, IUserService userService)
+        public LessonService(RideReadyDbContext context, IUserService userService)
         {
             _lessonRepository = new LessonRepository(context);
             _userService = userService;

@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using SharedLibrary.Models.Static_Class;
 using Microsoft.Extensions.DependencyInjection;
+using RepositoryLibrary.Features.Users.Entities;
 
 namespace RepositoryLibrary.Data.Seeds
 {

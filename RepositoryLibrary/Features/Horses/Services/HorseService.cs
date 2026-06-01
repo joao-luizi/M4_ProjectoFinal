@@ -17,7 +17,7 @@ public class HorseService : IHorseService
     private readonly IHorseRepository _horseRepo;
     private readonly ISchoolService _schoolService;
     private readonly ILessonService _lessonService;
-    public HorseService(EM_DbContext dbContext, ISchoolService schoolService, ILessonService lessonService)
+    public HorseService(RideReadyDbContext dbContext, ISchoolService schoolService, ILessonService lessonService)
     {
         _horseRepo = new HorseRepository(dbContext);
         _schoolService = schoolService;

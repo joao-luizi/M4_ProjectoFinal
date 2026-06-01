@@ -8,9 +8,9 @@ namespace RepositoryLibrary.Features.Products
 {
     public class LessonTypeRepository : ILessonTypeRepository
     {
-        private readonly EM_DbContext _emContext;
+        private readonly RideReadyDbContext _emContext;
 
-        public LessonTypeRepository(EM_DbContext emContext)
+        public LessonTypeRepository(RideReadyDbContext emContext)
         {
             _emContext = emContext;
         }

@@ -11,10 +11,10 @@ namespace RepositoryLibrary.Features.Users.Repository
 {
     public class UserRepository : IUserRepository
     {
-        private readonly EM_DbContext _emContext;
+        private readonly RideReadyDbContext _emContext;
         private readonly UserManager<EMUser> _userManager;
 
-        public UserRepository(EM_DbContext emContext, UserManager<EMUser> userManager)
+        public UserRepository(RideReadyDbContext emContext, UserManager<EMUser> userManager)
         {
             _emContext = emContext;
             _userManager = userManager;

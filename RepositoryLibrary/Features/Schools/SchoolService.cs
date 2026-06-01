@@ -9,7 +9,7 @@ public class SchoolService : ISchoolService
 {
     private readonly SchoolRepository _schoolRepo;
 
-    public SchoolService(EM_DbContext context)
+    public SchoolService(RideReadyDbContext context)
     {
         _schoolRepo = new SchoolRepository(context);
     }

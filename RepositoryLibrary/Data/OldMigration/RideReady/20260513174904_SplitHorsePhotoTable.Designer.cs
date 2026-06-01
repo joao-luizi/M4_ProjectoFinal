@@ -12,7 +12,7 @@ using RepositoryLibrary.Data.Context;
 
 namespace RepositoryLibrary.Migrations
 {
-    [DbContext(typeof(EM_DbContext))]
+    [DbContext(typeof(RideReadyDbContext))]
     [Migration("20260513174904_SplitHorsePhotoTable")]
     partial class SplitHorsePhotoTable
     {

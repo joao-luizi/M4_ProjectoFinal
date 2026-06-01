@@ -16,7 +16,7 @@ public static class SchoolSeed
     {
         try
         {
-            var em_context = serviceProvider.GetRequiredService<EM_DbContext>();
+            var em_context = serviceProvider.GetRequiredService<RideReadyDbContext>();
             if (!em_context.Schools.Any())
             {
                 List<School> schools =
@@ -61,7 +61,7 @@ public static class SchoolSeed
     {
         try
         {
-            var em_context = serviceProvider.GetRequiredService<EM_DbContext>();
+            var em_context = serviceProvider.GetRequiredService<RideReadyDbContext>();
             var userManager = serviceProvider.GetRequiredService<UserManager<EMUser>>();
 
             if (em_context.Schools.Any() && !em_context.SchoolUsers.Any())

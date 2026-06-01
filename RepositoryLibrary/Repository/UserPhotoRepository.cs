@@ -13,9 +13,9 @@ namespace RepositoryLibrary.Repository
 {
     public class SchoolUsersRepository : ISchoolUsersRepository
     {
-        private readonly EM_DbContext _emContext;
+        private readonly RideReadyDbContext _emContext;
 
-        public SchoolUsersRepository(EM_DbContext context)
+        public SchoolUsersRepository(RideReadyDbContext context)
         {
             _emContext = context;
         }

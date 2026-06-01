@@ -9,9 +9,9 @@ namespace RepositoryLibrary.Features.Products.Services
 
     public class ProductService : IProductService
     {
-        private readonly EM_DbContext _db;
+        private readonly RideReadyDbContext _db;
 
-        public ProductService(EM_DbContext db)
+        public ProductService(RideReadyDbContext db)
         {
             _db = db;
         }
