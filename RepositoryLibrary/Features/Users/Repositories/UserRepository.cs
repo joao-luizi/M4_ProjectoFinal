@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.IdentityModel.Tokens;
 using RepositoryLibrary.Data.Context;
 using RepositoryLibrary.Features.Users.DTOs;
@@ -17,11 +16,11 @@ namespace RepositoryLibrary.Features.Users.Repository
         private readonly UserManager<EMUser> _userManager;
         private readonly ILogger<UserRepository> _logger;
 
-        public UserRepository(RideReadyDbContext emContext, UserManager<EMUser> userManager, ILogger<UserRepository>? logger = null)
+        public UserRepository(RideReadyDbContext emContext, UserManager<EMUser> userManager, ILogger<UserRepository> logger)
         {
             _emContext = emContext;
             _userManager = userManager;
-            _logger = logger ?? NullLogger<UserRepository>.Instance;
+            _logger = logger;
         }
 
         public async Task<List<UpdateUserDto>> GetAllUsers(int schoolId)

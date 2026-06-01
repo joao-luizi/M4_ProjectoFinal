@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using RepositoryLibrary.Data.Context;
 using RepositoryLibrary.Features.Lessons.Entities;
 using RepositoryLibrary.Features.Lessons.Interfaces;
@@ -12,10 +11,10 @@ namespace RepositoryLibrary.Features.Lessons.Repositories
         private readonly RideReadyDbContext _emContext;
         private readonly ILogger<LessonRepository> _logger;
 
-        public LessonRepository(RideReadyDbContext context, ILogger<LessonRepository>? logger = null)
+        public LessonRepository(RideReadyDbContext context, ILogger<LessonRepository> logger)
         {
             _emContext = context;
-            _logger = logger ?? NullLogger<LessonRepository>.Instance;
+            _logger = logger;
         }
 
         public async Task<IEnumerable<Lesson>> GetAllLessonsAsync()

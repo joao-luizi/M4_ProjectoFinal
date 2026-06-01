@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.IdentityModel.Tokens;
 using RepositoryLibrary.Data.Context;
 using RepositoryLibrary.Features.Users;
@@ -20,10 +19,10 @@ namespace RepositoryLibrary.Features.Schools.Repositories
         private readonly RideReadyDbContext _emContext;
         private readonly ILogger<UserPhotoRepository> _logger;
 
-        public UserPhotoRepository(RideReadyDbContext context, ILogger<UserPhotoRepository>? logger = null)
+        public UserPhotoRepository(RideReadyDbContext context, ILogger<UserPhotoRepository> logger)
         {
             _emContext = context;
-            _logger = logger ?? NullLogger<UserPhotoRepository>.Instance;
+            _logger = logger;
         }
 
 

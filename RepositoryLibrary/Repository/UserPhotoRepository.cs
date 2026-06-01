@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.IdentityModel.Tokens;
 using RepositoryLibrary.Data.Context;
 using RepositoryLibrary.Features.Schools.Interfaces;
@@ -18,10 +17,10 @@ namespace RepositoryLibrary.Repository
         private readonly RideReadyDbContext _emContext;
         private readonly ILogger<SchoolUsersRepository> _logger;
 
-        public SchoolUsersRepository(RideReadyDbContext context, ILogger<SchoolUsersRepository>? logger = null)
+        public SchoolUsersRepository(RideReadyDbContext context, ILogger<SchoolUsersRepository> logger)
         {
             _emContext = context;
-            _logger = logger ?? NullLogger<SchoolUsersRepository>.Instance;
+            _logger = logger;
         }
 
         public async Task<List<SchoolUser>> GetAllUsers(int schoolId)

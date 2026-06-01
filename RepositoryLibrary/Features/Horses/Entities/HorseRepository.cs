@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using RepositoryLibrary.Data.Context;
 using RepositoryLibrary.Features.Horses.Interfaces;
 
@@ -11,10 +10,10 @@ namespace RepositoryLibrary.Features.Horses.Entities
         private readonly RideReadyDbContext _emContext;
         private readonly ILogger<HorseRepository> _logger;
 
-        public HorseRepository(RideReadyDbContext context, ILogger<HorseRepository>? logger = null)
+        public HorseRepository(RideReadyDbContext context, ILogger<HorseRepository> logger)
         {
             _emContext = context;
-            _logger = logger ?? NullLogger<HorseRepository>.Instance;
+            _logger = logger;
         }
 
         public async Task<Horse?> GetHorseByIdAsync(int horseId)

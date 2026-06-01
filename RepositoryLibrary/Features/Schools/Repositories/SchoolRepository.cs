@@ -1,5 +1,4 @@
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.EntityFrameworkCore;
 using RepositoryLibrary.Data.Context;
@@ -14,10 +13,10 @@ namespace RepositoryLibrary.Features.Schools.Repositories
         private readonly RideReadyDbContext _emContext;
         private readonly ILogger<SchoolRepository> _logger;
 
-        public SchoolRepository(RideReadyDbContext context, ILogger<SchoolRepository>? logger = null)
+        public SchoolRepository(RideReadyDbContext context, ILogger<SchoolRepository> logger)
         {
             _emContext = context;
-            _logger = logger ?? NullLogger<SchoolRepository>.Instance;
+            _logger = logger;
         }
 
         public async Task CreateUserSchoolAsync(string userId, int schoolId)
