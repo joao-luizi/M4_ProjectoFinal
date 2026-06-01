@@ -62,7 +62,7 @@ SelectionMode="DataGridSelectionMode.Single">
                 <RadzenText Text="@(user.IsActive ? "Active" : "Inactive")" Style="@CellRender(user.IsActive)" />
             </Template>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn Title="State" Width="160px">
+        <RadzenDataGridColumn Title="Ações" Width="160px">
             <Template Context="user">
                 <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@(args => OpenRender(user))" @onclick:stopPropagation="true" />
                 <RadzenButton Icon="delete"
