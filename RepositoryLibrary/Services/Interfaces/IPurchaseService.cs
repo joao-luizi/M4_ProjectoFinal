@@ -7,11 +7,11 @@ namespace RepositoryLibrary.Services
     public interface IPurchaseService
     {
 
-        
+        Task<Purchase?> GetByPurchaseId(int purchaseId);
         /// <summary>
         /// Creates a purchase intent without granting subscriptions or credits.
         /// </summary>
-        Task<Purchase> CreatePendingPurchase(string userId, IReadOnlyCollection<PurchaseRequestLine> lines);
+       Task<Purchase> CreatePendingPurchase(string userId, IReadOnlyCollection<PurchaseRequestLine> lines);
 
         /// <summary>
         /// Marks a pending purchase as paid and provisions the purchased entitlements.
