@@ -23,6 +23,17 @@ namespace RepositoryLibrary.Features.Purchases.Services
         /// <summary>
         /// Creates a pending purchase request and keeps entitlement provisioning blocked.
         /// </summary>
+        /// 
+        public async Task<Purchase?> GetByPurchaseId(int purchaseId)
+        {
+            return await _context.Purchases
+            .Include(x => x.Lines)
+            .ThenInclude(l => l.Product)
+            .ThenInclude(p => p.Entitlements)
+            .ThenInclude(e => e.LessonType)
+            .FirstOrDefaultAsync(x => x.Id == purchaseId);
+            
+        }
         public async Task<Purchase> CreatePendingPurchase(string userId, IReadOnlyCollection<PurchaseRequestLine> lines)
         {
             if (!lines.Any())

@@ -78,8 +78,14 @@
 
 @code {
 
+    private bool _originalPaymentReceived;
     [Parameter]
     public CreatePaymentDialogModel Model { get; set; } = null!;
+
+    protected override void OnInitialized()
+    {
+        _originalPaymentReceived = Model.PaymentReceived;
+    }
 
     private bool PaymentReceived
     {
@@ -99,12 +105,21 @@
     {
         DialogService.Close(new PaymentDialogResult
         {
-            PaymentReceived = Model.PaymentReceived
+            PaymentReceived = Model.PaymentReceived,
+
+            PaymentStatusChanged =
+                _originalPaymentReceived != Model.PaymentReceived
         });
     }
+
+ 
+
+
 
     public class PaymentDialogResult
     {
         public bool PaymentReceived { get; set; }
+
+        public bool PaymentStatusChanged { get; set; }
     }
 }

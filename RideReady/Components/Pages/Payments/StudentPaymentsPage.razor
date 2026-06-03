@@ -8,6 +8,7 @@
 @using RepositoryLibrary.Features.Users.Interfaces
 @rendermode InteractiveServer
 @inject NavigationManager Navigation
+@inject DialogService DialogService
 @inject IUserService UserService
 @inject IPurchaseService PurchaseService
 
@@ -146,11 +147,69 @@
         _totalSpent = _purchases.Sum(x => x.TotalAmount);
     }
 
-    private void ViewPurchase(int purchaseId)
+
+    private async Task ViewPurchase(int purchaseId)
     {
-        
-        Navigation.NavigateTo($"/admin/purchases/{purchaseId}");
+        var purchase = await PurchaseService.GetByPurchaseId(purchaseId);
+
+        if (purchase is null)
+            throw new Exception("Purchase not found.");
+
+        var model = new CreatePaymentDialogModel
+        {
+            
+            UserId = purchase.UserId,
+
+            Lines = purchase.Lines
+                .Select(l => new PurchaseRequestLine(
+                    new Product
+                    {
+                        Id = l.ProductId,
+                        Name = l.ProductName,
+                        Price = l.UnitPrice,
+                    },
+                    l.Kind,
+                    l.Quantity,
+                    l.SubscriptionPeriodStart,
+                    l.SubscriptionPeriodEnd
+                ))
+                .ToList(),
+
+            PaymentReceived =
+                purchase.Status != PurchaseStatus.PendingPayment
+        };
+
+        var result = await DialogService.OpenAsync<PaymentDialog>(
+            "Pagamento",
+            new Dictionary<string, object>
+            {
+            { "Model", model }
+            },
+            new DialogOptions
+            {
+                Width = "600px",
+                Height = "auto"
+            });
+
+        if (result is PaymentDialog.PaymentDialogResult r)
+        {
+            if (r.PaymentStatusChanged && r.PaymentReceived)
+            {
+                await PurchaseService.ConfirmPayment(purchaseId);
+
+                await LoadPurchases();
+
+                CalculateSummary();
+
+                StateHasChanged();
+            }
+        }
     }
+
+    
+
+
+
 
     private void CreatePurchase()
     {
