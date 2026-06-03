@@ -1,0 +1,1 @@
+Verificar CustomUserClaimsPrincipalFactory para integração de autorização na escola directamente nas claims

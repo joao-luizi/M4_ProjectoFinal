@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using RepositoryLibrary.Features.Users.Entities;
 using RideReady.Data;
@@ -5,7 +6,7 @@ using RideReady.Data;
 
 namespace RideReady.Components.Account
 {
-    internal sealed class IdentityUserAccessor(UserManager<EMUser> userManager, IdentityRedirectManager redirectManager)
+    public sealed class IdentityUserAccessor(UserManager<EMUser> userManager, IdentityRedirectManager redirectManager)
     {
         public async Task<EMUser> GetRequiredUserAsync(HttpContext context)
         {
