@@ -5,9 +5,10 @@ namespace RepositoryLibrary.Features.Users.Entities
 {
     public class SchoolUser
     {
-        [DatabaseGenerated(DatabaseGeneratedOption.None)]
         public string UserId { get; set; }
         public int SchoolId { get; set; }
+
+        public EMUser User { get; set; }
         public School School { get; set; }
     }
 }

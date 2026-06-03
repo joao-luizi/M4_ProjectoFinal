@@ -1,4 +1,6 @@
-﻿namespace RepositoryLibrary.Features.Users.DTOs
+﻿using RepositoryLibrary.Features.Users.Entities;
+
+namespace RepositoryLibrary.Features.Users.DTOs
 {
     public class UserDTO
     {
@@ -10,7 +12,7 @@
         public int CitizenNumber { get; set; }
         public long SocialHealthNumber { get; set; }
         public int TaxIdentificationNumber { get; set; }
-        public Photo? Photo { get; set; }
+        public UserPhoto? UserPhoto { get; set; }
         public bool IsActive { get; set; }
     }
 }

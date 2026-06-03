@@ -2,14 +2,14 @@ using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using RepositoryLibrary.Data.Context;
-using RepositoryLibrary.Features.Horses;
 using RepositoryLibrary.Features.Horses.Entities;
 using RepositoryLibrary.Features.Horses.Interfaces;
+using RepositoryLibrary.Features.Horses.Repositories;
+using RepositoryLibrary.Features.Images.Interfaces;
 using RepositoryLibrary.Features.Lessons.Interfaces;
 using RepositoryLibrary.Features.Schools.Interfaces;
 using RepositoryLibrary.Features.Users.DTOs;
-using RepositoryLibrary.Repository;
-using System.ComponentModel.DataAnnotations;
+
 
 namespace RepositoryLibrary.Features.Horses.Services;
 
@@ -18,13 +18,19 @@ public class HorseService : IHorseService
     private readonly IHorseRepository _horseRepo;
     private readonly ISchoolService _schoolService;
     private readonly ILessonService _lessonService;
+    private readonly IImageService _imageService;
     private readonly ILogger<HorseService> _logger;
 
-    public HorseService(RideReadyDbContext dbContext, ISchoolService schoolService, ILessonService lessonService, ILogger<HorseService> logger, ILogger<HorseRepository> repoLogger)
+    public HorseService(RideReadyDbContext dbContext,
+        ISchoolService schoolService,
+        ILessonService lessonService, 
+        IImageService imageService,
+        ILogger<HorseService> logger, ILogger<HorseRepository> repoLogger)
     {
         _horseRepo = new HorseRepository(dbContext, repoLogger);
         _schoolService = schoolService;
         _lessonService = lessonService;
+        _imageService = imageService; 
         _logger = logger;
     }
 
@@ -47,69 +53,40 @@ public class HorseService : IHorseService
 
     public async Task<Horse> AddHorse(Horse horse, IBrowserFile? file)
     {
-        _logger.LogInformation("A adicionar o cavalo '{HorseName}' (com foto: {HasPhoto}).", horse.Name, file != null);
+        _logger.LogInformation("A adicionar o cavalo '{HorseName}'.", horse.Name);
+
         try
         {
             await _horseRepo.CreateHorse(horse);
 
             if (file != null)
             {
-                var photo = await SavePhoto(file, horse.HorseId);
+                string path = await _imageService.ReplaceImageAsync(
+                    file,
+                    "horsephotos",
+                    horse.HorseId.ToString());
 
-                horse.HorseFoto = photo;
+                horse.HorseFoto = new HorseFoto
+                {
+                    HorseId = horse.HorseId,
+                    FotoPath = path
+                };
+
                 await _horseRepo.EditHorse(horse);
             }
 
-            _logger.LogInformation("Cavalo {HorseId} ('{HorseName}') adicionado com sucesso.", horse.HorseId, horse.Name);
+            _logger.LogInformation(
+                "Cavalo {HorseId} ('{HorseName}') adicionado com sucesso.",
+                horse.HorseId,
+                horse.Name);
+
             return horse;
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Erro ao adicionar o cavalo '{HorseName}'.", horse.Name);
-            throw new Exception(e.Message, e.InnerException);
+            _logger.LogError(e, "Erro ao adicionar cavalo {HorseName}.", horse.Name);
+            throw;
         }
-    }
-
-    private async Task<HorseFoto> SavePhoto(IBrowserFile file, int horseId)
-    {
-        _logger.LogInformation("A guardar foto '{FileName}' para o cavalo {HorseId}.", file.Name, horseId);
-
-        const long maxFileSize = 5 * 1024 * 1024;
-
-        string uploadsFolder = Path.Combine(
-            Directory.GetCurrentDirectory(),
-            "wwwroot",
-            "Images",
-            "horsephotos");
-
-        if (!Directory.Exists(uploadsFolder))
-            Directory.CreateDirectory(uploadsFolder);
-
-        string extension = Path.GetExtension(file.Name).ToLowerInvariant();
-
-        var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp" };
-        if (!allowedExtensions.Contains(extension))
-        {
-            _logger.LogWarning("Formato de imagem inválido '{Extension}' para o cavalo {HorseId}.", extension, horseId);
-            throw new InvalidOperationException("Invalid image format.");
-        }
-
-        // Nome fixo por cavalo (1 foto por cavalo)
-        string fileName = $"{horseId}{extension}";
-        string fullPath = Path.Combine(uploadsFolder, fileName);
-
-        await using (var fs = new FileStream(fullPath, FileMode.Create, FileAccess.Write))
-        {
-            await file.OpenReadStream(maxFileSize).CopyToAsync(fs);
-        }
-
-        _logger.LogInformation("Foto guardada em '{FotoPath}' para o cavalo {HorseId}.", $"/Images/horsephotos/{fileName}", horseId);
-
-        return new HorseFoto
-        {
-            HorseId = horseId,
-            FotoPath = $"/Images/horsephotos/{fileName}"
-        };
     }
 
     public async Task<List<Horse>> GetHorsesAsync()
@@ -238,33 +215,49 @@ public class HorseService : IHorseService
 
     public async Task<Horse> UpdateHorse(Horse horse, IBrowserFile? file)
     {
-        _logger.LogInformation("A atualizar o cavalo {HorseId} (com foto: {HasPhoto}).", horse.HorseId, file != null);
+        _logger.LogInformation("A atualizar o cavalo {HorseId}.", horse.HorseId);
+
         try
         {
             var updatedHorse = await _horseRepo.EditHorse(horse);
 
             if (file == null)
             {
-                _logger.LogInformation("Cavalo {HorseId} atualizado com sucesso (sem foto).", horse.HorseId);
+                _logger.LogInformation("Cavalo {HorseId} atualizado sem imagem.", horse.HorseId);
                 return updatedHorse;
             }
 
-            var photo = await SavePhoto(file, horse.HorseId);
+            string path = await _imageService.ReplaceImageAsync(
+                file,
+                "horsephotos",
+                horse.HorseId.ToString(),
+                updatedHorse.HorseFoto?.FotoPath);
 
-            // só atualizas isto se quiseres suportar mudança de extensão
             if (updatedHorse.HorseFoto == null)
-                updatedHorse.HorseFoto = photo;
+            {
+                updatedHorse.HorseFoto = new HorseFoto
+                {
+                    HorseId = horse.HorseId,
+                    FotoPath = path
+                };
+            }
             else
-                updatedHorse.HorseFoto.FotoPath = photo.FotoPath;
+            {
+                updatedHorse.HorseFoto.FotoPath = path;
+            }
 
             var result = await _horseRepo.EditHorse(updatedHorse);
-            _logger.LogInformation("Cavalo {HorseId} atualizado com sucesso (com nova foto).", horse.HorseId);
+
+            _logger.LogInformation(
+                "Cavalo {HorseId} atualizado com nova imagem.",
+                horse.HorseId);
+
             return result;
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Erro ao atualizar o cavalo {HorseId}.", horse.HorseId);
-            throw new Exception(e.Message, e);
+            _logger.LogError(e, "Erro ao atualizar cavalo {HorseId}.", horse.HorseId);
+            throw;
         }
     }
 

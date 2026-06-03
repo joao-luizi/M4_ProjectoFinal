@@ -1,10 +1,12 @@
-dotnet ef database drop --context ApplicationDbContext --project RideReady --startup-project RideReady --force
-
-dotnet ef database drop --context EM_DbContext --project RepositoryLibrary --startup-project RideReady --force
+dotnet ef database drop --context AppIdentityDbContext --project RepositoryLibrary --startup-project RideReady --force
 
 
-dotnet ef migrations add AddUserPayments --context EM_DbContext --project RepositoryLibrary --startup-project RideReady
 
-dotnet ef database update --context ApplicationDbContext --project RideReady --startup-project RideReady
+dotnet ef migrations add InitialIdentity --context AppIdentityDbContext --project RepositoryLibrary --startup-project RideReady --output-dir Data/Migrations/Identity
 
-dotnet ef database update --context EM_DbContext --project RepositoryLibrary --startup-project RideReady
+dotnet ef migrations add <nome-da-migração> --context RideReadyDbContext --project RepositoryLibrary --startup-project RideReady
+
+
+dotnet ef database update --context RideReadyDbContext --project RepositoryLibrary --startup-project RideReady
+
+dotnet ef database update --context AppIdentityDbContext --project RepositoryLibrary --startup-project RideReady  

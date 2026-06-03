@@ -1,4 +1,4 @@
-using RepositoryLibrary.IServices;
+
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -7,6 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 using RepositoryLibrary.Data.Context;
 using RepositoryLibrary.Features.Users.Entities;
 using RepositoryLibrary.Features.Schools.Entities;
+using RepositoryLibrary.Features.Images.Interfaces;
 
 namespace RepositoryLibrary.Data.Seeds;
 
@@ -48,7 +49,7 @@ public static class SchoolSeed
                 var imageService = serviceProvider.GetRequiredService<IImageService>();
                 var school = await em_context.Schools.FirstOrDefaultAsync(s => s.SchoolName == "Centro Equestre do Tejo") ?? throw new Exception("Couldn't find seeded school.");
                 string absolutePath = Path.Combine(_env.WebRootPath, "Logos", "logo1.jpg");
-                await imageService.AddSchoolLogoAsync(school.SchoolId, "logo", absolutePath);
+               // await imageService.AddSchoolLogoAsync(school.SchoolId, "logo", absolutePath);
             }
         }
         catch (Exception e)

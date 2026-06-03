@@ -11,7 +11,7 @@
         bool ImageAuthorized,
         DateTime RegisterDate,
         int TaxIdentificationNumber,
-        int SocialHealthName,
+        long SocialHealthNumber,
         int CitizenNumber,
         DateTime Birthdate,
         string Address,

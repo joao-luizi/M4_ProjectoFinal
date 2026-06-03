@@ -5,11 +5,13 @@ namespace RepositoryLibrary.Features.Schools.Interfaces
     public interface ISchoolRepository
     {
         public Task CreateUserSchoolAsync(string userId, int schoolId);
-        public Task<Logo> AddSchoolLogoAsync(int schoolId, string logoName, string filepath);
-        public Task<Logo> UpdateSchoolLogoAsync(Logo logoToChange, string filepath);
-        public Task<Logo> DeleteSchoolLogoAsync(int schoolId, string logoName);
-        public Task<Logo> GetSchoolLogoAsync(int schoolId, string logoName);
-        public Task<List<Logo>> GetAllSchoolLogosAsync(int schoolId);
+        //public Task<SchoolPhoto> AddSchoolLogoAsync(int schoolId, string logoName, string filepath);
+        //public Task<SchoolPhoto> UpdateSchoolLogoAsync(SchoolPhoto logoToChange, string filepath);
+        //public Task<SchoolPhoto> DeleteSchoolLogoAsync(int schoolId, string logoName);
+        //public Task<SchoolPhoto> GetSchoolLogoAsync(int schoolId, string logoName);
+        //public Task<List<SchoolPhoto>> GetAllSchoolLogosAsync(int schoolId);
+
+        public Task<School> CreateSchoolAsync(School school);
         public Task<School> GetSchoolAsync(int schoolId);
         public Task<School> EditSchoolAsync(School school);
         public Task<School> DeleteSchoolAsync(School school);

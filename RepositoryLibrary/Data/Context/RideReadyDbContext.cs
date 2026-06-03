@@ -4,7 +4,6 @@ using RepositoryLibrary.Features.Users.Entities;
 using RepositoryLibrary.Features.Purchases.Entities;
 using RepositoryLibrary.Features.Products.Entities;
 using RepositoryLibrary.Features.Entitlements.Entities;
-using RepositoryLibrary.Features.Users;
 using RepositoryLibrary.Features.Bookings.Entities;
 using RepositoryLibrary.Features.Horses.Entities;
 using RepositoryLibrary.Features.Schools.Entities;
@@ -21,20 +20,24 @@ namespace RepositoryLibrary.Data.Context
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<School>().HasIndex(em => em.Email).IsUnique();
-            modelBuilder.Entity<Logo>().HasKey(k => new { k.SchoolId, k.LogoName });
             modelBuilder.Entity<School>()
-                .HasOne(lg => lg.Logo)
+                .HasOne(lg => lg.SchoolPhoto)
                 .WithOne(scl => scl.School)
-                .HasForeignKey<Logo>(lg => lg.SchoolId)
+                .HasForeignKey<SchoolPhoto>(lg => lg.SchoolId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<SchoolUser>()
+                .HasKey(x => new { x.UserId, x.SchoolId });
+
+            modelBuilder.Entity<UserHorse>()
+                .HasKey(x => new { x.UserId, x.HorseId });
             modelBuilder.Entity<Booking>().HasKey(k => new { k.LessonId, k.UserId });
             modelBuilder.Entity<SchoolUser>().HasKey(k => new { k.SchoolId, k.UserId });
             modelBuilder.Entity<LessonProf>().HasKey(k => new { k.LessonId, k.UserId });
             modelBuilder.Entity<LessonHorse>().HasKey(k => new { k.LessonId, k.HorseId });
             modelBuilder.Entity<LessonHorse>().HasOne(lh => lh.Lesson).WithMany(h => h.LessonHorses).HasForeignKey(lh => lh.LessonId).OnDelete(DeleteBehavior.Restrict);
             modelBuilder.Entity<LessonHorse>().HasOne(lh => lh.Horse).WithMany(lh => lh.LessonHorses).HasForeignKey(lh => lh.HorseId).OnDelete(DeleteBehavior.Restrict);
-            modelBuilder.Entity<UserHorse>().HasKey(k => new { k.UserId, k.HorseId });
-            modelBuilder.Entity<Photo>().HasKey(k => k.UserId);
+
             modelBuilder.Entity<Horse>()
                 .HasOne(h => h.HorseFoto)
                 .WithOne(p => p.Horse)
@@ -43,7 +46,6 @@ namespace RepositoryLibrary.Data.Context
                 .OnDelete(DeleteBehavior.Cascade);
            
 
-            base.OnModelCreating(modelBuilder);
 
 
             modelBuilder.Entity<Product>()
@@ -139,16 +141,45 @@ namespace RepositoryLibrary.Data.Context
                 .HasForeignKey(pe => pe.LessonTypeId);
 
 
+            modelBuilder.Entity<HorseFoto>()
+            .HasKey(x => x.HorseId);
+
+            modelBuilder.Entity<HorseFoto>()
+                .HasOne(x => x.Horse)
+                .WithOne(h => h.HorseFoto)
+                .HasForeignKey<HorseFoto>(x => x.HorseId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<UserPhoto>()
+            .HasKey(x => x.UserId);
+
+            modelBuilder.Entity<UserPhoto>()
+                .HasOne(x => x.User)
+                .WithOne(u => u.UserPhoto)
+                .HasForeignKey<UserPhoto>(x => x.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<SchoolPhoto>()
+            .HasKey(x => x.SchoolId);
+
+            modelBuilder.Entity<SchoolPhoto>()
+                .HasOne(x => x.School)
+                .WithOne(s => s.SchoolPhoto)
+                .HasForeignKey<SchoolPhoto>(x => x.SchoolId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            base.OnModelCreating(modelBuilder);
         }
 
+        public DbSet<HorseFoto> HorseFotos { get; set; }
+        public DbSet<UserPhoto> UserPhotos { get; set; }
+        public DbSet<SchoolPhoto> SchoolPhotos { get; set; }
         public DbSet<Booking> Bookings { get; set; }
         public DbSet<Horse> Horses { get; set; }
         public DbSet<Lesson> Lessons { get; set; }
         public DbSet<LessonHorse> LessonHorses { get; set; }
         public DbSet<LessonProf> LessonProfs { get; set; }
         public DbSet<LessonType> LessonTypes { get; set; }
-        public DbSet<Logo> Logos { get; set; }
-        public DbSet<Photo> Photos { get; set; }
         public DbSet<School> Schools { get; set; }
         public DbSet<SchoolUser> SchoolUsers { get; set; }
         public DbSet<UserHorse> UserHorses { get; set; }

@@ -36,9 +36,11 @@
 	  <Folder Include="Features\Entitlements\Snapshots\" />
 	  <Folder Include="Features\Entitlements\Views\" />
 	  <Folder Include="Features\Horses\DTOs\" />
-	  <Folder Include="Features\Horses\Repositories\" />
 	  <Folder Include="Features\Horses\Snapshots\" />
 	  <Folder Include="Features\Horses\Views\" />
+	  <Folder Include="Features\Images\Entities\" />
+	  <Folder Include="Features\Images\DTOs\" />
+	  <Folder Include="Features\Images\Repositories\" />
 	  <Folder Include="Features\Lessons\DTOs\" />
 	  <Folder Include="Features\Lessons\Snapshots\" />
 	  <Folder Include="Features\Lessons\Views\" />
@@ -56,15 +58,10 @@
 	  <Folder Include="Features\Purchases\Repositories\" />
 	  <Folder Include="Features\Purchases\Views\" />
 	  <Folder Include="Features\Schools\DTOs\" />
-	  <Folder Include="Features\Schools\Services\" />
 	  <Folder Include="Features\Schools\Snapshots\" />
 	  <Folder Include="Features\Schools\Views\" />
 	  <Folder Include="Features\Users\Snapshots\" />
 	  <Folder Include="Features\Users\Views\" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <None Include="Repository\UserPhotoRepository.cs" />
 	</ItemGroup>
 
 </Project>

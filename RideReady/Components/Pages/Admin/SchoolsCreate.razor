@@ -1,0 +1,84 @@
+﻿@page "/admin/schools/create"
+@attribute [Authorize(Roles = "Administrator")]
+
+@using Microsoft.AspNetCore.Authorization
+@using RepositoryLibrary.Features.Images.Interfaces
+@using RepositoryLibrary.Features.Schools.Entities
+@using RepositoryLibrary.Features.Schools.Enums
+@using RepositoryLibrary.Features.Schools.Interfaces
+@rendermode InteractiveServer
+@inject ISchoolService SchoolService
+@inject NavigationManager Nav
+@inject NotificationService NotificationService
+@inject IImageService ImageService
+
+<SchoolsBase School="@school"
+             Mode="SchoolFormMode.Create"
+             OnSubmit="@CreateSchool"
+             OnCancel="@(() => Nav.NavigateTo("/admin/schools"))"
+             OnFileSelected="@OnFileSelected" />
+
+
+@code {
+    private School school = new();
+
+    private IBrowserFile? selectedFile;
+
+    private void OnFileSelected(IBrowserFile? file)
+    {
+        selectedFile = file;
+    }
+
+    private async Task CreateSchool()
+    {
+        try
+        {
+            // 1. Criar escola primeiro
+            var createdSchool = await SchoolService.CreateSchoolAsync(school);
+
+            // 2. Upload imagem com ID real
+            if (selectedFile != null)
+            {
+                var path = await ImageService.SaveImageAsync(
+                    selectedFile,
+                    "SchoolLogo",
+                    createdSchool.SchoolId.ToString()
+                );
+
+                // 3. Atualizar escola com foto
+                createdSchool.SchoolPhoto = new SchoolPhoto
+                {
+                    SchoolId = createdSchool.SchoolId,
+                    FotoPath = path
+                };
+
+                // 4. Persistir atualização
+                await SchoolService.EditSchoolByIdAsync(createdSchool);
+            }
+
+            NotificationService.Notify(
+                NotificationSeverity.Success,
+                "Success",
+                "School created"
+            );
+
+            Nav.NavigateTo("/admin/schools");
+        }
+        catch (Exception ex)
+        {
+            NotificationService.Notify(
+                NotificationSeverity.Error,
+                "Error",
+                ex.Message
+            );
+        }
+    }
+
+    private void Cancel()
+    {
+        Nav.NavigateTo("/admin/schools");
+    }
+
+    
+
+}

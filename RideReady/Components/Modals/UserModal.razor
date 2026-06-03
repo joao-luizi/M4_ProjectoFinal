@@ -2,7 +2,7 @@
 @using RepositoryLibrary.Features.Users.DTOs
 @using RepositoryLibrary.Features.Users.Entities
 @using RepositoryLibrary.Features.Users.Interfaces
-@using RepositoryLibrary.IServices
+
 
 @inject Radzen.DialogService dialogService
 @inject IUserService _userService
@@ -17,7 +17,7 @@ Style="height: 100%;">
             <RadzenColumn Size="12" SizeMD="6" class="rz-p-4 rz-border-radius-1" Style="border: var(--rz-grid-cell-border)">
                 <RadzenText TextStyle="TextStyle.Subtitle1">Contact</RadzenText>
                 <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center">
-                    <RadzenImage Path="@(User.Photo is not null ? Convert.ToBase64String(User.Photo.UserPhoto) : "User_default_image/user.png")" Style="width: 80px; height: 80px; border-radius: 50%" AlternateText="@($"{User.FirstName} {User.LastName}")" />
+                    <RadzenImage Path="@(User.UserPhoto is not null ? User.UserPhoto.FotoPath : "User_default_image/user.png")" Style="width: 80px; height: 80px; border-radius: 50%" AlternateText="@($"{User.FirstName} {User.LastName}")" />
                     <RadzenStack Gap="0" class="rz-text-truncate">
                         <RadzenText 
                         TextStyle="TextStyle.Overline" 

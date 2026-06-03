@@ -1,12 +1,10 @@
 ﻿using Microsoft.Extensions.Logging;
 using RepositoryLibrary.Data.Context;
-using RepositoryLibrary.Features.Lessons;
 using RepositoryLibrary.Features.Lessons.Entities;
 using RepositoryLibrary.Features.Lessons.Interfaces;
 using RepositoryLibrary.Features.Lessons.Repositories;
 using RepositoryLibrary.Features.Users.Entities;
 using RepositoryLibrary.Features.Users.Interfaces;
-using RepositoryLibrary.IRepository;
 
 namespace RepositoryLibrary.Features.Lessons.Services
 {

@@ -1,11 +1,12 @@
+using DocumentFormat.OpenXml.InkML;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.EntityFrameworkCore;
 using RepositoryLibrary.Data.Context;
-using RepositoryLibrary.Features.Users.Entities;
-using RepositoryLibrary.Features.Schools.Interfaces;
 using RepositoryLibrary.Features.Schools.Entities;
+using RepositoryLibrary.Features.Schools.Interfaces;
+using RepositoryLibrary.Features.Users.Entities;
 
 namespace RepositoryLibrary.Features.Schools.Repositories
 {
@@ -20,6 +21,16 @@ namespace RepositoryLibrary.Features.Schools.Repositories
             _logger = logger ?? NullLogger<SchoolRepository>.Instance;
         }
 
+        public async Task<School> CreateSchoolAsync(School school)
+        {
+            if (school == null)
+                throw new ArgumentNullException(nameof(school));
+
+            await _emContext.Schools.AddAsync(school);
+            await _emContext.SaveChangesAsync();
+
+            return school;
+        }
         public async Task CreateUserSchoolAsync(string userId, int schoolId)
         {
             _logger.LogInformation("BD: a associar utilizador {UserId} à escola {SchoolId}.", userId, schoolId);
@@ -59,48 +70,7 @@ namespace RepositoryLibrary.Features.Schools.Repositories
             }
         }
 
-        public async Task<Logo> AddSchoolLogoAsync(int schoolId, string logoName, string filepath)
-        {
-            _logger.LogInformation("BD: a adicionar logótipo '{LogoName}' à escola {SchoolId}.", logoName, schoolId);
-            try
-            {
-                Logo? logo = await _emContext.Logos.FirstOrDefaultAsync(lg => lg.SchoolId == schoolId && lg.LogoName == logoName);
-                School? school = await _emContext.Schools.FirstOrDefaultAsync(scl => scl.SchoolId == schoolId);
-
-                if (logo is not null)
-                {
-                    _logger.LogWarning("Logótipo '{LogoName}' já existe para a escola {SchoolId}.", logoName, schoolId);
-                    throw new Exception($"The logo with the name {logoName} already exists.");
-                }
-
-                if (school is null)
-                {
-                    _logger.LogWarning("Não foi possível adicionar logótipo: escola {SchoolId} não existe.", schoolId);
-                    throw new Exception($"The school with the Id = {schoolId} does not exist.");
-                }
-
-                byte[] logoImage = await File.ReadAllBytesAsync(filepath);
-
-                Logo newLogo = new Logo
-                {
-                    SchoolId = schoolId,
-                    LogoName = logoName,
-                    Image = logoImage
-                };
-
-                await _emContext.Logos.AddAsync(newLogo);
-                _emContext.SaveChanges();
-
-                _logger.LogInformation("BD: logótipo '{LogoName}' adicionado à escola {SchoolId} ({Size} bytes).", logoName, schoolId, logoImage.Length);
-                return newLogo;
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e, "Erro ao adicionar logótipo '{LogoName}' à escola {SchoolId}.", logoName, schoolId);
-                throw new Exception(e.Message, e.InnerException);
-            }
-        }
-
+       
         public async Task<School> DeleteSchoolAsync(School school)
         {
             _logger.LogInformation("BD: a eliminar escola {SchoolId}.", school.SchoolId);
@@ -119,32 +89,32 @@ namespace RepositoryLibrary.Features.Schools.Repositories
         }
 
 
-        public async Task<Logo> UpdateSchoolLogoAsync(Logo logoToChange, string filepath)
+        public async Task<SchoolPhoto> UpdateSchoolLogoAsync(SchoolPhoto logoToChange, string filepath)
         {
-            _logger.LogInformation("BD: a atualizar logótipo '{LogoName}' da escola {SchoolId}.", logoToChange.LogoName, logoToChange.SchoolId);
+            _logger.LogInformation("BD: a atualizar da escola {SchoolId}.", logoToChange.SchoolId);
             try
             {
-                Logo? logo = await _emContext.Logos.FirstOrDefaultAsync(lg => lg.SchoolId == logoToChange.SchoolId && lg.LogoName == logoToChange.LogoName);
+                SchoolPhoto? logo = await _emContext.SchoolPhotos.FirstOrDefaultAsync(lg => lg.SchoolId == logoToChange.SchoolId);
 
                 if (logo is null)
                 {
-                    _logger.LogWarning("Logótipo '{LogoName}' não encontrado para a escola {SchoolId}.", logoToChange.LogoName, logoToChange.SchoolId);
-                    throw new Exception($"The logo with the name {logoToChange.LogoName} and Id = {logoToChange.SchoolId} does not exist.");
+                    _logger.LogWarning("Logótipo não encontrado para a escola {SchoolId}.", logoToChange.SchoolId);
+                    throw new Exception($"The logo with  Id = {logoToChange.SchoolId} does not exist.");
                 }
 
                 byte[] logoImage = await File.ReadAllBytesAsync(filepath);
 
-                logoToChange.Image = logoImage;
+                
 
-                _emContext.Logos.Update(logoToChange);
+                _emContext.SchoolPhotos.Update(logoToChange);
                 _emContext.SaveChanges();
 
-                _logger.LogInformation("BD: logótipo '{LogoName}' da escola {SchoolId} atualizado ({Size} bytes).", logoToChange.LogoName, logoToChange.SchoolId, logoImage.Length);
+                _logger.LogInformation("BD: logótipo da escola {SchoolId} atualizado ({Size} bytes).", logoToChange.SchoolId);
                 return logoToChange;
             }
             catch (Exception e)
             {
-                _logger.LogError(e, "Erro ao atualizar logótipo '{LogoName}' da escola {SchoolId}.", logoToChange.LogoName, logoToChange.SchoolId);
+                _logger.LogError(e, "Erro ao atualizar logótipo da escola {SchoolId}.", logoToChange.SchoolId);
                 throw new Exception(e.Message, e.InnerException);
             }
         }
@@ -167,12 +137,12 @@ namespace RepositoryLibrary.Features.Schools.Repositories
         }
 
 
-        public async Task<Logo> DeleteSchoolLogoAsync(int schoolId, string logoName)
+        public async Task<SchoolPhoto> DeleteSchoolLogoAsync(int schoolId, string logoName)
         {
             _logger.LogInformation("BD: a eliminar logótipo '{LogoName}' da escola {SchoolId}.", logoName, schoolId);
             try
             {
-                Logo? logo = await _emContext.Logos.FirstOrDefaultAsync(lg => lg.SchoolId == schoolId && lg.LogoName == logoName);
+                SchoolPhoto? logo = await _emContext.SchoolPhotos.FirstOrDefaultAsync(lg => lg.SchoolId == schoolId);
 
                 if (logo is null)
                 {
@@ -180,7 +150,7 @@ namespace RepositoryLibrary.Features.Schools.Repositories
                     throw new Exception($"The logo with the name {logoName} and Id = {schoolId} does not exist.");
                 }
 
-                _emContext.Logos.Remove(logo);
+                _emContext.SchoolPhotos.Remove(logo);
                 _emContext.SaveChanges();
 
                 _logger.LogInformation("BD: logótipo '{LogoName}' eliminado da escola {SchoolId}.", logoName, schoolId);
@@ -198,7 +168,8 @@ namespace RepositoryLibrary.Features.Schools.Repositories
             _logger.LogInformation("BD: a consultar escola {SchoolId}.", schoolId);
             try
             {
-                return await _emContext.Schools.FirstOrDefaultAsync(s => s.SchoolId == schoolId) ?? throw new Exception("School not found.");
+                return await _emContext.Schools.Include(x => x.SchoolPhoto)
+                    .FirstOrDefaultAsync(s => s.SchoolId == schoolId) ?? throw new Exception("School not found.");
             }
             catch (Exception e)
             {
@@ -207,12 +178,12 @@ namespace RepositoryLibrary.Features.Schools.Repositories
             }
         }
 
-        public async Task<Logo> GetSchoolLogoAsync(int schoolId, string logoName)
+        public async Task<SchoolPhoto> GetSchoolLogoAsync(int schoolId, string logoName)
         {
             _logger.LogInformation("BD: a consultar logótipo '{LogoName}' da escola {SchoolId}.", logoName, schoolId);
             try
             {
-                Logo? logo = await _emContext.Logos.FirstOrDefaultAsync(lg => lg.SchoolId == schoolId && lg.LogoName == logoName);
+                SchoolPhoto? logo = await _emContext.SchoolPhotos.FirstOrDefaultAsync(lg => lg.SchoolId == schoolId);
 
                 if (logo is null)
                 {
@@ -245,12 +216,12 @@ namespace RepositoryLibrary.Features.Schools.Repositories
             }
         }
 
-        public async Task<List<Logo>> GetAllSchoolLogosAsync(int schoolId)
+        public async Task<List<SchoolPhoto>> GetAllSchoolLogosAsync(int schoolId)
         {
             _logger.LogInformation("BD: a consultar logótipos da escola {SchoolId}.", schoolId);
             try
             {
-                List<Logo> logos = await _emContext.Logos.Where(scl => scl.SchoolId == schoolId).ToListAsync();
+                List<SchoolPhoto> logos = await _emContext.SchoolPhotos.Where(scl => scl.SchoolId == schoolId).ToListAsync();
 
                 if (logos.IsNullOrEmpty())
                 {
@@ -301,6 +272,9 @@ namespace RepositoryLibrary.Features.Schools.Repositories
             }
         }
 
-
+        internal async Task<SchoolPhoto> AddSchoolLogoAsync(int schoolId, string logoName, string filepath)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

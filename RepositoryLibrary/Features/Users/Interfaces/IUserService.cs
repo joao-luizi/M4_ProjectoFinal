@@ -4,18 +4,28 @@ namespace RepositoryLibrary.Features.Users.Interfaces
 {
     public interface IUserService
     {
-        public Task<List<UpdateUserDto>> GetAllUsers(int schoolId);
-        public Task<UserDTO> GetUserById(string id);
-        public Task<List<UpdateUserDto>> GetUsersByRole(string role);
+        Task<List<UserListDto>> GetAllUsersAsync(int schoolId);
 
-        Task<List<UpdateUserDto>> GetUsersBySchoolAndRole(int schoolId, string role);
+        Task<List<UserListDto>> GetUsersByRoleAsync(string role);
 
-        public Task DeleteUserAsync(string id);
+        Task<List<UserListDto>> GetUsersBySchoolAndRoleAsync(int schoolId, string role);
 
-        public Task<UpdateUserDto> GetEditUserAsync(string id);
+        Task<UserDetailsDto?> GetUserByIdAsync(string userId);
 
-        public Task<UpdateUserDto> EditUserAsync(UpdateUserDto user);
+        Task<UpdateUserDto?> GetEditUserAsync(string userId);
 
-        public Task<IList<string>> GetUserRole(string userId);
+        Task UpdateUserAsync(UpdateUserDto user);
+
+        Task DeactivateUserAsync(string userId);
+
+        Task<IList<string>> GetUserRolesAsync(string userId);
+
+        Task SetUserRolesAsync(string userId, IList<string> roles);
+
+        Task<UserPhotoDto?> GetPhotoAsync(string userId);
+
+        Task SetPhotoAsync(string userId, string photoPath);
+
+        Task DeletePhotoAsync(string userId);
     }
 }

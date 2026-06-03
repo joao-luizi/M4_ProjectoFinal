@@ -1,4 +1,4 @@
-﻿using System.Data;
+﻿using DocumentFormat.OpenXml.InkML;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -8,6 +8,7 @@ using RepositoryLibrary.Data.Context;
 using RepositoryLibrary.Features.Users.DTOs;
 using RepositoryLibrary.Features.Users.Entities;
 using RepositoryLibrary.Features.Users.Interfaces;
+using System.Data;
 
 namespace RepositoryLibrary.Features.Users.Repository
 {
@@ -46,7 +47,7 @@ namespace RepositoryLibrary.Features.Users.Repository
                 foreach (EMUser user in eMUsers)
                 {
                     var role = await _userManager.GetRolesAsync(user);
-                    Photo? photo = await _emContext.Photos.FirstOrDefaultAsync(pht => pht.UserId == user.Id);
+                        UserPhoto? photo = await _emContext.UserPhotos.FirstOrDefaultAsync(pht => pht.UserId == user.Id);
 
                     UpdateUserDto userToAdd = new UpdateUserDto
                     {
@@ -63,7 +64,7 @@ namespace RepositoryLibrary.Features.Users.Repository
                         SocialHealthNumber = user.SocialHealthNumber,
                         CitizenNumber = user.CitizenNumber,
                         Roles = role,
-                        Photo = photo
+                        UserPhoto = photo
                     };
 
                     listOfUsers.Add(userToAdd);
@@ -93,7 +94,7 @@ namespace RepositoryLibrary.Features.Users.Repository
                     throw new Exception("The specified user does not exist");
                 }
 
-                var photo = await _emContext.Photos.FirstOrDefaultAsync(pht => pht.UserId == user.Id);
+                var photo = await _emContext.UserPhotos.FirstOrDefaultAsync(pht => pht.UserId == user.Id);
 
                 UserDTO newUser = new UserDTO
                 {
@@ -109,7 +110,7 @@ namespace RepositoryLibrary.Features.Users.Repository
 
                 if (photo is not null)
                 {
-                    newUser.Photo = photo;
+                    newUser.UserPhoto = photo;
                 }
 
                 _logger.LogInformation("BD: utilizador {UserId} obtido com sucesso.", id);
@@ -139,7 +140,7 @@ namespace RepositoryLibrary.Features.Users.Repository
                 foreach (EMUser user in usersList)
                 {
                     var userRole = await _userManager.GetRolesAsync(user);
-                    var userPhoto = await _emContext.Photos.FirstOrDefaultAsync(pht => pht.UserId == user.Id);
+                    var userPhoto = await _emContext.UserPhotos.FirstOrDefaultAsync(pht => pht.UserId == user.Id);
 
                     UpdateUserDto newUser = new UpdateUserDto
                     {
@@ -156,7 +157,7 @@ namespace RepositoryLibrary.Features.Users.Repository
                         SocialHealthNumber = user.SocialHealthNumber,
                         CitizenNumber = user.CitizenNumber,
                         Roles = userRole,
-                        Photo = userPhoto
+                        UserPhoto = userPhoto
                     };
 
                     listToReturn.Add(newUser);
@@ -214,7 +215,7 @@ namespace RepositoryLibrary.Features.Users.Repository
                 // to change the role of a user, i need to remove the one that he has first and than add a new role.
                 var roles = await _userManager.GetRolesAsync(user);
 
-                var photo = await _emContext.Photos.FirstOrDefaultAsync(pht => pht.UserId == user.Id);
+                var photo = await _emContext.UserPhotos.FirstOrDefaultAsync(pht => pht.UserId == user.Id);
 
                 var userToUpdate = new UpdateUserDto
                 {
@@ -231,7 +232,7 @@ namespace RepositoryLibrary.Features.Users.Repository
                     SocialHealthNumber = user.SocialHealthNumber,
                     CitizenNumber = user.CitizenNumber,
                     Roles = roles,
-                    Photo = photo
+                    UserPhoto = photo
                 };
 
                 _logger.LogInformation("BD: utilizador {UserId} obtido para edição.", id);
@@ -262,7 +263,7 @@ namespace RepositoryLibrary.Features.Users.Repository
 
                 var newRole = await ChangeUserRole(user, roles.FirstOrDefault(), user.Roles.First());
 
-                var photoToUpdate = await _emContext.Photos.FirstOrDefaultAsync(pht => pht.UserId == user.Id);
+                var photoToUpdate = await _emContext.UserPhotos.FirstOrDefaultAsync(pht => pht.UserId == user.Id);
 
                 userToUpdate.Email = user.Email;
                 userToUpdate.UserName = user.Name;
@@ -275,7 +276,7 @@ namespace RepositoryLibrary.Features.Users.Repository
                 userToUpdate.TaxIdentificationNumber = user.TaxIdentificationNumber;
                 userToUpdate.SocialHealthNumber = user.SocialHealthNumber;
                 userToUpdate.CitizenNumber = user.CitizenNumber;
-                photoToUpdate = user.Photo;
+                photoToUpdate = user.UserPhoto;
 
 
                 var updatedUser = new UpdateUserDto
@@ -293,7 +294,7 @@ namespace RepositoryLibrary.Features.Users.Repository
                     SocialHealthNumber = userToUpdate.SocialHealthNumber,
                     CitizenNumber = userToUpdate.CitizenNumber,
                     Roles = newRole,
-                    Photo = photoToUpdate
+                    UserPhoto = photoToUpdate
                 };
 
                 var result = await _userManager.UpdateAsync(userToUpdate);
@@ -370,7 +371,7 @@ namespace RepositoryLibrary.Features.Users.Repository
             }
         }
 
-        public async Task<Photo> AddUserPhotoAsync(string userId, string filepath)
+        public async Task<UserPhoto> AddUserPhotoAsync(string userId, string filepath)
         {
             _logger.LogInformation("BD: a adicionar foto ao utilizador {UserId} a partir de '{FilePath}'.", userId, filepath);
             try
@@ -391,13 +392,12 @@ namespace RepositoryLibrary.Features.Users.Repository
                     throw new Exception($"There was an error trying to convert the image with the filepath: {filepath}");
                 }
 
-                Photo photo = new Photo
+                UserPhoto photo = new UserPhoto
                 {
                     UserId = user.Id,
-                    UserPhoto = image
                 };
 
-                await _emContext.Photos.AddAsync(photo);
+                await _emContext.UserPhotos.AddAsync(photo);
                 _emContext.SaveChanges();
 
                 _logger.LogInformation("BD: foto adicionada ao utilizador {UserId} ({Size} bytes).", userId, image.Length);
@@ -410,12 +410,12 @@ namespace RepositoryLibrary.Features.Users.Repository
             }
         }
 
-        public async Task<Photo> UpdateUserPhotoAsync(string userId, string filepath)
+        public async Task<UserPhoto> UpdateUserPhotoAsync(string userId, string filepath)
         {
             _logger.LogInformation("BD: a atualizar foto do utilizador {UserId} a partir de '{FilePath}'.", userId, filepath);
             try
             {
-                var userPhoto = await _emContext.Photos.FirstOrDefaultAsync(usr => usr.UserId == userId);
+                var userPhoto = await _emContext.UserPhotos.FirstOrDefaultAsync(usr => usr.UserId == userId);
 
                 if (userPhoto is null)
                 {
@@ -431,9 +431,9 @@ namespace RepositoryLibrary.Features.Users.Repository
                     throw new Exception($"There was an error trying to convert the image with the filepath: {filepath}");
                 }
 
-                userPhoto.UserPhoto = image;
+              
 
-                await _emContext.Photos.AddAsync(userPhoto);
+                await _emContext.UserPhotos.AddAsync(userPhoto);
                 _emContext.SaveChanges();
 
                 _logger.LogInformation("BD: foto do utilizador {UserId} atualizada ({Size} bytes).", userId, image.Length);
@@ -446,12 +446,12 @@ namespace RepositoryLibrary.Features.Users.Repository
             }
         }
 
-        public async Task<Photo> DeleteUserPhotoAsync(string userId)
+        public async Task<UserPhoto> DeleteUserPhotoAsync(string userId)
         {
             _logger.LogInformation("BD: a eliminar foto do utilizador {UserId}.", userId);
             try
             {
-                var userPhoto = await _emContext.Photos.FirstOrDefaultAsync(usr => usr.UserId == userId);
+                var userPhoto = await _emContext.UserPhotos.FirstOrDefaultAsync(usr => usr.UserId == userId);
 
                 if (userPhoto is null)
                 {
@@ -459,7 +459,7 @@ namespace RepositoryLibrary.Features.Users.Repository
                     throw new Exception($"The user with Id = {userId} does not have a photo yet.");
                 }
 
-                _emContext.Photos.Remove(userPhoto);
+                _emContext.UserPhotos.Remove(userPhoto);
                 _emContext.SaveChanges();
 
                 _logger.LogInformation("BD: foto do utilizador {UserId} eliminada.", userId);
@@ -472,12 +472,12 @@ namespace RepositoryLibrary.Features.Users.Repository
             }
         }
 
-        public async Task<Photo> GetUserPhotoAsync(string userId)
+        public async Task<UserPhoto> GetUserPhotoAsync(string userId)
         {
             _logger.LogInformation("BD: a obter foto do utilizador {UserId}.", userId);
             try
             {
-                var userPhoto = await _emContext.Photos.FirstOrDefaultAsync(usr => usr.UserId == userId);
+                var userPhoto = await _emContext.UserPhotos.FirstOrDefaultAsync(usr => usr.UserId == userId);
 
                 if (userPhoto is null)
                 {
@@ -493,6 +493,36 @@ namespace RepositoryLibrary.Features.Users.Repository
                 _logger.LogError(e, "Erro ao obter foto do utilizador {UserId}.", userId);
                 throw new Exception(e.Message, e.InnerException);
             }
+        }
+
+        public async Task<List<UpdateUserDto>> GetUsersBySchoolAndRole(int schoolId, string role)
+        {
+            var schoolUserIds = await _emContext.Set<SchoolUser>()
+                .Where(su => su.SchoolId == schoolId)
+                .Select(su => su.UserId)
+                .ToListAsync();
+
+            var usersInRole = new List<EMUser>();
+
+            foreach (var userId in schoolUserIds)
+            {
+                var user = await _userManager.FindByIdAsync(userId);
+                if (user == null) continue;
+
+                var roles = await _userManager.GetRolesAsync(user);
+
+                if (roles.Contains(role))
+                    usersInRole.Add(user);
+            }
+
+            return usersInRole.Select(u => new UpdateUserDto
+            {
+                Id = u.Id,
+                FirstName = u.FirstName,
+                LastName = u.LastName,
+                Email = u.Email,
+                IsActive = u.IsActive
+            }).ToList();
         }
     }
 }

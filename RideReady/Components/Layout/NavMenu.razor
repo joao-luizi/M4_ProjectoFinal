@@ -14,16 +14,16 @@
     </RadzenStack>
     <RadzenPanelMenu>
         <RadzenPanelMenuItem Path="/dashboard" Text="Home" Icon="home" Style="font-size: 1.2rem" Click="@(() => sidebarExpanded = !sidebarExpanded)" />
-        <AuthorizeView>
-            <Authorized>
-                @* <RadzenPanelMenuItem Path="/dashboard" Text="Dashboard" Icon="account_box" Style="font-size: 1.2rem" Click="@(() => sidebarExpanded = !sidebarExpanded)" /> *@
-                <RadzenPanelMenuItem Path="/lessons" Text="Lessons" Icon="event" Style="font-size: 1.2rem" Click="@(() => sidebarExpanded = !sidebarExpanded)" />
-            </Authorized>
-        </AuthorizeView>
         <AuthorizeView Roles="@StaticRole.Admin">
             <Authorized>
+                <RadzenPanelMenuItem Path="/admin/schools" Text="Schools" Icon="account_box" Style="font-size: 1.2rem" Click="@(() => sidebarExpanded = !sidebarExpanded)" />
                 <RadzenPanelMenuItem Path="/users" Text="Users" Icon="account_box" Style="font-size: 1.2rem" Click="@(() => sidebarExpanded = !sidebarExpanded)" />
                 <RadzenPanelMenuItem Path="/horses" Text="Horses" Icon="motorcycle" Style="font-size: 1.2rem" Click="@(() => sidebarExpanded = !sidebarExpanded)" />
+            </Authorized>
+        </AuthorizeView>
+        <AuthorizeView>
+            <Authorized>
+                <RadzenPanelMenuItem Path="/lessons" Text="Lessons" Icon="event" Style="font-size: 1.2rem" Click="@(() => sidebarExpanded = !sidebarExpanded)" />
             </Authorized>
         </AuthorizeView>
         <AuthorizeView Roles=@($"{StaticRole.Admin},{StaticRole.Student}")>

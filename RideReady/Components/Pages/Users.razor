@@ -11,8 +11,7 @@
 @using RepositoryLibrary.Features.Schools.Interfaces
 @using RepositoryLibrary.Features.Users.DTOs
 @using RepositoryLibrary.Features.Users.Interfaces
-@using RepositoryLibrary.IServices
-@using RepositoryLibrary.Services
+
 @using RideReady.Components.Modals
 
 @inject IUserService _userService
@@ -35,7 +34,7 @@ SelectionMode="DataGridSelectionMode.Single">
         Frozen="true" Width="160px" >
             <Template Context="user">
                 <RadzenImage 
-                Path="@(user.Photo is not null ? Convert.ToBase64String(user.Photo.UserPhoto) : "User_default_image/user.png")" 
+                Path="@(user.UserPhoto is not null ? user.UserPhoto.FotoPath : "User_default_image/user.png")" 
                 Style="width: 32px; height: 32px;" class="rz-border-radius-4 rz-me-2" AlternateText="@($"{user.FirstName} {user.LastName}")" />
                 @($"{user.FirstName} {user.LastName}")
             </Template>

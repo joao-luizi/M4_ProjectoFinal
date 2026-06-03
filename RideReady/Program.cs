@@ -7,7 +7,10 @@ using RepositoryLibrary.Data.Seeds;
 using RepositoryLibrary.Features.Bookings.Interfaces;
 using RepositoryLibrary.Features.Bookings.Services;
 using RepositoryLibrary.Features.Horses.Interfaces;
+using RepositoryLibrary.Features.Horses.Repositories;
 using RepositoryLibrary.Features.Horses.Services;
+using RepositoryLibrary.Features.Images.Interfaces;
+using RepositoryLibrary.Features.Images.Services;
 using RepositoryLibrary.Features.Lessons.Interfaces;
 using RepositoryLibrary.Features.Lessons.Services;
 using RepositoryLibrary.Features.Products;
@@ -15,15 +18,13 @@ using RepositoryLibrary.Features.Products.Interfaces;
 using RepositoryLibrary.Features.Products.Services;
 using RepositoryLibrary.Features.Purchases.Interfaces;
 using RepositoryLibrary.Features.Purchases.Services;
-using RepositoryLibrary.Features.Schools;
 using RepositoryLibrary.Features.Schools.Interfaces;
+using RepositoryLibrary.Features.Schools.Repositories;
+using RepositoryLibrary.Features.Schools.Services;
 using RepositoryLibrary.Features.Users.Entities;
 using RepositoryLibrary.Features.Users.Interfaces;
+using RepositoryLibrary.Features.Users.Repositories;
 using RepositoryLibrary.Features.Users.Service;
-using RepositoryLibrary.IRepository;
-using RepositoryLibrary.IServices;
-using RepositoryLibrary.Repository;
-using RepositoryLibrary.Services;
 using RideReady.Components;
 using RideReady.Components.Account;
 using RideReady.Data;
@@ -90,6 +91,8 @@ builder.Services.AddScoped<ISchoolService, SchoolService>();
 builder.Services.AddScoped<ILessonTypeService, LessonTypeService>();
 builder.Services.AddScoped<IPurchaseService, PurchaseService>();
 builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<IHorseRepository, HorseRepository>();
+builder.Services.AddScoped<IUserPhotoRepository, UserPhotoRepository>();
 builder.Services.AddRadzenComponents();
 
 var app = builder.Build();
@@ -131,19 +134,3 @@ if (app.Environment.IsDevelopment())
 app.Run();
 
 
-public static class SeedData
-{
-    public static async Task InitializeAsync(IServiceProvider services)
-    {
-        await RoleSeed.SeedRolesAsync(services);
-        await UserSeed.UserSeedWithRole(services);
-        await SchoolSeed.SeedSchoolAsync(services);
-        await SchoolSeed.SeedSchoolUserAsync(services);
-        await LessonTypeSeed.SeedLessonTypeAsync(services);
-        await LessonSeed.SeedLessons(services);
-        await HorseSeed.SeedHorses(services);
-        await ProductSeed.SeedProductsAsync(services);
-        await EntitlementSeed.SeedEntitlementsAsync(services);
-
-    }
-}

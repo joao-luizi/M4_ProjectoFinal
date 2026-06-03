@@ -20,5 +20,7 @@ namespace RepositoryLibrary.Features.Users.Entities
         public int CitizenNumber { get; set; }
         public DateTime Birthdate { get; set; }
         public string Address { get; set; }
+
+        public UserPhoto? UserPhoto { get; set; }
     }
 }

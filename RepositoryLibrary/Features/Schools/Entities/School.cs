@@ -12,7 +12,7 @@ namespace RepositoryLibrary.Features.Schools.Entities
         public string Email { get; set; }
         public int CAE { get; set; }
         public int SchoolCapacity { get; set; }
-        public Logo Logo { get; set; }
+        public SchoolPhoto? SchoolPhoto { get; set; }
 
         public ICollection<SchoolUser> SchoolUsers { get; set; }
     }

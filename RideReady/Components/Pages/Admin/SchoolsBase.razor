@@ -1,0 +1,102 @@
+﻿@using RepositoryLibrary.Features.Schools.Entities
+@using RepositoryLibrary.Features.Schools.Enums
+
+<RadzenTemplateForm Data="@School" TItem="School" Submit="@OnSubmit">
+
+    <RadzenFieldset Text="School Logo">
+
+        @if (Mode != SchoolFormMode.View)
+        {
+        <InputFile OnChange="@OnFileSelectedHandler" accept=".jpg,.jpeg,.png" />
+        }
+
+        @if (!string.IsNullOrEmpty(previewImage))
+        {
+            <div style="margin-top:10px">
+                <img src="@previewImage"
+                     style="max-width:200px; border-radius:8px;" />
+            </div>
+        }
+        else if (School?.SchoolPhoto?.FotoPath != null)
+        {
+            <div style="margin-top:10px">
+                <img src="@School.SchoolPhoto.FotoPath"
+                     style="max-width:200px; border-radius:8px;" />
+            </div>
+        }
+
+    </RadzenFieldset>
+
+    <RadzenStack Gap="1rem">
+
+        <RadzenFormField Text="School Name">
+            <RadzenTextBox @bind-Value="School.SchoolName" Disabled="@IsReadOnly" />
+        </RadzenFormField>
+
+        <RadzenFormField Text="Address">
+            <RadzenTextBox @bind-Value="School.Address" Disabled="@IsReadOnly" />
+        </RadzenFormField>
+
+        <RadzenFormField Text="Email">
+            <RadzenTextBox @bind-Value="School.Email" Disabled="@IsReadOnly" />
+        </RadzenFormField>
+
+        <RadzenFormField Text="Contact">
+            <RadzenTextBox @bind-Value="School.Contact" Disabled="@IsReadOnly" />
+        </RadzenFormField>
+
+        <RadzenFormField Text="CAE">
+            <RadzenNumeric @bind-Value="School.CAE" Disabled="@IsReadOnly" />
+        </RadzenFormField>
+
+        <RadzenFormField Text="Capacity">
+            <RadzenNumeric @bind-Value="School.SchoolCapacity" Disabled="@IsReadOnly" />
+        </RadzenFormField>
+
+
+    </RadzenStack>
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem">
+
+        @if (Mode != SchoolFormMode.View)
+        {
+                <RadzenButton Text="Save"
+                              Icon="save"
+                              ButtonType="ButtonType.Submit"
+                              ButtonStyle="ButtonStyle.Primary" />
+        }
+
+            <RadzenButton Text="Cancel"
+                          Icon="close"
+                          ButtonStyle="ButtonStyle.Light"
+                          Click="@OnCancel" />
+
+        </RadzenStack>
+</RadzenTemplateForm>
+
+@code {
+
+    [Parameter] public School School { get; set; }
+    [Parameter] public SchoolFormMode Mode { get; set; }
+    [Parameter] public EventCallback OnSubmit { get; set; }
+    [Parameter] public EventCallback OnCancel { get; set; }
+    [Parameter] public EventCallback<IBrowserFile?> OnFileSelected { get; set; }
+    private bool IsReadOnly => Mode == SchoolFormMode.View;
+
+    private string? previewImage;
+
+    private async Task OnFileSelectedHandler(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+
+        await using var stream = file.OpenReadStream(5 * 1024 * 1024);
+
+        using var ms = new MemoryStream();
+        await stream.CopyToAsync(ms);
+
+        var buffer = ms.ToArray();
+
+        previewImage = $"data:{file.ContentType};base64,{Convert.ToBase64String(buffer)}";
+
+        await OnFileSelected.InvokeAsync(file);
+    }
+}

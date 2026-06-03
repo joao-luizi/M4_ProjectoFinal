@@ -5,6 +5,8 @@ namespace RepositoryLibrary.Features.Schools.Interfaces;
 
 public interface ISchoolService
 {
+
+    public Task<School> CreateSchoolAsync(School school);
     public Task CreateUserSchoolAsync(string userId, int schoolId);
     public Task<School> GetSchoolByIdAsync(int schoolId);
     public Task<School> EditSchoolByIdAsync(School school);
