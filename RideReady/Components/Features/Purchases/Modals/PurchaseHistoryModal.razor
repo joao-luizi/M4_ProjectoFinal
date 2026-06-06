@@ -1,0 +1,55 @@
+﻿@using RepositoryLibrary.Features.Purchases.DTOs
+@using RepositoryLibrary.Features.Purchases.Interfaces
+@inject IPurchaseService PurchaseService
+
+@if (_loading)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <RadzenDataGrid Data="@_history"
+                    TItem="PurchaseHistoryDto"
+                    AllowPaging="true"
+                    PageSize="10">
+
+        <Columns>
+
+            <RadzenDataGridColumn TItem="PurchaseHistoryDto"
+                                  Property="PurchasedAtUtc"
+                                  Title="Date" />
+
+            <RadzenDataGridColumn TItem="PurchaseHistoryDto"
+                                  Property="Status"
+                                  Title="Status" />
+
+            <RadzenDataGridColumn TItem="PurchaseHistoryDto"
+                                  Property="TotalAmount"
+                                  Title="Total" />
+
+        </Columns>
+
+    </RadzenDataGrid>
+
+    <RadzenButton Text="Close"
+                  Click="@Close" />
+}
+
+@code {
+    [Parameter] public string StudentId { get; set; } = string.Empty;
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    private List<PurchaseHistoryDto> _history = [];
+    private bool _loading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _history = await PurchaseService.GetStudentPurchaseHistoryAsync(StudentId);
+        _loading = false;
+    }
+
+    private async Task Close()
+    {
+        await OnClose.InvokeAsync();
+    }
+}

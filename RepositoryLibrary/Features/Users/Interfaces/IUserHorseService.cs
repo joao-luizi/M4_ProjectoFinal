@@ -8,14 +8,14 @@ namespace RepositoryLibrary.Features.Users.Interfaces
 {
     public  interface IUserHorseService
     {
-        Task<List<UserHorseDto>> GetUserHorsesAsync(string userId);
+        //Task<List<UserHorseDto>> GetUserHorsesAsync(string userId);
 
-        Task<List<UserHorseDto>> GetHorseUsersAsync(int horseId);
+        //Task<List<UserHorseDto>> GetHorseUsersAsync(int horseId);
 
-        Task AddRelationshipAsync(CreateUserHorseDto dto);
+        //Task AddRelationshipAsync(CreateUserHorseDto dto);
 
-        Task UpdateRelationshipAsync(UpdateUserHorseDto dto);
+        //Task UpdateRelationshipAsync(UpdateUserHorseDto dto);
 
-        Task RemoveRelationshipAsync(string userId, int horseId);
+        //Task RemoveRelationshipAsync(string userId, int horseId);
     }
 }

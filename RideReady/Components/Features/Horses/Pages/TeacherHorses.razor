@@ -1,0 +1,90 @@
+﻿@page "/teacher/horses"
+@using Microsoft.AspNetCore.Authorization
+@using RepositoryLibrary.Features.Horses
+@using RepositoryLibrary.Features.Horses.DTOs
+@using RepositoryLibrary.Features.Horses.Interfaces
+@using RepositoryLibrary.Features.Schools.DTOs
+@using RepositoryLibrary.Features.Schools.Interfaces
+@using RepositoryLibrary.Shared.Enums
+@using RideReady.Components.Features.Horses.Modals
+@inject IHorseService Horseservice
+
+@rendermode InteractiveServer
+@attribute [Authorize(Roles = "Teacher")]
+
+
+@if (_loading)
+{
+    <p>Loading...</p>
+}
+else
+{
+    
+    <RadzenDropDown Data="@schools"
+                    TextProperty="Name"
+                    ValueProperty="Id"
+                    @bind-Value="selectedSchoolId"
+                    Change="@OnSchoolChanged"
+                    AllowClear="true"
+                    Placeholder="Todas as escolas" />
+
+@data.TotalHorses
+@data.SchoolHorses
+@data.PrivateHorses
+
+<RadzenDataGrid Data="@filteredHorses" TItem="HorseListItemDto">
+    <Columns>
+        <RadzenDataGridColumn Property="HorseId" Title="ID" />
+        <RadzenDataGridColumn Property="Name" Title="Nome" />
+        <RadzenDataGridColumn Property="Breed" Title="Raça" />
+        <RadzenDataGridColumn Property="DateOfBirth" Title="Nascimento" />
+        <RadzenDataGridColumn Property="SchoolName" Title="Escola" />
+    </Columns>
+</RadzenDataGrid>
+}
+
+@code {
+    private bool _loading = true;
+
+    private HorseOverviewDto data = new();
+    private List<HorseListItemDto> filteredHorses = new();
+
+    private List<SchoolListDto> schools = new();
+
+    private int? selectedSchoolId;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        data = await Horseservice.GetHorseOverviewAsync();
+
+        filteredHorses = data.Horses;
+
+        schools = data.Horses
+            .GroupBy(x => new { x.SchoolId, x.SchoolName })
+            .Select(g => new SchoolListDto
+            {
+                SchoolId = g.Key.SchoolId,
+                SchoolName = g.Key.SchoolName
+            })
+            .ToList();
+
+        _loading = false;
+    }
+
+    private void OnSchoolChanged(object value)
+    {
+        selectedSchoolId = value as int?;
+
+        if (selectedSchoolId is null)
+        {
+            filteredHorses = data.Horses;
+            return;
+        }
+
+        filteredHorses = data.Horses
+        .Where(x => !selectedSchoolId.HasValue || x.SchoolId == selectedSchoolId)
+        .ToList();
+    }
+
+}

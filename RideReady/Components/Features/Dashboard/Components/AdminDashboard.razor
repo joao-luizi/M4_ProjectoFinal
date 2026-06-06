@@ -1,0 +1,85 @@
+﻿@using RepositoryLibrary.Features.DashBoard.DTOs
+@using RepositoryLibrary.Features.DashBoard.Interfaces
+@inject IAdminDashboardService DashboardService
+
+@if (_dashboard is null)
+{
+    <p>A carregar...</p>
+}
+else
+{
+    <p class="text-muted mb-6">Gerencie alunos, aulas e pagamentos.</p>
+
+    <RadzenRow class="rz-mb-4">
+        <RadzenColumn Width="50%">
+            <RadzenCard Style="border-radius: 8px; width: 100%; height: 100%;">
+                <RadzenStack Gap="0.5rem" class="rz-p-4">
+                    <RadzenText Text="Total de Alunos" TextStyle="TextStyle.H6" />
+                    <RadzenText Text="@_dashboard.TotalStudents.ToString()"
+                                TextStyle="TextStyle.H4"
+                                Style="font-weight: bold;" />
+                    <RadzenText Text="Alunos registados na escola"
+                                TextStyle="TextStyle.Caption"
+                                class="text-muted" />
+                </RadzenStack>
+            </RadzenCard>
+        </RadzenColumn>
+
+        ...
+    </RadzenRow>
+
+    <h3 class="text-xl font-semibold mt-8 mb-4">Lista de Alunos</h3>
+
+    <RadzenDataGrid Data="@_dashboard.Students"
+                    TItem="StudentDashboardItemDto">
+
+        <Columns>
+            <RadzenDataGridColumn TItem="StudentDashboardItemDto"
+                                  Property="Name"
+                                  Title="Nome" />
+
+            <RadzenDataGridColumn TItem="StudentDashboardItemDto"
+                                  Property="PaymentStatus"
+                                  Title="Status de Pagamento">
+
+                <Template Context="student">
+                    @if (student.PaymentStatus == "paid")
+                    {
+                        <span class="text-success">Pago</span>
+                    }
+                    else
+                    {
+                        <span class="text-danger">Não Pago</span>
+                    }
+                </Template>
+
+            </RadzenDataGridColumn>
+
+            <RadzenDataGridColumn TItem="StudentDashboardItemDto"
+                                  Property="ClassesRemaining"
+                                  Title="Aulas Restantes" />
+
+            <RadzenDataGridColumn TItem="StudentDashboardItemDto"
+                                  Property="LastClass"
+                                  Title="Última Aula">
+
+                <Template Context="student">
+                    @(student.LastClass?.ToString("dd/MM/yyyy HH:mm") ?? "-")
+                </Template>
+
+            </RadzenDataGridColumn>
+        </Columns>
+    </RadzenDataGrid>
+}
+@code
+{
+    private AdminStudentDashboardDto? _dashboard;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _dashboard = await DashboardService.GetAdminDashboardAsync();
+    }
+
+    private string GetPaymentStyle()
+        => $"font-weight: bold; color: {(_dashboard?.MissingPayments == 0 ? "green" : "red")};";
+}

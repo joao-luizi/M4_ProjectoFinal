@@ -30,12 +30,9 @@
 	  <Folder Include="Features\Bookings\Snapshots\" />
 	  <Folder Include="Features\Bookings\Views\" />
 	  <Folder Include="Features\Entitlements\DTOs\" />
-	  <Folder Include="Features\Entitlements\Interfaces\" />
-	  <Folder Include="Features\Entitlements\Repositories\" />
 	  <Folder Include="Features\Entitlements\Services\" />
 	  <Folder Include="Features\Entitlements\Snapshots\" />
 	  <Folder Include="Features\Entitlements\Views\" />
-	  <Folder Include="Features\Horses\DTOs\" />
 	  <Folder Include="Features\Horses\Snapshots\" />
 	  <Folder Include="Features\Horses\Views\" />
 	  <Folder Include="Features\Images\Entities\" />
@@ -52,12 +49,9 @@
 	  <Folder Include="Features\Payments\Snapshots\" />
 	  <Folder Include="Features\Payments\Views\" />
 	  <Folder Include="Features\Products\DTOs\" />
-	  <Folder Include="Features\Products\Repositories\" />
 	  <Folder Include="Features\Products\Snapshots\" />
 	  <Folder Include="Features\Products\Views\" />
-	  <Folder Include="Features\Purchases\Repositories\" />
 	  <Folder Include="Features\Purchases\Views\" />
-	  <Folder Include="Features\Schools\DTOs\" />
 	  <Folder Include="Features\Schools\Snapshots\" />
 	  <Folder Include="Features\Schools\Views\" />
 	  <Folder Include="Features\Users\Snapshots\" />

@@ -1,285 +1,189 @@
-using Microsoft.EntityFrameworkCore;
-using RepositoryLibrary.Data.Context;
-using RepositoryLibrary.Features.Entitlements;
-using RepositoryLibrary.Features.Entitlements.Entities;
-using RepositoryLibrary.Features.Entitlements.Enums;
+using Microsoft.Extensions.Logging;
+using RepositoryLibrary.Features.Products.Interfaces;
+using RepositoryLibrary.Features.Purchases.DTOs;
 using RepositoryLibrary.Features.Purchases.Entities;
 using RepositoryLibrary.Features.Purchases.Enums;
 using RepositoryLibrary.Features.Purchases.Interfaces;
-using RepositoryLibrary.Features.Purchases.Snapshot;
+using RepositoryLibrary.Features.Users.Entities;
+using RepositoryLibrary.Features.Users.Interfaces;
 
 
 namespace RepositoryLibrary.Features.Purchases.Services
 {
     public class PurchaseService : IPurchaseService
     {
-        private readonly RideReadyDbContext _context;
-        public PurchaseService(RideReadyDbContext context)
+        private readonly IPurchaseRepository _purchaseRepo;
+        private readonly ISchoolUsersRepository _schoolUsersRepo;
+        private readonly IProductRepository _productRepo;
+        private readonly ILogger<PurchaseService> _logger;
+
+        public PurchaseService(
+            IPurchaseRepository purchaseRepo,
+            ISchoolUsersRepository schoolUsersRepo,
+            ILogger<PurchaseService> logger)
         {
-            _context = context;
+            _purchaseRepo = purchaseRepo;
+            _schoolUsersRepo = schoolUsersRepo;
+            _logger = logger;
         }
 
+        //V2 implemented
+        public async Task<List<PurchaseStudentSummary>> GetStudentPurchaseSummaryAsync()
+        {
+            _logger.LogInformation("A obter resumo de compras por estudante.");
 
-        /// <summary>
-        /// Creates a pending purchase request and keeps entitlement provisioning blocked.
-        /// </summary>
-        /// 
-        public async Task<Purchase?> GetByPurchaseId(int purchaseId)
-        {
-            return await _context.Purchases
-            .Include(x => x.Lines)
-            .ThenInclude(l => l.Product)
-            .ThenInclude(p => p.Entitlements)
-            .ThenInclude(e => e.LessonType)
-            .FirstOrDefaultAsync(x => x.Id == purchaseId);
-            
-        }
-        public async Task<Purchase> CreatePendingPurchase(string userId, IReadOnlyCollection<PurchaseRequestLine> lines)
-        {
-            if (!lines.Any())
+            try
             {
-                throw new InvalidOperationException("A purchase must have at least one line.");
+                var students = await _schoolUsersRepo.GetAllWithIncludesAsync();
+
+                var purchaseCounts = await _purchaseRepo.GetPurchaseCountsByUserAsync();
+
+                var result = students
+                    .Select(student =>
+                    {
+                        var count = purchaseCounts
+                            .FirstOrDefault(x => x.UserId == student.UserId)
+                            ?.Count ?? 0;
+
+                        return new PurchaseStudentSummary
+                        {
+                            StudentId = student.UserId,
+                            StudentName = $"{student.User.FirstName} {student.User.LastName}",
+                            SchoolId = student.SchoolId,
+                            SchoolName = student.School.SchoolName,
+                            PurchaseCount = count
+                        };
+                    })
+                    .OrderBy(x => x.StudentName)
+                    .ToList();
+
+                _logger.LogInformation(
+                    "Resumo de compras gerado para {Count} estudantes.",
+                    result.Count);
+
+                return result;
             }
-
-            var purchase = new Purchase
+            catch (Exception ex)
             {
-                UserId = userId,
-                PurchasedAtUtc = DateTime.UtcNow,
-                Status = PurchaseStatus.PendingPayment
-            };
+                _logger.LogError(ex, "Erro ao obter resumo de compras por estudante.");
+                throw;
+            }
+        }
 
-            foreach (var requestLine in lines)
+        //V2 implemented
+        public async Task<List<PurchaseHistoryDto>> GetStudentPurchaseHistoryAsync(string studentId)
+        {
+            _logger.LogInformation(
+                "A obter histórico de compras do estudante {StudentId}.",
+                studentId);
+
+            try
             {
-                var unitPrice = requestLine.Product.Price;
-                var lineTotal = unitPrice * requestLine.Quantity;
+                var purchases = await _purchaseRepo.GetByUserIdAsync(studentId);
 
-                purchase.Lines.Add(new PurchaseLine
+                var result = purchases
+                    .Select(p => new PurchaseHistoryDto
+                    {
+                        PurchaseId = p.Id,
+                        PurchasedAtUtc = p.PurchasedAtUtc,
+                        Status = p.Status,
+                        TotalAmount = p.TotalAmount
+                    })
+                    .ToList();
+
+                _logger.LogInformation(
+                    "Obtidas {Count} compras para o estudante {StudentId}.",
+                    result.Count,
+                    studentId);
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "Erro ao obter histórico de compras do estudante {StudentId}.",
+                    studentId);
+
+                throw;
+            }
+        }
+
+        //V2 implemented
+        public async Task CreatePurchaseAsync(CreatePurchaseDto dto)
+        {
+            _logger.LogInformation(
+                "A criar compra para utilizador {UserId}. PaymentReceived={PaymentReceived}",
+                dto.UserId,
+                dto.PaymentReceived);
+
+            try
+            {
+                var productIds = dto.Lines
+                    .Select(x => x.ProductId)
+                    .Distinct()
+                    .ToList();
+
+                var products = await _productRepo.GetByIdsAsync(productIds);
+
+                var purchase = new Purchase
                 {
-                    ProductId = requestLine.Product.Id,
-                    //Product = requestLine.Product,
-                    ProductName = requestLine.Product.Name,
-                    Kind = requestLine.Kind,
-                    Quantity = requestLine.Quantity,
-                    UnitPrice = unitPrice,
-                    LineTotal = lineTotal,
-                    SubscriptionMonths = requestLine.Kind == PurchaseLineKind.Subscription ? requestLine.Quantity : null,
-                    SubscriptionPeriodStart = requestLine.SubscriptionPeriodStart,
-                    SubscriptionPeriodEnd = requestLine.SubscriptionPeriodEnd
-                });
+                    UserId = dto.UserId,
+                    PurchasedAtUtc = DateTime.UtcNow,
+                    Status = dto.PaymentReceived
+                        ? PurchaseStatus.Paid
+                        : PurchaseStatus.PendingPayment
+                };
 
-                if (requestLine.Kind == PurchaseLineKind.Subscription)
+                foreach (var lineDto in dto.Lines)
                 {
-                    purchase.MonthlyRecurringAmount += lineTotal;
-                }
-                else
-                {
-                    purchase.OneOffAmount += lineTotal;
-                }
+                    var product = products.First(x => x.Id == lineDto.ProductId);
 
-                purchase.TotalAmount += lineTotal;
-            }
+                    var lineTotal = product.Price * lineDto.Quantity;
 
-            _context.Purchases.Add(purchase);
+                    purchase.Lines.Add(new PurchaseLine
+                    {
+                        ProductId = product.Id,
+                        ProductName = product.Name,
+                        Kind = lineDto.Kind,
+                        Quantity = lineDto.Quantity,
+                        UnitPrice = product.Price,
+                        LineTotal = lineTotal,
+                        SubscriptionMonths = lineDto.SubscriptionMonths
+                    });
 
-            await _context.SaveChangesAsync();
-            return purchase;
-
-        }
-
-        /// <summary>
-        /// Confirms payment and provisions subscriptions or credits exactly once.
-        /// </summary>
-        public async Task<Purchase?> ConfirmPayment(int purchaseId)
-        {
-            var purchase = await _context.Purchases
-                .Include(x => x.Lines)
-                .ThenInclude(l => l.Product)
-                .ThenInclude(p => p.Entitlements)
-                .ThenInclude(e => e.LessonType)
-                .FirstOrDefaultAsync(x => x.Id == purchaseId);
-            //var purchase = _purchases.FirstOrDefault(p => p.Id == purchaseId);
-
-            if (purchase is null)
-                return null;
-
-            if (purchase.Status == PurchaseStatus.Paid)
-                return purchase;
-
-            if (purchase.Status != PurchaseStatus.PendingPayment)
-            {
-                throw new InvalidOperationException($"Purchase {purchase.Id} cannot be paid from status {purchase.Status}.");
-            }
-
-            purchase.Status = PurchaseStatus.Paid;
-            ProvisionEntitlements(purchase);
-
-            await _context.SaveChangesAsync();
-
-            return purchase;
-            //return Task.FromResult<Purchase?>(purchase);
-        }
-
-        /// <summary>
-        /// Cancels an unpaid purchase request.
-        /// </summary>
-        public async Task<Purchase?> CancelPurchase(int purchaseId)
-        {
-            //var purchase = _purchases.FirstOrDefault(p => p.Id == purchaseId);
-            var purchase = await _context.Purchases
-               .Include(x => x.Lines)
-               .ThenInclude(l => l.Product)
-               .ThenInclude(p => p.Entitlements)
-               .ThenInclude(e => e.LessonType)
-               .FirstOrDefaultAsync(x => x.Id == purchaseId);
-            if (purchase is null)
-            {
-                //return Task.FromResult<Purchase?>(null);
-                return null;
-            }
-
-            if (purchase.Status == PurchaseStatus.Paid)
-            {
-                throw new InvalidOperationException($"Paid purchase {purchase.Id} cannot be cancelled.");
-            }
-
-            purchase.Status = PurchaseStatus.Cancelled;
-            //return Task.FromResult<Purchase?>(purchase);
-            await _context.SaveChangesAsync();
-
-            return purchase;
-        }
-
-        /// <summary>
-        /// Lists all purchase requests created by a user.
-        /// </summary>
-        public async Task<List<Purchase>> GetPurchasesForUser(string userId)
-        {
-            return await _context.Purchases
-              .Include(x => x.Lines)
-              .ThenInclude(l => l.Product)
-              .ThenInclude(p => p.Entitlements)
-              .ThenInclude(e => e.LessonType)
-              .Where(x => x.UserId == userId)
-              .ToListAsync();
-        }
-
-
-        /// <summary>
-        /// Returns the currently provisioned in-memory entitlements for a user.
-        /// </summary>
-        public async Task<PurchaseEntitlementSnapshot> GetEntitlementsForUser(string userId)
-        {
-            var userSubscription = await _context.UserSubscriptions.Where(s => s.UserId == userId).ToListAsync();
-            var userCreditsLedger = await _context.UserCreditLedgerEntries.Where(s => s.UserId == userId).ToListAsync();
-
-            return new PurchaseEntitlementSnapshot(userSubscription, userCreditsLedger);
-        }
-        
-
-        /// <summary>
-        /// Routes each paid purchase line to the matching entitlement provisioning path.
-        /// </summary>
-        private void ProvisionEntitlements(Purchase purchase)
-        {
-            foreach (var line in purchase.Lines)
-            {
-
-                switch (line.Kind)
-                {
-                    case PurchaseLineKind.Subscription:
-                        ProvisionSubscription(purchase, line);
-                        break;
-
-                    case PurchaseLineKind.CreditPack:
-                        ProvisionCredits(purchase, line);
-                        break;
-
-                    default:
-                        throw new InvalidOperationException("O tipo de Linha não é reconhecido.");
+                    if (lineDto.Kind == PurchaseLineKind.Subscription)
+                    {
+                        purchase.MonthlyRecurringAmount += lineTotal;
+                    }
+                    else
+                    {
+                        purchase.OneOffAmount += lineTotal;
+                    }
                 }
 
+                purchase.TotalAmount =
+                    purchase.MonthlyRecurringAmount +
+                    purchase.OneOffAmount;
+
+                await _purchaseRepo.AddAsync(purchase);
+
+                _logger.LogInformation(
+                    "Compra criada com sucesso para utilizador {UserId}. Status={Status}",
+                    dto.UserId,
+                    purchase.Status);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "Erro ao criar compra para utilizador {UserId}",
+                    dto.UserId);
+
+                throw;
             }
         }
 
-        /// <summary>
-        /// Creates the active subscription and weekly lesson limits from a paid subscription line.
-        /// </summary>
-        private void ProvisionSubscription(Purchase purchase, PurchaseLine line)
-        {
-            if (line.SubscriptionPeriodStart is null || line.SubscriptionPeriodEnd is null)
-            {
-                throw new InvalidOperationException($"Subscription line {line.Id} is missing a period.");
-            }
-
-            var subscription = new UserSubscription
-            {
-                UserId = purchase.UserId,
-                PurchaseLineId = line.Id,
-                ProductId = line.ProductId,
-                PurchasedMonths = line.SubscriptionMonths ?? line.Quantity,
-                PeriodStart = line.SubscriptionPeriodStart.Value,
-                PeriodEnd = line.SubscriptionPeriodEnd.Value,
-                Status = SubscriptionStatus.Active
-            };
-
-            var productEntitlements = _context.ProductEntitlements
-            .Where(e => e.ProductId == line.ProductId)
-            .Include(e => e.LessonType)
-            .ToList();
-
-            foreach (var entitlement in productEntitlements.Where(e => (e.WeeklyFrequency ?? 0) > 0))
-            {
-                subscription.Entitlements.Add(new UserSubscriptionEntitlement
-                {
-                    LessonTypeId = entitlement.LessonTypeId,
-                    WeeklyFrequency = entitlement.WeeklyFrequency!.Value
-                });
-            }
-
-            //_subscriptions.Add(subscription);
-
-            _context.UserSubscriptions.Add(subscription);
-
-        }
-
-        /// <summary>
-        /// Creates positive credit ledger entries from a paid credit pack line.
-        /// </summary>
-        private void ProvisionCredits(Purchase purchase, PurchaseLine line)
-        {
-            var creditLedgerEntries = new List<UserCreditLedgerEntry>();
-
-            var productEntitlements = _context.ProductEntitlements
-           .Where(e => e.ProductId == line.ProductId)
-           .Include(e => e.LessonType)
-           .ToList();
-
-            foreach (var entitlement in productEntitlements.Where(e => (e.CreditsGranted ?? 0) > 0))
-            {
-                creditLedgerEntries.Add(new UserCreditLedgerEntry
-                {
-                    UserId = purchase.UserId,
-                    ProductId = line.ProductId,
-                    PurchaseLineId = line.Id,
-                    LessonTypeId = entitlement.LessonTypeId,
-                    CreditsDelta = entitlement.CreditsGranted!.Value * line.Quantity,
-                    CreatedAtUtc = DateTime.UtcNow,
-                    Reason = $"Purchase {purchase.Id}: {line.ProductName}"
-                });
-            }
-            _context.UserCreditLedgerEntries.AddRange(creditLedgerEntries);
-
-        }
-
-        public async Task<List<Purchase>> GetPurchasesByUserId(string userId)
-        {
-            return await _context.Purchases
-                .Where(x => x.UserId == userId)
-                .Include(x => x.Lines)
-                    .ThenInclude(l => l.Product)
-                .AsNoTracking()
-                .ToListAsync();
-        }
     }
 
 }

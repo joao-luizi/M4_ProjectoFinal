@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.EntityFrameworkCore;
+using RepositoryLibrary.Features.Horses.DTOs;
 using RepositoryLibrary.Features.Horses.Entities;
 using RepositoryLibrary.Features.Users.DTOs;
 using System;
@@ -8,16 +9,17 @@ namespace RepositoryLibrary.Features.Horses.Interfaces;
 
 public interface IHorseService
 {
-    Task<List<Horse>> GetHorsesAsync();
-    Task<List<Horse>> GetHorsesBySchool(int schoolId);
-    Task<bool> IsAvailable(Horse horse, DateTime date, bool Aula);
-    Task<List<Horse>> GetHorsesByUser(UpdateUserDto user);
-    public Task<Horse> AddHorse(Horse horse, IBrowserFile? file);
-    Task<Horse> RemoveHorse(Horse horse);
-    Task<Horse> UpdateHorse(Horse horse, IBrowserFile? file);
-    Task<List<Horse>> AvailableHorsesByDate(DateTime date, int schoolId);
+    //V2 Implelmented
+    Task<HorseOverviewDto> GetHorseOverviewAsync();
+    //V2 Implelmented
+    Task<Horse> GetHorseByIdAsync(int id);
 
-    public Task<Horse> GetHorseByIdAsync(int horseId);
+  
+    //V2 Implelmented
+    Task<HorseEditDto> GetHorseEditDtoAsync(int horseId);
+
+    //V2 Implelmented
+    Task SaveHorseAsync(HorseEditDto dto);
 
 }
 

@@ -1,14 +1,13 @@
-using Microsoft.AspNetCore.Components.Forms;
-using Microsoft.EntityFrameworkCore;
+
+using DocumentFormat.OpenXml.Office2010.Excel;
+using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.Extensions.Logging;
-using RepositoryLibrary.Data.Context;
+using RepositoryLibrary.Features.Horses.DTOs;
 using RepositoryLibrary.Features.Horses.Entities;
 using RepositoryLibrary.Features.Horses.Interfaces;
-using RepositoryLibrary.Features.Horses.Repositories;
 using RepositoryLibrary.Features.Images.Interfaces;
-using RepositoryLibrary.Features.Lessons.Interfaces;
-using RepositoryLibrary.Features.Schools.Interfaces;
-using RepositoryLibrary.Features.Users.DTOs;
+using RepositoryLibrary.Features.Users.Entities;
+
 
 
 namespace RepositoryLibrary.Features.Horses.Services;
@@ -16,296 +15,235 @@ namespace RepositoryLibrary.Features.Horses.Services;
 public class HorseService : IHorseService
 {
     private readonly IHorseRepository _horseRepo;
-    private readonly ISchoolService _schoolService;
-    private readonly ILessonService _lessonService;
     private readonly IImageService _imageService;
+    private readonly IHorsePhotoRepository _horsePhotoRepo;
     private readonly ILogger<HorseService> _logger;
 
-    public HorseService(RideReadyDbContext dbContext,
-        ISchoolService schoolService,
-        ILessonService lessonService, 
+    public HorseService(
+        IHorseRepository horseRepo, 
         IImageService imageService,
-        ILogger<HorseService> logger, ILogger<HorseRepository> repoLogger)
+        IHorsePhotoRepository horsePhotoRepo,
+        ILogger<HorseService> logger)
     {
-        _horseRepo = new HorseRepository(dbContext, repoLogger);
-        _schoolService = schoolService;
-        _lessonService = lessonService;
+        _horseRepo = horseRepo;
         _imageService = imageService; 
+        _horsePhotoRepo = horsePhotoRepo;
         _logger = logger;
     }
 
-    public async Task<Horse> GetHorseByIdAsync(int horseId)
+
+
+    //V2 Implelmented
+    public async Task<HorseOverviewDto> GetHorseOverviewAsync()
     {
-        _logger.LogInformation("A obter o cavalo {HorseId}.", horseId);
-
-        Horse? backendHorse = await _horseRepo.GetHorseByIdAsync(horseId);
-
-        if (backendHorse == null)
-        {
-            _logger.LogWarning("Cavalo {HorseId} não encontrado.", horseId);
-            throw new InvalidOperationException(
-                $"Horse with id {horseId} was not found.");
-        }
-
-        _logger.LogInformation("Cavalo {HorseId} obtido com sucesso.", horseId);
-        return backendHorse;
-    }
-
-    public async Task<Horse> AddHorse(Horse horse, IBrowserFile? file)
-    {
-        _logger.LogInformation("A adicionar o cavalo '{HorseName}'.", horse.Name);
-
         try
         {
-            await _horseRepo.CreateHorse(horse);
+            var horses = await _horseRepo.GetAllAsync();
 
-            if (file != null)
+            var horseList = horses.ToList();
+
+            var total = horseList.Count;
+
+            var mapped = horseList.Select(h =>
             {
-                string path = await _imageService.ReplaceImageAsync(
-                    file,
-                    "horsephotos",
-                    horse.HorseId.ToString());
+                var ownership = ResolveOwnership(h);
 
-                horse.HorseFoto = new HorseFoto
+                return new HorseListItemDto
                 {
-                    HorseId = horse.HorseId,
-                    FotoPath = path
+                    HorseId = h.HorseId,
+                    Name = h.Name,
+                    Breed = h.Breed,
+                    DateOfBirth = h.DateOfBirth,
+                    SchoolId = h.School.SchoolId,
+                    SchoolName = h.School.SchoolName,
+                    Ownership = ownership
                 };
+            }).ToList();
 
-                await _horseRepo.EditHorse(horse);
-            }
+            var schoolCount = horseList.Count(h => h.School != null);
+            var privateCount = total - schoolCount;
 
-            _logger.LogInformation(
-                "Cavalo {HorseId} ('{HorseName}') adicionado com sucesso.",
-                horse.HorseId,
-                horse.Name);
+            return new HorseOverviewDto
+            {
+                TotalHorses = total,
+                SchoolHorses = schoolCount,
+                PrivateHorses = privateCount,
+                Horses = mapped
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error fetching horse overview");
+            throw;
+        }
+    }
+    //V2 Implelmented
+    private string ResolveOwnership(Horse horse)
+    {
+        if (horse.UserHorses == null || horse.UserHorses.Count == 0)
+            return "School";
+
+        var primary = horse.UserHorses.FirstOrDefault();
+
+        if (primary == null)
+            return "School";
+
+        return primary.Relationship ?? "Private";
+    }
+
+    //V2 Implelmented
+    public async Task<Horse> GetHorseByIdAsync(int id)
+    {
+        try
+        {
+            var horse = await _horseRepo.GetByIdAsync(id);
+
+            if (horse == null)
+                throw new KeyNotFoundException($"Horse {id} not found");
 
             return horse;
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            _logger.LogError(e, "Erro ao adicionar cavalo {HorseName}.", horse.Name);
+            _logger.LogError(ex, "Error fetching horse {HorseId}", id);
             throw;
         }
     }
 
-    public async Task<List<Horse>> GetHorsesAsync()
+    //V2 Implelmented
+    private async Task UpdateHorseAsync(HorseEditDto horseDto)
     {
-        _logger.LogInformation("A obter a lista de todos os cavalos.");
         try
         {
-            var horses = await _horseRepo.GetAllHorses();
-            _logger.LogInformation("Obtidos {Count} cavalos.", horses.Count);
-            return horses;
-        }
-        catch (Exception e)
-        {
-            _logger.LogError(e, "Erro ao obter a lista de cavalos.");
-            throw new Exception(e.Message, e.InnerException);
-        }
-    }
+           
+            var existing = await _horseRepo.GetByIdAsync(horseDto.HorseId);
 
-    public async Task<List<Horse>> GetHorsesBySchool(int schoolId)
-    {
-        _logger.LogInformation("A obter cavalos da escola {SchoolId}.", schoolId);
-        try
-        {
-            var horses = await _horseRepo.GetHorsesBySchool(schoolId);
-            _logger.LogInformation("Obtidos {Count} cavalos da escola {SchoolId}.", horses.Count, schoolId);
-            return horses;
-        }
-        catch (Exception e)
-        {
-            _logger.LogError(e, "Erro ao obter cavalos da escola {SchoolId}.", schoolId);
-            throw new Exception(e.Message, e.InnerException);
-        }
-    }
+            if (existing == null)
+                throw new KeyNotFoundException($"Horse {horseDto.HorseId} not found");
 
-    public async Task<List<Horse>> GetHorsesByUser(UpdateUserDto user)
-    {
-        _logger.LogInformation("A obter cavalos do utilizador {UserId}.", user.Id);
-        try
-        {
-            var horseList = new List<Horse>();
-            horseList.AddRange(await _horseRepo.GetHorsesByUser(user.Id));
+            existing.Name = horseDto.Name;
+            existing.Breed = horseDto.Breed;
+            existing.DateOfBirth = horseDto.DateOfBirth;
 
-            var schools = await _schoolService.GetUserSchoolsAsync(user.Id);
-            foreach (var school in schools)
+            await _horseRepo.SaveChangesAsync();
+
+            // 2. Se não há imagem nova, termina aqui
+            if (horseDto.NewPhoto is null)
+                return;
+
+            // 3. Obter foto atual (se existir)
+            var existingPhoto = await _horsePhotoRepo.GetByHorseIdAsync(horseDto.HorseId);
+
+            string newPath = await _imageService.ReplaceImageAsync(
+                horseDto.NewPhoto,
+                folder: "horses",
+                fileName: horseDto.HorseId.ToString(),
+                existingImagePath: existingPhoto?.FotoPath);
+
+            // 4. Persistir relação UserPhoto
+            if (existingPhoto is null)
             {
-                horseList.AddRange(await _horseRepo.GetHorsesBySchool(school.SchoolId));
-            }
-
-            _logger.LogInformation("Obtidos {Count} cavalos para o utilizador {UserId}.", horseList.Count, user.Id);
-            return horseList;
-        }
-        catch (Exception e)
-        {
-            _logger.LogError(e, "Erro ao obter cavalos do utilizador {UserId}.", user.Id);
-            throw new Exception(e.Message, e.InnerException);
-        }
-    }
-
-    public async Task<bool> IsAvailable(Horse horse, DateTime date, bool Aula = false)
-    {
-        _logger.LogInformation("A verificar disponibilidade do cavalo {HorseId} para {Date:yyyy-MM-dd} (aula: {IsAula}).", horse.HorseId, date, Aula);
-
-        //create in LessonRepo a way to get lessons by date
-        //get bookings for date
-        //if 2 bookings of type aula return false
-        //if 1 booking of type aula and 1 of type passeio return false
-        //if 3/4 bookings return false
-
-        var lessons = await _lessonService.GetLessonByHorseAndDate(horse.HorseId, date);
-        // Count the bookings by type.
-        // Using StringComparison.OrdinalIgnoreCase ensures that our comparisons ignore casing.
-        int aulaCount = lessons.Count(l => l.LessonType != null &&
-                                           !l.LessonType.Name.Equals("passeio", StringComparison.OrdinalIgnoreCase));
-        int passeioCount = lessons.Count(l => l.LessonType != null &&
-                                              l.LessonType.Name.Equals("passeio", StringComparison.OrdinalIgnoreCase));
-        int totalCount = lessons.Count();
-
-        // Business Rules:
-        // If there are exactly two bookings of type "aula" → cannot book.
-        if (aulaCount == 2)
-        {
-            _logger.LogInformation("Cavalo {HorseId} indisponível em {Date:yyyy-MM-dd}: já tem 2 aulas.", horse.HorseId, date);
-            return false;
-        }
-
-        // If there's exactly one booking of type "aula" and one of type "passeio" → cannot book.
-        if (aulaCount == 1 && passeioCount == 1)
-        {
-            _logger.LogInformation("Cavalo {HorseId} indisponível em {Date:yyyy-MM-dd}: já tem 1 aula e 1 passeio.", horse.HorseId, date);
-            return false;
-        }
-
-        if (totalCount == 3 && Aula)
-        {
-            _logger.LogInformation("Cavalo {HorseId} indisponível para aula em {Date:yyyy-MM-dd}: já tem 3 marcações.", horse.HorseId, date);
-            return false;
-        }
-
-        // If there are 4 bookings (total) → cannot book.
-        if (totalCount == 4)
-        {
-            _logger.LogInformation("Cavalo {HorseId} indisponível em {Date:yyyy-MM-dd}: limite de 4 marcações atingido.", horse.HorseId, date);
-            return false;
-        }
-
-        // If none of the above conditions are met, it's valid to book.
-        _logger.LogInformation("Cavalo {HorseId} disponível em {Date:yyyy-MM-dd}.", horse.HorseId, date);
-        return true;
-    }
-
-    public async Task<Horse> RemoveHorse(Horse horse)
-    {
-        _logger.LogInformation("A remover o cavalo {HorseId}.", horse.HorseId);
-        try
-        {
-            var removed = await _horseRepo.DeleteHorseById(horse.HorseId);
-            _logger.LogInformation("Cavalo {HorseId} removido com sucesso.", horse.HorseId);
-            return removed;
-        }
-        catch (Exception e)
-        {
-            _logger.LogError(e, "Erro ao remover o cavalo {HorseId}.", horse.HorseId);
-            throw new Exception(e.Message, e.InnerException);
-        }
-    }
-
-    public async Task<Horse> UpdateHorse(Horse horse, IBrowserFile? file)
-    {
-        _logger.LogInformation("A atualizar o cavalo {HorseId}.", horse.HorseId);
-
-        try
-        {
-            var updatedHorse = await _horseRepo.EditHorse(horse);
-
-            if (file == null)
-            {
-                _logger.LogInformation("Cavalo {HorseId} atualizado sem imagem.", horse.HorseId);
-                return updatedHorse;
-            }
-
-            string path = await _imageService.ReplaceImageAsync(
-                file,
-                "horsephotos",
-                horse.HorseId.ToString(),
-                updatedHorse.HorseFoto?.FotoPath);
-
-            if (updatedHorse.HorseFoto == null)
-            {
-                updatedHorse.HorseFoto = new HorseFoto
+                await _horsePhotoRepo.AddAsync(new HorseFoto
                 {
-                    HorseId = horse.HorseId,
-                    FotoPath = path
-                };
+                    HorseId = horseDto.HorseId,
+                    FotoPath = newPath
+                });
             }
             else
             {
-                updatedHorse.HorseFoto.FotoPath = path;
+                existingPhoto.FotoPath = newPath;
+                await _horsePhotoRepo.SaveChangesAsync();
             }
-
-            var result = await _horseRepo.EditHorse(updatedHorse);
-
-            _logger.LogInformation(
-                "Cavalo {HorseId} atualizado com nova imagem.",
-                horse.HorseId);
-
-            return result;
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            _logger.LogError(e, "Erro ao atualizar cavalo {HorseId}.", horse.HorseId);
+            _logger.LogError(ex, "Error updating horse {HorseId}", horseDto.HorseId);
+            throw;
+        }
+    }
+    //V2 Implelmented
+    private async Task CreateHorseAsync(HorseEditDto horseDto)
+    {
+        try
+        {
+            var horse = new Horse
+            {
+                Name = horseDto.Name,
+                Breed = horseDto.Breed,
+                DateOfBirth = horseDto.DateOfBirth
+            };
+
+            await _horseRepo.AddAsync(horse);
+
+            await _horseRepo.SaveChangesAsync();
+
+            // horse.HorseId já existe aqui
+
+            if (horseDto.NewPhoto is null)
+                return;
+
+            string newPath = await _imageService.ReplaceImageAsync(
+                horseDto.NewPhoto,
+                folder: "horses",
+                fileName: horse.HorseId.ToString(),
+                existingImagePath: null);
+
+            await _horsePhotoRepo.AddAsync(new HorseFoto
+            {
+                HorseId = horse.HorseId,
+                FotoPath = newPath
+            });
+
+            await _horsePhotoRepo.SaveChangesAsync();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex,
+                "Error creating horse");
+
+            throw;
+        }
+    }
+    //V2 Implemented
+    public async Task<HorseEditDto> GetHorseEditDtoAsync(int horseId)
+    {
+        try
+        {
+            var horse = await _horseRepo.GetByIdAsync(horseId);
+
+            if (horse == null)
+                throw new KeyNotFoundException($"Horse {horseId} not found.");
+
+            return new HorseEditDto
+        {
+            HorseId = horse.HorseId,
+            Name = horse.Name,
+            Breed = horse.Breed,
+            DateOfBirth = horse.DateOfBirth,
+            PhotoPath = horse.HorseFoto?.FotoPath
+        };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error loading horse edit dto for horse {HorseId}", horseId);
             throw;
         }
     }
 
-    public async Task<List<Horse>> AvailableHorsesByDate(DateTime date, int schoolId)
+    //V2 Implelmented
+    public async Task SaveHorseAsync(HorseEditDto dto)
     {
-        _logger.LogInformation("A obter cavalos disponíveis em {Date:yyyy-MM-dd} para a escola {SchoolId}.", date, schoolId);
-        try
+        if (dto.HorseId == 0)
         {
-            List<Horse> availableHorses = [];
-            var horses = await _horseRepo.GetHorsesBySchool(schoolId);
-            foreach (var horse in horses)
-            {
-                if (await IsAvailable(horse, date))
-                {
-                    availableHorses.Add(horse);
-                }
-            }
-            _logger.LogInformation("Encontrados {Count} cavalos disponíveis em {Date:yyyy-MM-dd} na escola {SchoolId}.", availableHorses.Count, date, schoolId);
-            return availableHorses;
+            // create
+            await CreateHorseAsync(dto);
         }
-        catch (Exception e)
+        else
         {
-            _logger.LogError(e, "Erro ao obter cavalos disponíveis em {Date:yyyy-MM-dd} na escola {SchoolId}.", date, schoolId);
-            throw new Exception(e.Message, e.InnerException);
+            // update
+            await UpdateHorseAsync(dto);
         }
     }
 
-    public async Task<List<Horse>> AvailableHorsesByDateAula(DateTime date, int schoolId)
-    {
-        _logger.LogInformation("A obter cavalos disponíveis para aula em {Date:yyyy-MM-dd} para a escola {SchoolId}.", date, schoolId);
-        try
-        {
-            List<Horse> availableHorses = [];
-            var horses = await _horseRepo.GetHorsesBySchool(schoolId);
-            foreach (var horse in horses)
-            {
-                if (await IsAvailable(horse, date, true))
-                {
-                    availableHorses.Add(horse);
-                }
-            }
-            _logger.LogInformation("Encontrados {Count} cavalos disponíveis para aula em {Date:yyyy-MM-dd} na escola {SchoolId}.", availableHorses.Count, date, schoolId);
-            return availableHorses;
-        }
-        catch (Exception e)
-        {
-            _logger.LogError(e, "Erro ao obter cavalos disponíveis para aula em {Date:yyyy-MM-dd} na escola {SchoolId}.", date, schoolId);
-            throw new Exception(e.Message, e.InnerException);
-        }
-    }
+
 }

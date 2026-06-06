@@ -1,7 +1,5 @@
-﻿
-using RepositoryLibrary.Features.Lessons.Entities;
+﻿using RepositoryLibrary.Features.Lessons.Entities;
 using RepositoryLibrary.Features.Schools.Entities;
-using RepositoryLibrary.Features.Users.Entities;
 using System.ComponentModel.DataAnnotations;
 
 namespace RepositoryLibrary.Features.Horses.Entities

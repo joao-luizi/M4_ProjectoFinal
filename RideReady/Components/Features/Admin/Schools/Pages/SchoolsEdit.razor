@@ -1,0 +1,93 @@
+﻿@page "/admin/schools/{id:int}/edit"
+@attribute [Authorize(Roles = "Administrator")]
+
+@rendermode InteractiveServer
+@using Microsoft.AspNetCore.Authorization
+@using RepositoryLibrary.Features.Images.Interfaces
+@using RepositoryLibrary.Features.Schools.Entities
+@using RepositoryLibrary.Features.Schools.Enums
+@using RepositoryLibrary.Features.Schools.Interfaces
+@using RideReady.Components.Features.Admin.Schools.Components
+@inject ISchoolService SchoolService
+@inject IImageService ImageService
+@inject NavigationManager Nav
+@inject NotificationService NotificationService
+
+<RadzenCard Style="padding:1rem; max-width:700px; margin:auto">
+
+    <h3>Edit School</h3>
+
+    @if (school == null)
+    {
+        <p>Loading...</p>
+    }
+    else
+    {
+        <SchoolsBase School="@school"
+                     Mode="SchoolFormMode.Edit"
+                     OnSubmit="@UpdateSchool"
+                     OnCancel="@(() => Nav.NavigateTo("/admin/schools"))"
+                     OnFileSelected="@OnFileSelected" />
+    }
+
+</RadzenCard>
+
+@code {
+    [Parameter] public int id { get; set; }
+
+    private School school;
+    private IBrowserFile? selectedFile;
+
+    protected override async Task OnInitializedAsync()
+    {
+        school = await SchoolService.GetSchoolByIdAsync(id);
+    }
+
+    private void OnFileSelected(IBrowserFile? file)
+    {
+        selectedFile = file;
+    }
+
+    private async Task UpdateSchool()
+    {
+        try
+        {
+            // 1. atualizar dados base
+            var updated = await SchoolService.EditSchoolByIdAsync(school);
+
+            // 2. se há nova imagem
+            if (selectedFile != null)
+            {
+                var path = await ImageService.SaveImageAsync(
+                    selectedFile,
+                    "SchoolLogo",
+                    updated.SchoolId.ToString()
+                );
+
+                updated.SchoolPhoto ??= new SchoolPhoto();
+
+                updated.SchoolPhoto.SchoolId = updated.SchoolId;
+                updated.SchoolPhoto.FotoPath = path;
+
+                await SchoolService.EditSchoolByIdAsync(updated);
+            }
+
+            NotificationService.Notify(
+                NotificationSeverity.Success,
+                "Success",
+                "School updated"
+            );
+
+            Nav.NavigateTo("/admin/schools");
+        }
+        catch (Exception ex)
+        {
+            NotificationService.Notify(
+                NotificationSeverity.Error,
+                "Error",
+                ex.Message
+            );
+        }
+    }
+}
+}

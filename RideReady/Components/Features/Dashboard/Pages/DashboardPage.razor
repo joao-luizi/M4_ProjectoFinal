@@ -1,0 +1,50 @@
+﻿@page "/dashboard"
+@rendermode InteractiveServer
+@attribute [Authorize]
+
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using RideReady.Components.Features.Dashboard.Components
+
+@inject AuthenticationStateProvider AuthStateProvider
+
+@if (_loading)
+{
+    <p>Loading dashboard...</p>
+}
+else
+{
+    @switch (_userRole)
+    {
+        case "Administrator":
+            <AdminDashboard />
+            break;
+
+        case "Teacher":
+            <TeacherDashboard />
+            break;
+
+        case "Student":
+            <StudentDashboard />
+            break;
+
+        default:
+            <p>Role not recognized</p>
+            break;
+    }
+}
+
+@code {
+    private string? _userRole;
+    private bool _loading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        _userRole = user.FindFirst(ClaimTypes.Role)?.Value;
+        _loading = false;
+    }
+}

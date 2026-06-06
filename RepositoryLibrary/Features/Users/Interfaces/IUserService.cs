@@ -1,31 +1,24 @@
-﻿using RepositoryLibrary.Features.Users.DTOs;
+﻿using RepositoryLibrary.Features.Horses.DTOs;
+using RepositoryLibrary.Features.Users.DTOs;
 
 namespace RepositoryLibrary.Features.Users.Interfaces
 {
     public interface IUserService
     {
-        Task<List<UserListDto>> GetAllUsersAsync(int schoolId);
-
-        Task<List<UserListDto>> GetUsersByRoleAsync(string role);
-
-        Task<List<UserListDto>> GetUsersBySchoolAndRoleAsync(int schoolId, string role);
-
-        Task<UserDetailsDto?> GetUserByIdAsync(string userId);
-
-        Task<UpdateUserDto?> GetEditUserAsync(string userId);
-
-        Task UpdateUserAsync(UpdateUserDto user);
-
+        //V2 Implemented
+        Task<AdminUsersDto> GetAdminUsersAsync();
+        //V2 Implemented
         Task DeactivateUserAsync(string userId);
+        //V2 Implemented
+        Task ActivateUserAsync(string userId);
 
-        Task<IList<string>> GetUserRolesAsync(string userId);
+        //V2 Implemented
+        Task<AdminUserDetailsDto?> GetUserDetailsAsync(string userId);
+        
+ 
 
-        Task SetUserRolesAsync(string userId, IList<string> roles);
+        //V2 Implemented
+        Task SaveUserAsync(AdminUserDetailsDto dto);
 
-        Task<UserPhotoDto?> GetPhotoAsync(string userId);
-
-        Task SetPhotoAsync(string userId, string photoPath);
-
-        Task DeletePhotoAsync(string userId);
     }
 }

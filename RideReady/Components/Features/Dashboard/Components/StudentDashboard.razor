@@ -1,0 +1,115 @@
+﻿
+@using Microsoft.AspNetCore.Authorization
+@using RepositoryLibrary.Features.DashBoard.DTOs
+@using RepositoryLibrary.Features.DashBoard.Interfaces
+@inject IStudentDashboardService DashboardService
+@inject AuthenticationStateProvider AuthStateProvider
+
+@if (_loading)
+{
+    <p>Carregando...</p>
+}
+else if (_dashboard is null)
+{
+    <p>Sem dados disponíveis.</p>
+}
+else
+{
+    <p class="text-muted mb-6">
+        Aqui está o resumo das suas aulas e atividades.
+    </p>
+
+    <RadzenRow class="rz-mb-4">
+
+        <!-- AULAS AGENDADAS -->
+        <RadzenColumn Width="50%">
+            <RadzenCard>
+                <RadzenStack Gap="0.5rem" class="rz-p-4">
+                    <RadzenText Text="Aulas Agendadas" TextStyle="TextStyle.H6" />
+                    <RadzenText Text="@_dashboard.Summary.ScheduledClassesCount.ToString()"
+                                TextStyle="TextStyle.H4"
+                                Style="font-weight:bold;" />
+
+                    <RadzenText TextStyle="TextStyle.Caption" class="rz-text-secondary">
+                        @if (_dashboard.Summary.NextClassDate.HasValue)
+                        {
+                            <text>
+                                Próxima: @_dashboard.Summary.NextClassDate.Value.ToString("dd/MM/yyyy")
+                            </text>
+                        }
+                        else
+                        {
+                            <text>Nenhuma aula agendada</text>
+                        }
+                    </RadzenText>
+                </RadzenStack>
+            </RadzenCard>
+        </RadzenColumn>
+
+        <!-- CRÉDITOS -->
+        <RadzenColumn Width="50%">
+            <RadzenCard>
+                <RadzenStack Gap="0.5rem" class="rz-p-4">
+                    <RadzenText Text="Créditos" TextStyle="TextStyle.H6" />
+                    <RadzenText Text="@_dashboard.Summary.Credits.TotalCredits.ToString()"
+                                TextStyle="TextStyle.H4"
+                                Style="font-weight:bold;" />
+
+                    <RadzenText Text="Saldo atual" TextStyle="TextStyle.Caption" class="text-muted" />
+                </RadzenStack>
+            </RadzenCard>
+        </RadzenColumn>
+
+        <!-- SUBSCRIÇÕES -->
+        <RadzenColumn Width="50%">
+            <RadzenCard>
+                <RadzenStack Gap="0.5rem" class="rz-p-4">
+                    <RadzenText Text="Subscrições Ativas" TextStyle="TextStyle.H6" />
+                    <RadzenText Text="@_dashboard.Summary.Subscription.ActiveSubscriptionsCount.ToString()"
+                                TextStyle="TextStyle.H4"
+                                Style="font-weight:bold;" />
+
+                    <RadzenText Text="Plano atual" TextStyle="TextStyle.Caption" class="text-muted" />
+                </RadzenStack>
+            </RadzenCard>
+        </RadzenColumn>
+
+        <!-- PLACEHOLDER / HORÁRIO (mantido fixo porque não existe no DTO) -->
+        <RadzenColumn Width="50%">
+            <RadzenCard>
+                <RadzenStack Gap="0.5rem" class="rz-p-4">
+                    <RadzenText Text="Horário Escolar" TextStyle="TextStyle.H6" />
+                    <RadzenText Text="8:00 - 19:00"
+                                TextStyle="TextStyle.H4"
+                                Style="font-weight:bold;" />
+                    <RadzenText Text="Segunda a Sábado" TextStyle="TextStyle.Caption" class="text-muted" />
+                </RadzenStack>
+            </RadzenCard>
+        </RadzenColumn>
+
+    </RadzenRow>
+}
+
+@code {
+    private bool _loading = true;
+    private StudentDashboardDto? _dashboard;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        var studentId = user?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+        if (string.IsNullOrEmpty(studentId))
+        {
+            _loading = false;
+            return;
+        }
+
+        _dashboard = await DashboardService.GetStudentDashboardAsync(studentId);
+
+        _loading = false;
+    }
+}
+

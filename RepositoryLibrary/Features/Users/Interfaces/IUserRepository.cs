@@ -5,18 +5,25 @@ namespace RepositoryLibrary.Features.Users.Interfaces
 {
     public interface IUserRepository
     {
+        //V2 Implemented
+        Task<List<UserAdminProjectionDto>> GetUsersForAdministrationAsync();
+        //V2 Implemented
+        Task<IList<string>> GetUserRolesAsync(string userId);
+        //V2 Implemented
+        Task<List<EMUser>> GetAllUsersAsync();
+        //V2 Implemented
+        public Task<List<EMUser>> GetUsersByIdsAsync(List<string> ids);
+        //V2 Implemented
+        public Task<List<EMUser>> GetUsersByRoleAsync(string role);
+        //V2 Implemented
+        Task SetUserActiveStatusAsync(string userId, bool isActive);
 
+        //V2 Implemented
+        Task UpdateUserAsync(EMUser user);
 
-        public Task<List<UpdateUserDto>> GetUsersBySchoolAndRole(int schoolId, string role);
-        public Task<List<UpdateUserDto>> GetAllUsers(int schoolId);
-        public Task<UserDTO> GetUserById(string id);
-        public Task<List<UpdateUserDto>> GetUsersByRole(string role);
-        public Task<UpdateUserDto> GetEditUserAsync(string id);
-        public Task InactivateUser(string id);
-        public Task<UpdateUserDto> EditUserAsync(UpdateUserDto user);
-        public Task<UserPhoto> AddUserPhotoAsync(string userId, string filepath);
-        public Task<UserPhoto> UpdateUserPhotoAsync(string userId, string filepath);
-        public Task<UserPhoto> DeleteUserPhotoAsync(string userId);
-        public Task<UserPhoto> GetUserPhotoAsync(string userId);
+        //V2 Implemented
+        Task<EMUser?> GetByIdAsync(string id);
+        
+
     }
 }

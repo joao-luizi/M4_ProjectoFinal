@@ -1,0 +1,76 @@
+﻿@using RepositoryLibrary.Features.Purchases.DTOs
+
+<RadzenCard Style="padding:1rem">
+
+    <RadzenStack Gap="1rem">
+
+        <h4>Cart</h4>
+
+        @if (Lines.Count == 0)
+        {
+            <p>No items selected</p>
+        }
+        else
+        {
+            @foreach (var line in Lines)
+            {
+                <RadzenRow AlignItems="AlignItems.Center" Gap="1rem">
+
+                    <RadzenColumn Size="6">
+                        <b>@line.ProductName</b>
+                        <div style="font-size:12px; opacity:0.7">
+                            @line.Kind
+                        </div>
+                    </RadzenColumn>
+
+                    <RadzenColumn Size="3">
+                        @line.Quantity x @line.UnitPrice.ToString("0.00") €
+                    </RadzenColumn>
+
+                    <RadzenColumn Size="2">
+                        <b>@line.LineTotal.ToString("0.00") €</b>
+                    </RadzenColumn>
+
+                    <RadzenColumn Size="1">
+                        <RadzenButton Icon="close"
+                                      Size="ButtonSize.Small"
+                                      ButtonStyle="ButtonStyle.Danger"
+                                      Click="@(() => Remove(line))" />
+                    </RadzenColumn>
+
+                </RadzenRow>
+            }
+
+            <hr />
+
+            <RadzenStack Orientation="Orientation.Horizontal"
+                         JustifyContent="JustifyContent.SpaceBetween">
+
+                <b>Total:</b>
+                <b>@Total.ToString("0.00") €</b>
+
+            </RadzenStack>
+        }
+
+    </RadzenStack>
+
+</RadzenCard>
+
+@code {
+
+    [Parameter] public List<CreatePurchaseLineDto> Lines { get; set; } = [];
+
+    [Parameter] public EventCallback<List<CreatePurchaseLineDto>> LinesChanged { get; set; }
+
+    private decimal Total =>
+        Lines.Sum(x => x.Quantity * GetUnitPrice(x));
+
+    private decimal GetUnitPrice(CreatePurchaseLineDto line)
+        => line.UnitPrice;
+
+    private async Task Remove(CreatePurchaseLineDto line)
+    {
+        Lines.Remove(line);
+        await LinesChanged.InvokeAsync(Lines);
+    }
+}

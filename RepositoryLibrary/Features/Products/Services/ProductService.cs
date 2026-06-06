@@ -16,6 +16,7 @@ namespace RepositoryLibrary.Features.Products.Services
             _db = db;
         }
 
+        //V2 Its using
         public async Task<List<Product>> GetAll()
         {
             return await _db.Products
@@ -23,12 +24,12 @@ namespace RepositoryLibrary.Features.Products.Services
                     .ThenInclude(e => e.LessonType)
                 .ToListAsync();
         }
-
+        //V2 Its using
         public async Task<Product?> GetById(int id)
             => await _db.Products
                 .Include(p => p.Entitlements)
                 .FirstOrDefaultAsync(p => p.Id == id);
-
+        //V2 Its using
         public async Task Create(Product product)
         {
             _db.Products.Add(product);

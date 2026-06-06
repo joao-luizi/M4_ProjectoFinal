@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using RepositoryLibrary.Data.Context;
+using RepositoryLibrary.Features.Schools.DTOs;
 using RepositoryLibrary.Features.Schools.Entities;
 using RepositoryLibrary.Features.Schools.Interfaces;
 using RepositoryLibrary.Features.Schools.Repositories;
@@ -99,19 +100,24 @@ public class SchoolService : ISchoolService
         }
     }
 
-    public async Task<List<School>> GetSchoolsAsync()
+    public async Task<List<SchoolListDto>> GetSchoolsListAsync()
     {
         _logger.LogInformation("A obter a lista de todas as escolas.");
         try
         {
             var schools = await _schoolRepo.GetSchoolsAsync();
+
             _logger.LogInformation("Obtidas {Count} escolas.", schools.Count);
-            return schools;
+            return schools.Select (s => new SchoolListDto
+            {
+                SchoolId = s.SchoolId,
+                SchoolName = s.SchoolName,
+            }).ToList();
         }
         catch (Exception e)
         {
             _logger.LogError(e, "Erro ao obter a lista de escolas.");
-            throw new Exception(e.Message, e.InnerException);
+            throw;
         }
     }
 

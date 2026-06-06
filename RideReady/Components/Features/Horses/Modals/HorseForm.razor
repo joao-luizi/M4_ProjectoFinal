@@ -1,0 +1,120 @@
+﻿@using Microsoft.AspNetCore.Components.Forms
+@using RepositoryLibrary.Features.Horses.DTOs
+@using RepositoryLibrary.Features.Horses.Interfaces
+@using RepositoryLibrary.Shared.Enums
+
+@if (Horse is null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <EditForm Model="Horse" OnValidSubmit="Save">
+
+        <DataAnnotationsValidator />
+
+        <!-- FOTO -->
+        <div style="margin-bottom:16px;">
+            <label>Horse Photo</label>
+
+            <div style="display:flex; gap:16px; align-items:center;">
+
+                <img src="@(PreviewImage ?? Horse.PhotoPath ?? "horse_default_image/horse.png")"
+                     style="width:120px;height:120px;border-radius:8px;object-fit:cover;" />
+
+                @if (Mode != ModalFormMode.View)
+                {
+                    <InputFile OnChange="HandleImageSelected" />
+                }
+
+            </div>
+        </div>
+
+        <hr />
+
+        <!-- FIELDS -->
+
+        <div>
+            <label>Name</label>
+            <InputText @bind-Value="Horse.Name"
+                       disabled="@(Mode == ModalFormMode.View)" />
+        </div>
+
+        <div>
+            <label>Breed</label>
+            <InputText @bind-Value="Horse.Breed"
+                       disabled="@(Mode == ModalFormMode.View)" />
+        </div>
+
+        <div>
+            <label>Date of Birth</label>
+            <InputDate @bind-Value="Horse.DateOfBirth"
+                       disabled="@(Mode == ModalFormMode.View)" />
+        </div>
+
+        <!-- ACTIONS -->
+        <div style="margin-top:16px; display:flex; gap:8px;">
+
+            @if (Mode != ModalFormMode.View)
+            {
+                <button type="submit">Save</button>
+            }
+
+            <button type="button" @onclick="Cancel">
+                Close
+            </button>
+
+        </div>
+
+    </EditForm>
+}
+
+@code {
+
+    private string? PreviewImage;
+
+    [Parameter] public HorseEditDto? Horse { get; set; }
+
+    [Parameter] public ModalFormMode Mode { get; set; }
+
+    [Parameter] public EventCallback<HorseEditDto> OnSave { get; set; }
+
+    [Parameter] public EventCallback OnCancel { get; set; }
+
+    private async Task HandleImageSelected(InputFileChangeEventArgs e)
+    {
+        if (Mode == ModalFormMode.View)
+            return;
+
+        var file = e.File;
+
+        if (file is null)
+            return;
+
+        Horse!.NewPhoto = file;
+
+        var buffer = new byte[file.Size];
+
+        await file.OpenReadStream(5 * 1024 * 1024)
+                  .ReadAsync(buffer);
+
+        PreviewImage =
+            $"data:{file.ContentType};base64,{Convert.ToBase64String(buffer)}";
+    }
+
+    private async Task Save()
+    {
+        if (Mode == ModalFormMode.View)
+            return;
+
+        if (Horse is null)
+            return;
+
+        await OnSave.InvokeAsync(Horse);
+    }
+
+    private async Task Cancel()
+    {
+        await OnCancel.InvokeAsync();
+    }
+}

@@ -1,0 +1,144 @@
+﻿
+@using Microsoft.AspNetCore.Authorization
+@using RepositoryLibrary.Features.DashBoard.DTOs
+@using RepositoryLibrary.Features.DashBoard.Interfaces
+@inject ITeacherDashboardService DashboardService
+@inject AuthenticationStateProvider AuthStateProvider
+
+@if (_loading)
+{
+    <p>Loading dashboard...</p>
+}
+else if (_dashboard is null)
+{
+    <p>No data available</p>
+}
+else
+{
+    <p class="text-muted mb-6">Visão geral da sua atividade de ensino.</p>
+
+    <RadzenRow class="rz-mb-4">
+
+        <!-- Students -->
+        <RadzenColumn Width="50%">
+            <RadzenCard Style="border-radius: 8px; width: 100%; height: 100%;">
+                <RadzenStack Gap="0.5rem" class="rz-p-4">
+                    <RadzenText Text="Total de Alunos" TextStyle="TextStyle.H6" />
+                    <RadzenText Text="@_dashboard.TotalStudents.ToString()" TextStyle="TextStyle.H4" Style="font-weight: bold;" />
+                    <RadzenText Text="Alunos atribuídos a você" TextStyle="TextStyle.Caption" class="text-muted" />
+                </RadzenStack>
+            </RadzenCard>
+        </RadzenColumn>
+
+        <!-- Scheduled classes -->
+        <RadzenColumn Width="50%">
+            <RadzenCard Style="border-radius: 8px; width: 100%; height: 100%;">
+                <RadzenStack Gap="0.5rem" class="rz-p-4">
+                    <RadzenText Text="Aulas Agendadas" TextStyle="TextStyle.H6" />
+                    <RadzenText Text="@_dashboard.ScheduledClasses.ToString()" TextStyle="TextStyle.H4" Style="font-weight: bold;" />
+                    <RadzenText Text="Próximas aulas no seu calendário" TextStyle="TextStyle.Caption" class="text-muted" />
+                </RadzenStack>
+            </RadzenCard>
+        </RadzenColumn>
+
+        <!-- Horses -->
+        <RadzenColumn Width="50%">
+            <RadzenLink Path="/horses" Style="text-decoration: none;">
+                <RadzenCard Style="border-radius: 8px; width: 100%; height: 100%;">
+                    <RadzenStack Gap="0.5rem" class="rz-p-4">
+                        <RadzenText Text="Cavalos Disponíveis" TextStyle="TextStyle.H6" />
+                        <RadzenText Text="@_dashboard.TotalHorses.ToString()" TextStyle="TextStyle.H4" Style="font-weight: bold;" />
+                        <RadzenText Text="Cavalos usados nas suas aulas" TextStyle="TextStyle.Caption" class="text-muted" />
+                    </RadzenStack>
+                </RadzenCard>
+            </RadzenLink>
+        </RadzenColumn>
+
+        <!-- Next lesson -->
+        <RadzenColumn Width="50%">
+            <RadzenCard Style="border-radius: 8px; width: 100%; height: 100%;">
+                <RadzenStack Gap="0.5rem" class="rz-p-4">
+                    <RadzenText Text="Próxima Aula" TextStyle="TextStyle.H6" />
+
+                    @if (_dashboard.NextLesson is not null)
+                    {
+                        <RadzenText Text="@_dashboard.NextLesson.LessonDate.ToString("dd/MM/yyyy HH:mm")"
+                                    TextStyle="TextStyle.H4"
+                                    Style="font-weight: bold;" />
+
+                        <RadzenText Text="@GetNextLessonStudents(_dashboard.NextLesson)"
+                                    TextStyle="TextStyle.Caption"
+                                    class="text-muted" />
+                    }
+                    else
+                    {
+                        <RadzenText Text="Sem aulas agendadas"
+                                    TextStyle="TextStyle.H4"
+                                    Style="font-weight: bold;" />
+                    }
+                </RadzenStack>
+            </RadzenCard>
+        </RadzenColumn>
+
+    </RadzenRow>
+
+    <!-- Students table -->
+    <h3 class="text-xl font-semibold mt-8 mb-4">Lista de Alunos</h3>
+
+    <RadzenDataGrid Data="@_dashboard.Students"
+                    TItem="TeacherStudentDashboardItemDto"
+                    Style="border-radius: 8px;"
+                    Class="w-100">
+
+        <Columns>
+            <RadzenDataGridColumn TItem="TeacherStudentDashboardItemDto"
+                                  Property="Name"
+                                  Title="Nome" />
+
+            <RadzenDataGridColumn TItem="TeacherStudentDashboardItemDto"
+                                  Property="ClassesRemaining"
+                                  Title="Aulas Restantes" />
+
+            <RadzenDataGridColumn TItem="TeacherStudentDashboardItemDto"
+                                  Title="Última Aula">
+                <Template Context="student">
+                    @(student.LastClass?.ToString("dd/MM/yyyy HH:mm") ?? "-")
+                </Template>
+            </RadzenDataGridColumn>
+        </Columns>
+    </RadzenDataGrid>
+}
+
+@code {
+
+    private TeacherDashboardDto? _dashboard;
+    private bool _loading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+
+            var teacherId = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+            if (teacherId is null)
+                return;
+
+            _dashboard = await DashboardService.GetTeacherDashboardAsync(teacherId);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private string GetNextLessonStudents(TeacherNextLessonDto lesson)
+    {
+        if (lesson.StudentNames is null || lesson.StudentNames.Count == 0)
+            return "Sem alunos";
+
+        return "Com: " + string.Join(", ", lesson.StudentNames);
+    }
+}

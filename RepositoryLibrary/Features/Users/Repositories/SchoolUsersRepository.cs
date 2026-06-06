@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using RepositoryLibrary.Data.Context;
+using RepositoryLibrary.Features.Purchases.DTOs;
 using RepositoryLibrary.Features.Users.DTOs;
 using RepositoryLibrary.Features.Users.Entities;
 using RepositoryLibrary.Features.Users.Interfaces;
@@ -20,6 +21,16 @@ namespace RepositoryLibrary.Features.Users.Repositories
             _context = context;
         }
 
+        
+
+        //V2 Implemented
+        public async Task<List<SchoolUser>> GetAllWithIncludesAsync()
+        {
+            return await _context.SchoolUsers
+           .Include(x => x.User)
+           .Include(x => x.School)
+           .ToListAsync();
+        }
         public async Task<bool> ExistsAsync(string userId, int schoolId)
         {
             return await _context.Set<SchoolUser>()

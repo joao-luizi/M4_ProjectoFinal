@@ -5,16 +5,21 @@ namespace RepositoryLibrary.Features.Horses.Interfaces
 {
     public interface IHorseRepository
     {
-        public Task<List<Horse>> GetHorsesByUser(string userId);
-        public Task<List<Horse>> GetHorsesBySchool(int schoolId);
-        public Task<List<Horse>> GetAllHorses();
-        public Task<Horse> CreateHorse(Horse horse);
-        public Task<Horse> EditHorse(Horse horse);
-        public Task<Horse> DeleteHorseById(int horseId);
+        //V2 Implelmented
+        Task<Horse?> GetByIdAsync(int horseId);
+        //V2 Implelmented
+        Task<List<Horse>> GetAllAsync();
+        //V2 Implelmented
+        Task AddAsync(Horse horse);
+        //V2 Implelmented
+        Task SaveChangesAsync();
+        //V2 Implelmented
+        Task<List<Horse>> GetByIdsAsync(List<int> ids);
+        //V2 Implelmented
+        Task<int> CountAsync();
 
-        public Task<Horse?> GetHorseByIdAsync(int horseId);
 
-        Task<int> DeleteByUserIdAsync(string userId);
+
 
 
     }

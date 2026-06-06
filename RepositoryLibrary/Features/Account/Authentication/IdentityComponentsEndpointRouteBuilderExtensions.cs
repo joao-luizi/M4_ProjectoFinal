@@ -1,5 +1,3 @@
-using System.Security.Claims;
-using System.Text.Json;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components.Authorization;
@@ -10,7 +8,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
+using RepositoryLibrary.Features.Account.Authentication;
 using RepositoryLibrary.Features.Users.Entities;
+using System.Security.Claims;
+using System.Text.Json;
 
  
 
@@ -33,11 +34,11 @@ namespace Microsoft.AspNetCore.Routing
             {
                 IEnumerable<KeyValuePair<string, StringValues>> query = [
                     new("ReturnUrl", returnUrl),
-                    new("Action", ExternalLogin.LoginCallbackAction)];
+                    new("Action", IdentityFlows.ExternalLoginCallbackAction)];
 
                 var redirectUrl = UriHelper.BuildRelative(
                     context.Request.PathBase,
-                    "/Account/ExternalLogin",
+                    IdentityRoutes.ExternalLogin,
                     QueryString.Create(query));
 
                 var properties = signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
@@ -65,8 +66,8 @@ namespace Microsoft.AspNetCore.Routing
 
                 var redirectUrl = UriHelper.BuildRelative(
                     context.Request.PathBase,
-                    "/Account/Manage/ExternalLogins",
-                    QueryString.Create("Action", ExternalLogins.LinkLoginCallbackAction));
+                    IdentityRoutes.ManageExternalLogins,
+                    QueryString.Create("Action", IdentityFlows.ExternalLoginLinkAction));
 
                 var properties = signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl, signInManager.UserManager.GetUserId(context.User));
                 return TypedResults.Challenge(properties, [provider]);

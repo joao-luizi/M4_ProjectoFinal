@@ -1,0 +1,157 @@
+﻿@page "/admin/purchases"
+@attribute [Authorize(Roles = "Administrator")]
+@rendermode InteractiveServer
+
+@using Microsoft.AspNetCore.Authorization
+@using Radzen
+@using Radzen.Blazor
+@using RepositoryLibrary.Features.Purchases.DTOs
+@using RepositoryLibrary.Features.Purchases.Interfaces
+@using RepositoryLibrary.Features.Schools.DTOs
+@using RepositoryLibrary.Features.Schools.Interfaces
+@using RideReady.Components.Features.Purchases.Modals
+
+@inject IPurchaseService PurchaseService
+@inject ISchoolService SchoolService
+
+<PageTitle>Purchases</PageTitle>
+
+<RadzenStack Gap="1rem">
+
+    <RadzenDropDown Data="@_schools"
+                    TextProperty="SchoolName"
+                    ValueProperty="SchoolId"
+                    @bind-Value="_selectedSchoolId"
+                    Placeholder="All schools"
+                    Style="width:300px" />
+
+    <RadzenDataGrid Data="@FilteredStudents"
+                    TItem="PurchaseStudentSummary"
+                    AllowPaging="true"
+                    PageSize="10"
+                    EmptyText="No students found">
+
+        <Columns>
+
+            <RadzenDataGridColumn TItem="PurchaseStudentSummary"
+                                  Property="StudentName"
+                                  Title="Student" />
+
+            <RadzenDataGridColumn TItem="PurchaseStudentSummary"
+                                  Property="SchoolName"
+                                  Title="School" />
+
+            <RadzenDataGridColumn TItem="PurchaseStudentSummary"
+                                  Property="PurchaseCount"
+                                  Title="Purchases"
+                                  Width="120px"
+                                  TextAlign="TextAlign.Center" />
+
+            <RadzenDataGridColumn TItem="PurchaseStudentSummary"
+                                  Title="Actions"
+                                  Width="180px"
+                                  Filterable="false"
+                                  Sortable="false"
+                                  TextAlign="TextAlign.Center">
+
+                <Template Context="row">
+
+                    <RadzenStack Orientation="Orientation.Horizontal"
+                                 Gap="0.5rem"
+                                 JustifyContent="JustifyContent.Center">
+
+                        <RadzenButton Icon="visibility"
+                                      ButtonStyle="ButtonStyle.Light"
+                                      Size="ButtonSize.Small"
+                                      Click="@(() => OpenHistory(row.StudentId))" />
+
+                        <RadzenButton Icon="add"
+                                      ButtonStyle="ButtonStyle.Primary"
+                                      Size="ButtonSize.Small"
+                                      Click="@(() => OpenCreate(row.StudentId))" />
+
+                    </RadzenStack>
+
+                </Template>
+
+            </RadzenDataGridColumn>
+
+        </Columns>
+
+    </RadzenDataGrid>
+
+</RadzenStack>
+
+@if (_showHistory && _selectedStudentId is not null)
+{
+    <PurchaseHistoryModal StudentId="_selectedStudentId"
+                          OnClose="CloseHistory" />
+}
+
+@if (_showCreate && _selectedStudentId is not null)
+{
+    <PurchaseCreateModal StudentId="_selectedStudentId"
+                         OnSaved="OnPurchaseCreated"
+                         OnClose="CloseCreate" />
+}
+
+@code {
+
+    private List<PurchaseStudentSummary> _students = [];
+    private List<SchoolListDto> _schools = [];
+
+    private int? _selectedSchoolId;
+    private string? _selectedStudentId;
+
+    private bool _showHistory;
+    private bool _showCreate;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        _students = await PurchaseService.GetStudentPurchaseSummaryAsync();
+
+        _schools = await SchoolService.GetSchoolsListAsync();
+    }
+
+    private IEnumerable<PurchaseStudentSummary> FilteredStudents =>
+        _selectedSchoolId is null
+            ? _students
+            : _students.Where(x => x.SchoolId == _selectedSchoolId);
+
+    private void OpenHistory(string studentId)
+    {
+        _selectedStudentId = studentId;
+        _showHistory = true;
+    }
+
+    private void CloseHistory()
+    {
+        _showHistory = false;
+        _selectedStudentId = null;
+    }
+
+    private void OpenCreate(string studentId)
+    {
+        _selectedStudentId = studentId;
+        _showCreate = true;
+    }
+
+    private void CloseCreate()
+    {
+        _showCreate = false;
+        _selectedStudentId = null;
+    }
+
+    private async Task OnPurchaseCreated()
+    {
+        _showCreate = false;
+        _selectedStudentId = null;
+
+        await LoadData();
+    }
+}

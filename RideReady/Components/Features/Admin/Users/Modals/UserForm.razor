@@ -1,0 +1,124 @@
+﻿@using Microsoft.AspNetCore.Components.Forms
+@using RepositoryLibrary.Features.Users.DTOs
+@using RepositoryLibrary.Shared.Enums
+
+@if (User is null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <EditForm Model="User" OnValidSubmit="Save">
+
+        <DataAnnotationsValidator />
+
+        <!-- FOTO SECTION -->
+        <div style="margin-bottom:16px;">
+            <label>Profile Image</label>
+
+            <div style="display:flex; gap:16px; align-items:center;">
+
+                <img src="@(PreviewImage ?? User.PhotoPath ?? "User_default_image/user.png")"
+                     style="width:100px;height:100px;border-radius:8px;object-fit:cover;" />
+
+                <InputFile OnChange="HandleImageSelected" />
+
+            </div>
+        </div>
+
+        <hr />
+
+        <!-- FORM FIELDS -->
+        <div>
+            <label>First Name</label>
+            <InputText @bind-Value="User.FirstName" />
+        </div>
+
+        <div>
+            <label>Last Name</label>
+            <InputText @bind-Value="User.LastName" />
+        </div>
+
+        <div>
+            <label>Email</label>
+            <InputText @bind-Value="User.Email" disabled />
+        </div>
+
+        <div>
+            <label>Phone</label>
+            <InputText @bind-Value="User.PhoneNumber" />
+        </div>
+
+        <div>
+            <label>Address</label>
+            <InputText @bind-Value="User.Address" />
+        </div>
+        <div>
+            <label>Birthdate</label>
+            <InputDate @bind-Value="User.Birthdate" />
+        </div>
+        <div>
+            <label>Active</label>
+            <InputCheckbox @bind-Value="User.IsActive" />
+        </div>
+
+        <div>
+            <label>Role</label>
+            <span>@User.Role</span>
+        </div>
+
+        @if (Mode != ModalFormMode.View)
+        {
+            <button type="submit">Save</button>
+        }
+
+        <button type="button" @onclick="OnCancelClicked">Cancel</button>
+
+    </EditForm>
+}
+
+@code {
+    [Parameter] public AdminUserDetailsDto? User { get; set; }
+
+    [Parameter] public EventCallback<AdminUserDetailsDto> OnSave { get; set; }
+
+    private string? PreviewImage;
+
+    [Parameter] public ModalFormMode Mode { get; set; }
+
+
+    [Parameter] public EventCallback OnCancel { get; set; }
+
+    private async Task HandleImageSelected(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+
+        if (file is null)
+            return;
+
+        // guarda no DTO para o service tratar
+        User!.NewPhoto = file;
+
+        // preview local (browser)
+        var buffer = new byte[file.Size];
+
+        await file.OpenReadStream(5 * 1024 * 1024)
+                  .ReadAsync(buffer);
+
+        PreviewImage = $"data:{file.ContentType};base64,{Convert.ToBase64String(buffer)}";
+    }
+
+
+    private async Task Save()
+    {
+        if (User is null)
+            return;
+
+        await OnSave.InvokeAsync(User);
+    }
+
+    private async Task OnCancelClicked()
+    {
+        await OnCancel.InvokeAsync();
+    }
+}
