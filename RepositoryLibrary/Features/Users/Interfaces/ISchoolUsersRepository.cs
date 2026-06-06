@@ -14,6 +14,9 @@ namespace RepositoryLibrary.Features.Users.Interfaces
 
         //V2 implemented
         Task<List<SchoolUser>> GetAllWithIncludesAsync();
+        
+        //V2 Implemented
+        Task<List<SchoolUser>> GetUsersBySchoolAsync(int schoolId);
         Task<bool> ExistsAsync(string userId, int schoolId);
 
         Task AddAsync(SchoolUser entity);
@@ -21,8 +24,6 @@ namespace RepositoryLibrary.Features.Users.Interfaces
         Task<SchoolUser?> GetAsync(string userId, int schoolId);
 
         Task DeleteAsync(SchoolUser entity);
-
-        Task<List<UserListDto>> GetUsersBySchoolAsync(int schoolId);
 
         Task<List<UserSchoolDto>> GetSchoolsByUserAsync(string userId);
     }

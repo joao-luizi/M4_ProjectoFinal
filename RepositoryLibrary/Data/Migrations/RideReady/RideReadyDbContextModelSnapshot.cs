@@ -194,6 +194,25 @@ namespace RepositoryLibrary.Data.Migrations.RideReady
                     b.ToTable("HorseFotos");
                 });
 
+            modelBuilder.Entity("RepositoryLibrary.Features.Horses.Entities.UserHorse", b =>
+                {
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("HorseId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Relationship")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("UserId", "HorseId");
+
+                    b.HasIndex("HorseId");
+
+                    b.ToTable("UserHorses");
+                });
+
             modelBuilder.Entity("RepositoryLibrary.Features.Lessons.Entities.Lesson", b =>
                 {
                     b.Property<int>("LessonId")
@@ -563,26 +582,9 @@ namespace RepositoryLibrary.Data.Migrations.RideReady
 
                     b.HasKey("SchoolId", "UserId");
 
+                    b.HasIndex("UserId");
+
                     b.ToTable("SchoolUsers");
-                });
-
-            modelBuilder.Entity("RepositoryLibrary.Features.Users.Entities.UserHorse", b =>
-                {
-                    b.Property<string>("UserId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<int>("HorseId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Relationship")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("UserId", "HorseId");
-
-                    b.HasIndex("HorseId");
-
-                    b.ToTable("UserHorses");
                 });
 
             modelBuilder.Entity("RepositoryLibrary.Features.Users.Entities.UserPhoto", b =>
@@ -688,6 +690,17 @@ namespace RepositoryLibrary.Data.Migrations.RideReady
                         .WithOne("HorseFoto")
                         .HasForeignKey("RepositoryLibrary.Features.Horses.Entities.HorseFoto", "HorseId")
                         .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("Horse");
+                });
+
+            modelBuilder.Entity("RepositoryLibrary.Features.Horses.Entities.UserHorse", b =>
+                {
+                    b.HasOne("RepositoryLibrary.Features.Horses.Entities.Horse", "Horse")
+                        .WithMany("UserHorses")
+                        .HasForeignKey("HorseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Horse");
                 });
@@ -798,18 +811,15 @@ namespace RepositoryLibrary.Data.Migrations.RideReady
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("School");
-                });
-
-            modelBuilder.Entity("RepositoryLibrary.Features.Users.Entities.UserHorse", b =>
-                {
-                    b.HasOne("RepositoryLibrary.Features.Horses.Entities.Horse", "Horse")
-                        .WithMany("UserHorses")
-                        .HasForeignKey("HorseId")
+                    b.HasOne("RepositoryLibrary.Features.Users.Entities.EMUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Horse");
+                    b.Navigation("School");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("RepositoryLibrary.Features.Users.Entities.UserPhoto", b =>

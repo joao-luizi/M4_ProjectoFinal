@@ -13,6 +13,8 @@ public interface ISchoolService
     public Task<School> EditSchoolByIdAsync(School school);
     public Task<School> DeleteSchoolByIdAsync(int schoolId);
     //V2 Implemented
+    Task<List<School>> GetSchoolsAsync();
+    //V2 Implemented
     public Task<List<SchoolListDto>> GetSchoolsListAsync();
     public Task<List<School>> GetUserSchoolsAsync(string userId);
 

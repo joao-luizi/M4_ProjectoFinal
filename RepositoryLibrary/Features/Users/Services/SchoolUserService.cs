@@ -36,7 +36,7 @@ namespace RepositoryLibrary.Features.Users.Services
 
             try
             {
-                var user = await _userRepository.GetUserById(userId);
+                var user = await _userRepository.GetByIdAsync(userId);
                 if (user == null)
                     throw new Exception($"User {userId} não encontrado");
 
@@ -101,11 +101,11 @@ namespace RepositoryLibrary.Features.Users.Services
 
                 return users.Select(u => new UserListDto
                 {
-                    Id = u.Id,
-                    FirstName = u.FirstName,
-                    LastName = u.LastName,
-                    Email = u.Email,
-                    IsActive = u.IsActive
+                    Id = u.UserId,
+                    FirstName = u.User.FirstName,
+                    LastName = u.User.LastName,
+                    Email = u.User.Email,
+                    IsActive = u.User.IsActive
                 }).ToList();
             }
             catch (Exception ex)

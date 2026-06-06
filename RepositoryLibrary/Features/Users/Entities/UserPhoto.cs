@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace RepositoryLibrary.Features.Users.Entities
 {
+   
     public class UserPhoto
     {
         [Key]

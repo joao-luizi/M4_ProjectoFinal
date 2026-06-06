@@ -1,5 +1,6 @@
 ﻿using RepositoryLibrary.Features.Horses.DTOs;
 using RepositoryLibrary.Features.Users.DTOs;
+using RepositoryLibrary.Features.Users.Entities;
 
 namespace RepositoryLibrary.Features.Users.Interfaces
 {
@@ -14,10 +15,10 @@ namespace RepositoryLibrary.Features.Users.Interfaces
 
         //V2 Implemented
         Task<AdminUserDetailsDto?> GetUserDetailsAsync(string userId);
-        
- 
-
         //V2 Implemented
+        Task<List<EMUser>> GetUsersBySchoolAndRole(int schoolId, string role);
+
+        //V2 Implemented GetUsersBySchoolAndRole
         Task SaveUserAsync(AdminUserDetailsDto dto);
 
     }

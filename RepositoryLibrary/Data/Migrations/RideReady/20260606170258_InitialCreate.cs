@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace RepositoryLibrary.Data.Migrations.RideReady
 {
     /// <inheritdoc />
-    public partial class RenamePhotoEntities : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -272,6 +272,12 @@ namespace RepositoryLibrary.Data.Migrations.RideReady
                 {
                     table.PrimaryKey("PK_SchoolUsers", x => new { x.SchoolId, x.UserId });
                     table.ForeignKey(
+                        name: "FK_SchoolUsers_EMUser_UserId",
+                        column: x => x.UserId,
+                        principalTable: "EMUser",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
                         name: "FK_SchoolUsers_Schools_SchoolId",
                         column: x => x.SchoolId,
                         principalTable: "Schools",
@@ -523,6 +529,11 @@ namespace RepositoryLibrary.Data.Migrations.RideReady
                 table: "Schools",
                 column: "Email",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SchoolUsers_UserId",
+                table: "SchoolUsers",
+                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_UserCreditLedgerEntries_LessonTypeId",

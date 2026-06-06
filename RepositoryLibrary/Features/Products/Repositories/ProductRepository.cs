@@ -2,12 +2,13 @@
 using Microsoft.Extensions.Logging;
 using RepositoryLibrary.Data.Context;
 using RepositoryLibrary.Features.Products.Entities;
+using RepositoryLibrary.Features.Products.Interfaces;
 
 
 
 namespace RepositoryLibrary.Features.Products.Repositories
 {
-    public class ProductRepository
+    public class ProductRepository : IProductRepository
     {
         private readonly RideReadyDbContext _context;
         private ILogger<ProductRepository> _logger;

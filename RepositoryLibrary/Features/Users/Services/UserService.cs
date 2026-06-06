@@ -15,6 +15,7 @@ using RepositoryLibrary.Features.Schools.Repositories;
 using RepositoryLibrary.Features.Users.DTOs;
 using RepositoryLibrary.Features.Users.Entities;
 using RepositoryLibrary.Features.Users.Interfaces;
+using RepositoryLibrary.Features.Users.Repositories;
 using RepositoryLibrary.Features.Users.Repository;
 
 
@@ -26,16 +27,19 @@ namespace RepositoryLibrary.Features.Users.Service
         private readonly IUserRepository _userRepo;
         private readonly IUserPhotoRepository _userPhotoRepo;
         private readonly IImageService _imageService;
+        private readonly ISchoolUsersRepository _schoolUserRepo;
         private readonly ILogger<UserService> _logger;
 
         public UserService(
             IUserRepository userRepo,
             IUserPhotoRepository userPhotoRepo,
+            ISchoolUsersRepository schoolUserRepo,
             IImageService imageService,
             ILogger<UserService> logger)
         {
             _userRepo = userRepo;
             _userPhotoRepo = userPhotoRepo;
+            _schoolUserRepo = schoolUserRepo;
             _imageService = imageService;
             _logger = logger;
         }
@@ -79,6 +83,26 @@ namespace RepositoryLibrary.Features.Users.Service
             await _userRepo.SetUserActiveStatusAsync(
                 userId,
                 false);
+        }
+        //V2 Implemented GetUsersBySchoolAndRole
+        public async Task<List<EMUser>> GetUsersBySchoolAndRole(int schoolId, string role)
+        {
+            try
+            {
+                var users = await _userRepo.GetUsersByRoleAsync(role);
+                var schoolUsers = await _schoolUserRepo.GetUsersBySchoolAsync(schoolId);
+
+                var schoolUserIds = schoolUsers
+                .Select(su => su.UserId)
+                .ToHashSet();
+
+                return users.Where(u => schoolUserIds.Contains(u.Id)).ToList();
+
+            }
+            catch (Exception e)
+            {
+                throw new Exception(e.Message, e.InnerException);
+            }
         }
 
         public async Task<AdminUserDetailsDto?> GetUserDetailsAsync(string userId)

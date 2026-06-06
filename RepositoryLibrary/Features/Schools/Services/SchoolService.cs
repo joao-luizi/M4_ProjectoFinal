@@ -99,6 +99,24 @@ public class SchoolService : ISchoolService
             throw new Exception(e.Message, e.InnerException);
         }
     }
+    //School
+
+    public async Task<List<School>> GetSchoolsAsync()
+    {
+        _logger.LogInformation("A obter a lista de todas as escolas.");
+        try
+        {
+            var schools = await _schoolRepo.GetSchoolsAsync();
+
+            _logger.LogInformation("Obtidas {Count} escolas.", schools.Count);
+            return schools;
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Erro ao obter a lista de escolas.");
+            throw;
+        }
+    }
 
     public async Task<List<SchoolListDto>> GetSchoolsListAsync()
     {

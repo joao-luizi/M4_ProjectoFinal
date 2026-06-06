@@ -17,6 +17,5 @@ namespace RepositoryLibrary.Features.Schools.Interfaces
         public Task<School> DeleteSchoolAsync(School school);
         public Task<List<School>> GetUserSchoolsAsync(string userId);
         public Task<List<School>> GetSchoolsAsync();
-
     }
 }

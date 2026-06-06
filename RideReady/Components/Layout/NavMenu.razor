@@ -17,8 +17,9 @@
         <AuthorizeView Roles="@StaticRole.Admin">
             <Authorized>
                 <RadzenPanelMenuItem Path="/admin/schools" Text="Schools" Icon="account_box" Style="font-size: 1.2rem" Click="@(() => sidebarExpanded = !sidebarExpanded)" />
-                <RadzenPanelMenuItem Path="/users" Text="Users" Icon="account_box" Style="font-size: 1.2rem" Click="@(() => sidebarExpanded = !sidebarExpanded)" />
-                <RadzenPanelMenuItem Path="/horses" Text="Horses" Icon="motorcycle" Style="font-size: 1.2rem" Click="@(() => sidebarExpanded = !sidebarExpanded)" />
+                <RadzenPanelMenuItem Path="/admin/users" Text="Users" Icon="account_box" Style="font-size: 1.2rem" Click="@(() => sidebarExpanded = !sidebarExpanded)" />
+                <RadzenPanelMenuItem Path="/admin/horses" Text="Horses" Icon="motorcycle" Style="font-size: 1.2rem" Click="@(() => sidebarExpanded = !sidebarExpanded)" />
+                <RadzenPanelMenuItem Path="/admin/purchases" Text="Payments" Icon="payments" Style="font-size: 1.2rem" Click="@(() => sidebarExpanded = !sidebarExpanded)" />
             </Authorized>
         </AuthorizeView>
         <AuthorizeView>
@@ -26,7 +27,7 @@
                 <RadzenPanelMenuItem Path="/lessons" Text="Lessons" Icon="event" Style="font-size: 1.2rem" Click="@(() => sidebarExpanded = !sidebarExpanded)" />
             </Authorized>
         </AuthorizeView>
-        <AuthorizeView Roles=@($"{StaticRole.Admin},{StaticRole.Student}")>
+        <AuthorizeView Roles="@StaticRole.Student">
                 <RadzenPanelMenuItem Path="/payments"
                                      Text="Payments"
                                      Icon="payments"

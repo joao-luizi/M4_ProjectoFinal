@@ -1,10 +1,16 @@
 dotnet ef database drop --context AppIdentityDbContext --project RepositoryLibrary --startup-project RideReady --force
 
 
+----------------------------CRAIAÇÃO INICIAL ___________________________
 
 dotnet ef migrations add InitialIdentity --context AppIdentityDbContext --project RepositoryLibrary --startup-project RideReady --output-dir Data/Migrations/Identity
 
+dotnet ef migrations add InitialCreate --context RideReadyDbContext --project RepositoryLibrary --startup-project RideReady --output-dir Data/Migrations/RideReady
+
+__________________________________________________________________________
 dotnet ef migrations add <nome-da-migração> --context RideReadyDbContext --project RepositoryLibrary --startup-project RideReady
+
+
 
 
 dotnet ef database update --context RideReadyDbContext --project RepositoryLibrary --startup-project RideReady

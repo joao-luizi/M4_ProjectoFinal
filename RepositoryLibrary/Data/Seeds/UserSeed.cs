@@ -71,30 +71,6 @@ namespace RepositoryLibrary.Data.Seeds
             return users;
         }
 
-        public static async Task<List<EMUser>> CreateUsersV0(IServiceProvider serviceProvider)
-        {
-            try
-            {
-               
-
-                List<EMUser> users = new();
-                List<EMUser> admin = await CreateUsers(serviceProvider, 1, 1, StaticRole.Admin);
-                List<EMUser> teachers = await CreateUsers(serviceProvider, 1, 3, StaticRole.Teacher);
-                List<EMUser> students = await CreateUsers(serviceProvider, 1, 10, StaticRole.Student);
-                users.AddRange(admin);
-                users.AddRange(teachers);
-                users.AddRange(students);
-
-
-                return users;
-            }
-            catch (Exception e)
-            {
-                throw new Exception(e.Message, e.InnerException);
-            }
-        }
-
-
         public static async Task UserSeedWithRole(IServiceProvider serviceProvider)
         {
             try
@@ -113,6 +89,7 @@ namespace RepositoryLibrary.Data.Seeds
                     await emContext.SaveChangesAsync();
                 }
 
+              
                 List<EMUser> users = new();
 
                 users.AddRange(await CreateUsers(
@@ -133,10 +110,14 @@ namespace RepositoryLibrary.Data.Seeds
                     amount: 10,
                     role: StaticRole.Student));
 
+
+
                 if (!users.Any())
                 {
                     throw new Exception("No users were created.");
                 }
+                await emContext.AddRangeAsync(users);
+                await emContext.SaveChangesAsync();
             }
             catch (Exception e)
             {

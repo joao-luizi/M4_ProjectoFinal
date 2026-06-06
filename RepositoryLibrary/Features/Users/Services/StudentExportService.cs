@@ -45,7 +45,7 @@ namespace RepositoryLibrary.Features.Users.Service
             var row = 2;
             foreach (var s in students)
             {
-                ws.Cell(row, 1).Value = s.Name ?? string.Empty;
+                ws.Cell(row, 1).Value = s.FirstName + " " + s.LastName ?? string.Empty;
                 ws.Cell(row, 2).Value = s.Email ?? string.Empty;
                 ws.Cell(row, 3).Value = s.PhoneNumber ?? string.Empty;
                 ws.Cell(row, 4).Value = s.Birthdate.ToString("dd/MM/yyyy");

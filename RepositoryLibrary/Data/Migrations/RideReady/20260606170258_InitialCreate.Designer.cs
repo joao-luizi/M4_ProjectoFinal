@@ -12,8 +12,8 @@ using RepositoryLibrary.Data.Context;
 namespace RepositoryLibrary.Data.Migrations.RideReady
 {
     [DbContext(typeof(RideReadyDbContext))]
-    [Migration("20260527090657_InitialRideReady")]
-    partial class InitialRideReady
+    [Migration("20260606170258_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -194,7 +194,26 @@ namespace RepositoryLibrary.Data.Migrations.RideReady
 
                     b.HasKey("HorseId");
 
-                    b.ToTable("HorseFoto");
+                    b.ToTable("HorseFotos");
+                });
+
+            modelBuilder.Entity("RepositoryLibrary.Features.Horses.Entities.UserHorse", b =>
+                {
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("HorseId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Relationship")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("UserId", "HorseId");
+
+                    b.HasIndex("HorseId");
+
+                    b.ToTable("UserHorses");
                 });
 
             modelBuilder.Entity("RepositoryLibrary.Features.Lessons.Entities.Lesson", b =>
@@ -417,26 +436,6 @@ namespace RepositoryLibrary.Data.Migrations.RideReady
                     b.ToTable("PurchaseLines");
                 });
 
-            modelBuilder.Entity("RepositoryLibrary.Features.Schools.Entities.Logo", b =>
-                {
-                    b.Property<int>("SchoolId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("LogoName")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<byte[]>("Image")
-                        .IsRequired()
-                        .HasColumnType("varbinary(max)");
-
-                    b.HasKey("SchoolId", "LogoName");
-
-                    b.HasIndex("SchoolId")
-                        .IsUnique();
-
-                    b.ToTable("Logos");
-                });
-
             modelBuilder.Entity("RepositoryLibrary.Features.Schools.Entities.School", b =>
                 {
                     b.Property<int>("SchoolId")
@@ -475,6 +474,107 @@ namespace RepositoryLibrary.Data.Migrations.RideReady
                     b.ToTable("Schools");
                 });
 
+            modelBuilder.Entity("RepositoryLibrary.Features.Schools.Entities.SchoolPhoto", b =>
+                {
+                    b.Property<int>("SchoolId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("FotoPath")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("SchoolId");
+
+                    b.ToTable("SchoolPhotos");
+                });
+
+            modelBuilder.Entity("RepositoryLibrary.Features.Users.Entities.EMUser", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("AccessFailedCount")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Address")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("Birthdate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("CitizenNumber")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Email")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("EmailConfirmed")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("ImageAuthorized")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("InformationAuthorized")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("LockoutEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTimeOffset?>("LockoutEnd")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("NormalizedEmail")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NormalizedUserName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PasswordHash")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("PhoneNumberConfirmed")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("RegisterDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("SecurityStamp")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<long>("SocialHealthNumber")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("TaxIdentificationNumber")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("TwoFactorEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("UserName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("EMUser");
+                });
+
             modelBuilder.Entity("RepositoryLibrary.Features.Users.Entities.SchoolUser", b =>
                 {
                     b.Property<int>("SchoolId")
@@ -485,40 +585,22 @@ namespace RepositoryLibrary.Data.Migrations.RideReady
 
                     b.HasKey("SchoolId", "UserId");
 
+                    b.HasIndex("UserId");
+
                     b.ToTable("SchoolUsers");
                 });
 
-            modelBuilder.Entity("RepositoryLibrary.Features.Users.Entities.UserHorse", b =>
+            modelBuilder.Entity("RepositoryLibrary.Features.Users.Entities.UserPhoto", b =>
                 {
                     b.Property<string>("UserId")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<int>("HorseId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Relationship")
-                        .IsRequired()
+                    b.Property<string>("FotoPath")
                         .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("UserId", "HorseId");
-
-                    b.HasIndex("HorseId");
-
-                    b.ToTable("UserHorses");
-                });
-
-            modelBuilder.Entity("RepositoryLibrary.Features.Users.Photo", b =>
-                {
-                    b.Property<string>("UserId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<byte[]>("UserPhoto")
-                        .IsRequired()
-                        .HasColumnType("varbinary(max)");
 
                     b.HasKey("UserId");
 
-                    b.ToTable("Photos");
+                    b.ToTable("UserPhotos");
                 });
 
             modelBuilder.Entity("RepositoryLibrary.Features.Bookings.Entities.Booking", b =>
@@ -615,6 +697,17 @@ namespace RepositoryLibrary.Data.Migrations.RideReady
                     b.Navigation("Horse");
                 });
 
+            modelBuilder.Entity("RepositoryLibrary.Features.Horses.Entities.UserHorse", b =>
+                {
+                    b.HasOne("RepositoryLibrary.Features.Horses.Entities.Horse", "Horse")
+                        .WithMany("UserHorses")
+                        .HasForeignKey("HorseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Horse");
+                });
+
             modelBuilder.Entity("RepositoryLibrary.Features.Lessons.Entities.Lesson", b =>
                 {
                     b.HasOne("RepositoryLibrary.Features.Products.Entities.LessonType", "LessonType")
@@ -702,11 +795,11 @@ namespace RepositoryLibrary.Data.Migrations.RideReady
                     b.Navigation("Purchase");
                 });
 
-            modelBuilder.Entity("RepositoryLibrary.Features.Schools.Entities.Logo", b =>
+            modelBuilder.Entity("RepositoryLibrary.Features.Schools.Entities.SchoolPhoto", b =>
                 {
                     b.HasOne("RepositoryLibrary.Features.Schools.Entities.School", "School")
-                        .WithOne("Logo")
-                        .HasForeignKey("RepositoryLibrary.Features.Schools.Entities.Logo", "SchoolId")
+                        .WithOne("SchoolPhoto")
+                        .HasForeignKey("RepositoryLibrary.Features.Schools.Entities.SchoolPhoto", "SchoolId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -721,18 +814,26 @@ namespace RepositoryLibrary.Data.Migrations.RideReady
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("School");
-                });
-
-            modelBuilder.Entity("RepositoryLibrary.Features.Users.Entities.UserHorse", b =>
-                {
-                    b.HasOne("RepositoryLibrary.Features.Horses.Entities.Horse", "Horse")
-                        .WithMany("UserHorses")
-                        .HasForeignKey("HorseId")
+                    b.HasOne("RepositoryLibrary.Features.Users.Entities.EMUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Horse");
+                    b.Navigation("School");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("RepositoryLibrary.Features.Users.Entities.UserPhoto", b =>
+                {
+                    b.HasOne("RepositoryLibrary.Features.Users.Entities.EMUser", "User")
+                        .WithOne("UserPhoto")
+                        .HasForeignKey("RepositoryLibrary.Features.Users.Entities.UserPhoto", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("RepositoryLibrary.Features.Entitlements.Entities.UserSubscription", b =>
@@ -770,10 +871,14 @@ namespace RepositoryLibrary.Data.Migrations.RideReady
 
             modelBuilder.Entity("RepositoryLibrary.Features.Schools.Entities.School", b =>
                 {
-                    b.Navigation("Logo")
-                        .IsRequired();
+                    b.Navigation("SchoolPhoto");
 
                     b.Navigation("SchoolUsers");
+                });
+
+            modelBuilder.Entity("RepositoryLibrary.Features.Users.Entities.EMUser", b =>
+                {
+                    b.Navigation("UserPhoto");
                 });
 #pragma warning restore 612, 618
         }

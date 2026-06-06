@@ -56,19 +56,11 @@ namespace RepositoryLibrary.Features.Users.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task<List<UserListDto>> GetUsersBySchoolAsync(int schoolId)
+        //V2 Implemented
+        public async Task<List<SchoolUser>> GetUsersBySchoolAsync(int schoolId)
         {
-            return await _context.Set<SchoolUser>()
-                .AsNoTracking()
+            return await _context.SchoolUsers
                 .Where(su => su.SchoolId == schoolId)
-                .Select(su => new UserListDto
-                {
-                    Id = su.User.Id,
-                    FirstName = su.User.FirstName,
-                    LastName = su.User.LastName,
-                    Email = su.User.Email,
-                    IsActive = su.User.IsActive
-                })
                 .ToListAsync();
         }
 
