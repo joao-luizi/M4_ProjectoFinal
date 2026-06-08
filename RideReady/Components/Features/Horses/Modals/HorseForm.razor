@@ -1,77 +1,100 @@
 ﻿@using Microsoft.AspNetCore.Components.Forms
+@using Radzen
 @using RepositoryLibrary.Features.Horses.DTOs
-@using RepositoryLibrary.Features.Horses.Interfaces
+@using RepositoryLibrary.Features.Schools.DTOs
+@using RepositoryLibrary.Features.Users.DTOs
 @using RepositoryLibrary.Shared.Enums
 
 @if (Horse is null)
 {
-    <p>Loading...</p>
+    <RadzenProgressBar Mode="ProgressBarMode.Indeterminate" />
 }
 else
 {
-    <EditForm Model="Horse" OnValidSubmit="Save">
+    <RadzenTemplateForm TItem="HorseEditDto"
+                        Data="@Horse"
+                        Submit="@OnSubmit">
 
-        <DataAnnotationsValidator />
-
-        <!-- FOTO -->
-        <div style="margin-bottom:16px;">
-            <label>Horse Photo</label>
+        <RadzenFieldset Text="Horse Photo">
 
             <div style="display:flex; gap:16px; align-items:center;">
 
-                <img src="@(PreviewImage ?? Horse.PhotoPath ?? "horse_default_image/horse.png")"
+                <img src="@(previewImage ?? Horse.PhotoPath ?? "/Images/default_horse.png")"
                      style="width:120px;height:120px;border-radius:8px;object-fit:cover;" />
 
                 @if (Mode != ModalFormMode.View)
                 {
-                    <InputFile OnChange="HandleImageSelected" />
+                    <InputFile OnChange="@OnFileSelectedHandler"
+                               accept=".jpg,.jpeg,.png" />
                 }
 
             </div>
-        </div>
 
-        <hr />
+        </RadzenFieldset>
 
-        <!-- FIELDS -->
+        <RadzenFieldset Text="Details">
 
-        <div>
-            <label>Name</label>
-            <InputText @bind-Value="Horse.Name"
-                       disabled="@(Mode == ModalFormMode.View)" />
-        </div>
+            <RadzenStack Gap="12px">
 
-        <div>
-            <label>Breed</label>
-            <InputText @bind-Value="Horse.Breed"
-                       disabled="@(Mode == ModalFormMode.View)" />
-        </div>
+                <RadzenTextBox @bind-Value="Horse.Name"
+                               Disabled="@(Mode == ModalFormMode.View)"
+                               Placeholder="Name" />
 
-        <div>
-            <label>Date of Birth</label>
-            <InputDate @bind-Value="Horse.DateOfBirth"
-                       disabled="@(Mode == ModalFormMode.View)" />
-        </div>
+                <RadzenTextBox @bind-Value="Horse.Breed"
+                               Disabled="@(Mode == ModalFormMode.View)"
+                               Placeholder="Breed" />
 
-        <!-- ACTIONS -->
-        <div style="margin-top:16px; display:flex; gap:8px;">
+                <RadzenDatePicker @bind-Value="Horse.DateOfBirth"
+                                  Disabled="@(Mode == ModalFormMode.View)" />
+
+                <RadzenDropDown @bind-Value="Horse.SchoolId"
+                                Data="@Schools"
+                                TextProperty="SchoolName"
+                                ValueProperty="SchoolId"
+                                Placeholder="Select School"
+                                Disabled="@(Mode == ModalFormMode.View)"
+                                Style="width:100%" />
+
+                <RadzenDropDown Data="@Students"
+                                TextProperty="FullName"
+                                ValueProperty="Id"
+                                @bind-Value="Horse.OwnerUserId"
+                                AllowClear="true"
+                                Placeholder="Cavalo da escola"
+                                Disabled="@(Mode == ModalFormMode.View)" 
+                                />
+
+            </RadzenStack>
+
+        </RadzenFieldset>
+
+        <div style="margin-top:16px; display:flex; gap:8px; justify-content:flex-end;">
 
             @if (Mode != ModalFormMode.View)
             {
-                <button type="submit">Save</button>
+                <RadzenButton ButtonType="ButtonType.Submit"
+                              Text="Save"
+                              Icon="save"
+                              ButtonStyle="ButtonStyle.Primary" />
             }
 
-            <button type="button" @onclick="Cancel">
-                Close
-            </button>
+            <RadzenButton Text="Close"
+                          Icon="close"
+                          ButtonStyle="ButtonStyle.Light"
+                          Click="Cancel" />
 
         </div>
 
-    </EditForm>
+    </RadzenTemplateForm>
 }
 
 @code {
 
-    private string? PreviewImage;
+    private string? previewImage;
+
+    [Parameter] public List<AdminUserListItemDto> Students { get; set; } = [];
+
+    [Parameter] public List<SchoolListDto> Schools { get; set; } = new();
 
     [Parameter] public HorseEditDto? Horse { get; set; }
 
@@ -81,28 +104,34 @@ else
 
     [Parameter] public EventCallback OnCancel { get; set; }
 
-    private async Task HandleImageSelected(InputFileChangeEventArgs e)
-    {
-        if (Mode == ModalFormMode.View)
-            return;
+    [Parameter] public EventCallback<IBrowserFile?> OnFileSelected { get; set; }
 
+
+    private async Task OnFileSelectedHandler(InputFileChangeEventArgs e)
+    {
         var file = e.File;
 
-        if (file is null)
-            return;
+        Horse.NewPhoto = file;
 
-        Horse!.NewPhoto = file;
+        await using var stream = file.OpenReadStream(5 * 1024 * 1024);
 
-        var buffer = new byte[file.Size];
+        using var ms = new MemoryStream();
+        await stream.CopyToAsync(ms);
 
-        await file.OpenReadStream(5 * 1024 * 1024)
-                  .ReadAsync(buffer);
+        var buffer = ms.ToArray();
 
-        PreviewImage =
-            $"data:{file.ContentType};base64,{Convert.ToBase64String(buffer)}";
+        previewImage = $"data:{file.ContentType};base64,{Convert.ToBase64String(buffer)}";
+
+        await OnFileSelected.InvokeAsync(file);
     }
 
-    private async Task Save()
+
+    private async Task Cancel()
+    {
+        await OnCancel.InvokeAsync();
+    }
+
+    private async Task OnSubmit()
     {
         if (Mode == ModalFormMode.View)
             return;
@@ -111,10 +140,5 @@ else
             return;
 
         await OnSave.InvokeAsync(Horse);
-    }
-
-    private async Task Cancel()
-    {
-        await OnCancel.InvokeAsync();
     }
 }

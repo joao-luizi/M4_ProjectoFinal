@@ -29,5 +29,7 @@ namespace RepositoryLibrary.Features.Users.DTOs
         public string? PhotoPath { get; set; }
 
         public IBrowserFile? NewPhoto { get; set; }
+
+        public string? Password { get; set; }
     }
 }

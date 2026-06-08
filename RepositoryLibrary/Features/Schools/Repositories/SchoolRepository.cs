@@ -215,30 +215,38 @@ namespace RepositoryLibrary.Features.Schools.Repositories
                 throw new Exception(e.Message, e.InnerException);
             }
         }
-
-        public async Task<List<SchoolPhoto>> GetAllSchoolLogosAsync(int schoolId)
+        //V2 Implemented
+        public async Task AddAsync(School school)
         {
-            _logger.LogInformation("BD: a consultar logótipos da escola {SchoolId}.", schoolId);
-            try
-            {
-                List<SchoolPhoto> logos = await _emContext.SchoolPhotos.Where(scl => scl.SchoolId == schoolId).ToListAsync();
-
-                if (logos.IsNullOrEmpty())
-                {
-                    _logger.LogWarning("Escola {SchoolId} não tem logótipos.", schoolId);
-                    throw new Exception($"The school with Id = {schoolId} has no logos yet.");
-                }
-
-                _logger.LogInformation("BD: obtidos {Count} logótipos para a escola {SchoolId}.", logos.Count, schoolId);
-                return logos;
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e, "Erro ao consultar logótipos da escola {SchoolId}.", schoolId);
-                throw new Exception(e.Message, e.InnerException);
-            }
+            await _emContext.Schools.AddAsync(school);
+            await _emContext.SaveChangesAsync();
+        }
+        //V2 Implemented
+        public async Task AddAsync(SchoolPhoto foto)
+        {
+            await _emContext.SchoolPhotos.AddAsync(foto);
+            await _emContext.SaveChangesAsync();
+        }
+        //V2 Implemented
+        public async Task<SchoolPhoto?> GetSchoolPhotoByIsAsync(int schoolId)
+        {
+            return await _emContext.SchoolPhotos
+                .Where(x => x.SchoolId == schoolId)
+                .FirstOrDefaultAsync();
+        }
+        //V2 Implemented
+        public async Task UpdateAsync(SchoolPhoto foto)
+        {
+            _emContext.SchoolPhotos.Update(foto);
+            await _emContext.SaveChangesAsync();
         }
 
+        //V2 Implemented
+        public async Task UpdateAsync(School school)
+        {
+            _emContext.Schools.Update(school);
+            await _emContext.SaveChangesAsync();
+        }
         public async Task<List<School>> GetUserSchoolsAsync(string userId)
         {
             _logger.LogInformation("BD: a consultar escolas do utilizador {UserId}.", userId);
@@ -272,9 +280,6 @@ namespace RepositoryLibrary.Features.Schools.Repositories
             }
         }
 
-        internal async Task<SchoolPhoto> AddSchoolLogoAsync(int schoolId, string logoName, string filepath)
-        {
-            throw new NotImplementedException();
-        }
+       
     }
 }

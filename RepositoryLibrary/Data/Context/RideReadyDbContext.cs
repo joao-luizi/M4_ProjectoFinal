@@ -150,17 +150,16 @@ namespace RepositoryLibrary.Data.Context
                 .HasForeignKey<HorseFoto>(x => x.HorseId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            modelBuilder.Entity<UserPhoto>()
+            modelBuilder.Entity<UserFoto>()
             .HasKey(x => x.UserId);
 
-            modelBuilder.Entity<UserPhoto>()
-                .HasOne(x => x.User)
-                .WithOne(u => u.UserPhoto)
-                .HasForeignKey<UserPhoto>(x => x.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<UserFoto>()
+            .Property(x => x.UserId)
+            .IsRequired();
 
             modelBuilder.Entity<SchoolPhoto>()
             .HasKey(x => x.SchoolId);
+
 
             modelBuilder.Entity<SchoolPhoto>()
                 .HasOne(x => x.School)
@@ -172,7 +171,7 @@ namespace RepositoryLibrary.Data.Context
         }
 
         public DbSet<HorseFoto> HorseFotos { get; set; }
-        public DbSet<UserPhoto> UserPhotos { get; set; }
+        public DbSet<UserFoto> UserFotos { get; set; }
         public DbSet<SchoolPhoto> SchoolPhotos { get; set; }
         public DbSet<Booking> Bookings { get; set; }
         public DbSet<Horse> Horses { get; set; }
@@ -190,5 +189,6 @@ namespace RepositoryLibrary.Data.Context
         public DbSet<UserSubscription> UserSubscriptions => Set<UserSubscription>();
         public DbSet<UserSubscriptionEntitlement> UserSubscriptionEntitlements => Set<UserSubscriptionEntitlement>();
         public DbSet<UserCreditLedgerEntry> UserCreditLedgerEntries => Set<UserCreditLedgerEntry>();
+
     }
 }

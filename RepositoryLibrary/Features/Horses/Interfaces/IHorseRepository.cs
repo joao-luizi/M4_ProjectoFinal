@@ -18,8 +18,16 @@ namespace RepositoryLibrary.Features.Horses.Interfaces
         //V2 Implelmented
         Task<int> CountAsync();
 
+        //V2 Implemented
+        Task<UserHorse?> GetUserHorseByHorseId(int horseId);
 
+        //V2 Implemented
+        Task<UserHorse?> GetUserHorseByUserId(string userId);
+        //V2 Implemented
+        Task AddAsync(UserHorse userHorse);
 
+        //V2 Implemented
+        Task Delete(UserHorse userHorse);
 
 
     }

@@ -1,0 +1,199 @@
+﻿@page "/admin/schools"
+@attribute [Authorize(Roles = StaticRole.Admin)]
+@rendermode InteractiveServer
+
+@using Microsoft.AspNetCore.Authorization
+@using RepositoryLibrary.Features.Schools.DTOs
+@using RepositoryLibrary.Features.Schools.Entities
+@using RepositoryLibrary.Features.Schools.Interfaces
+@using RepositoryLibrary.Features.Users.Entities
+@using RepositoryLibrary.Shared.Enums
+@using RideReady.Components.Features.Admin.Schools.Components
+
+
+@inject ISchoolService SchoolService
+@inject NotificationService NotificationService
+
+@if (_loading)
+{
+    <p>Loading...</p>
+}
+else
+{
+    @if (showForm)
+    {
+        <SchoolForm School="editingSchoolDetails"
+                    Mode="formMode"
+                    OnSave="SaveSchool"
+                    OnCancel="CloseForm" />
+    }
+    else
+    {
+        <RadzenCard Style="padding:1rem">
+
+            <RadzenStack Orientation="Orientation.Horizontal"
+                         JustifyContent="JustifyContent.SpaceBetween">
+
+                <h3>Schools</h3>
+
+                <RadzenButton Text="New School"
+                              Icon="add"
+                              Click="@CreateSchool" />
+            </RadzenStack>
+
+            <RadzenDataGrid TItem="AdminSchoolListItemDto"
+                            Data="@schools"
+                            AllowPaging="true"
+                            PageSize="10"
+                            AllowSorting="true">
+
+                <Columns>
+
+                    <RadzenDataGridColumn TItem="AdminSchoolListItemDto"
+                                          Property="SchoolName"
+                                          Title="Name" />
+
+                    <RadzenDataGridColumn TItem="AdminSchoolListItemDto"
+                                          Property="Email"
+                                          Title="Email" />
+
+                    <RadzenDataGridColumn TItem="AdminSchoolListItemDto"
+                                          Property="Contact"
+                                          Title="Contact" />
+
+                    <RadzenDataGridColumn TItem="AdminSchoolListItemDto"
+                                          Property="SchoolCapacity"
+                                          Title="Capacity" />
+
+                    <RadzenDataGridColumn TItem="AdminSchoolListItemDto"
+                                          Title="Actions"
+                                          Width="180px">
+
+                        <Template Context="school">
+
+                            <RadzenButton Icon="edit"
+                                          Size="ButtonSize.Small"
+                                          Style="margin-right:5px"
+                                          Click="@(() => EditSchool(school))" />
+
+                            <RadzenButton Icon="visibility"
+                                          Size="ButtonSize.Small"
+                                          Style="margin-right:5px"
+                                          Click="@(() => ViewSchool(school))" />
+
+                            <RadzenButton Icon="delete"
+                                          ButtonStyle="ButtonStyle.Danger"
+                                          Size="ButtonSize.Small"
+                                          Click="@(() => DeleteSchool(school))" />
+
+                        </Template>
+
+                    </RadzenDataGridColumn>
+
+                </Columns>
+
+            </RadzenDataGrid>
+
+        </RadzenCard>
+    }
+}
+
+@code {
+
+    private AdminSchoolDetailsDto? editingSchoolDetails;
+    private List<AdminSchoolListItemDto> schools = new();
+    private bool showForm;
+    private bool _loading = true;
+
+    private ModalFormMode formMode { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Reload();
+        _loading = false;
+    }
+
+    private async Task Reload()
+    {
+        schools = await SchoolService.GetAdminSchoolsAsync();
+    }
+
+    private async Task ViewSchool(AdminSchoolListItemDto dto)
+    {
+        editingSchoolDetails = await SchoolService.GetAdminSchoolByIdAsync(dto.SchoolId);
+        formMode = ModalFormMode.View;
+        showForm = true;
+    }
+
+    private async Task EditSchool(AdminSchoolListItemDto dto)
+    {
+        editingSchoolDetails = await SchoolService.GetAdminSchoolByIdAsync(dto.SchoolId);
+        formMode = ModalFormMode.Edit;
+        showForm = true;
+    }
+
+    private void CreateSchool()
+    {
+        editingSchoolDetails = new AdminSchoolDetailsDto();
+        formMode = ModalFormMode.Create;
+        showForm = true;
+    }
+
+    private async Task SaveSchool(AdminSchoolDetailsDto dto)
+    {
+        try
+        {
+            await SchoolService.SaveSchoolAsync(dto);
+
+            await Reload();
+
+            showForm = false;
+            editingSchoolDetails = null;
+
+            NotificationService.Notify(
+                NotificationSeverity.Success,
+                "Success",
+                "School saved successfully"
+            );
+        }
+        catch (Exception)
+        {
+            NotificationService.Notify(
+                NotificationSeverity.Error,
+                "Error",
+                "Failed to save school"
+            );
+        }
+    }
+
+    private void CloseForm()
+    {
+        showForm = false;
+        editingSchoolDetails = null;
+        formMode = ModalFormMode.None;
+    }
+
+    private async Task DeleteSchool(AdminSchoolListItemDto dto)
+    {
+        try
+        {
+            await SchoolService.DeleteSchoolByIdAsync(dto.SchoolId);
+
+            await Reload();
+
+            NotificationService.Notify(
+                NotificationSeverity.Success,
+                "Deleted",
+                "School deleted successfully"
+            );
+        }
+        catch
+        {
+            NotificationService.Notify(
+                NotificationSeverity.Error,
+                "Error",
+                "Failed to delete school"
+            );
+        }
+    }
+}

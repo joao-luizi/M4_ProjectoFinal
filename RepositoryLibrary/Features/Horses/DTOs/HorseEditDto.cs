@@ -20,5 +20,9 @@ namespace RepositoryLibrary.Features.Horses.DTOs
         public string? PhotoPath { get; set; }
 
         public IBrowserFile? NewPhoto { get; set; }
+
+        public int SchoolId { get; set; }
+
+        public string? OwnerUserId { get; set; }
     }
 }

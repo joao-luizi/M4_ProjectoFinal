@@ -13,5 +13,15 @@ namespace RepositoryLibrary.Features.Entitlements.Interfaces
         Task<List<UserCreditLedgerEntry>> GetCreditLedgerAsync(string userId);
         //V2 Implemented
         Task<List<UserSubscriptionEntitlement>> GetSubscriptionEntitlementsAsync(string userId);
+
+        //V2 Implemented
+        Task AddAsync(UserSubscription subscription);
+        //V2 Implemented
+        Task AddAsync(UserCreditLedgerEntry creditLedgerEntry);
+        //V2 Implemented
+        Task AddAsync(List<UserCreditLedgerEntry> credsList);
+        
+
+
     }
 }

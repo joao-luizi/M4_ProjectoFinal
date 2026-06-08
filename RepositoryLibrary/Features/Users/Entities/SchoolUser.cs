@@ -8,7 +8,6 @@ namespace RepositoryLibrary.Features.Users.Entities
         public string UserId { get; set; }
         public int SchoolId { get; set; }
 
-        public EMUser User { get; set; }
         public School School { get; set; }
     }
 }

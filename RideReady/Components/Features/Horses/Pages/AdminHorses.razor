@@ -3,18 +3,21 @@
 @using RepositoryLibrary.Features.Horses
 @using RepositoryLibrary.Features.Horses.DTOs
 @using RepositoryLibrary.Features.Horses.Interfaces
+@using RepositoryLibrary.Features.Schools.DTOs
+@using RepositoryLibrary.Features.Schools.Interfaces
+@using RepositoryLibrary.Features.Users.DTOs
+@using RepositoryLibrary.Features.Users.Interfaces
 @using RepositoryLibrary.Shared.Enums
 @using RideReady.Components.Features.Horses.Modals
 @inject IHorseService HorseService
+@inject ISchoolService SchoolService
+@inject IUserService UserService
 @rendermode InteractiveServer
 @attribute [Authorize(Roles = "Administrator")]
 
-<h3 class="text-3xl font-bold mb-2">Gestão de Cavalos</h3>
-<p class="text-muted mb-6">Lista e gestão dos cavalos da escola.</p>
-
 @if (overview is null)
 {
-    <p>Loading...</p>
+    <RadzenProgressBar Mode="ProgressBarMode.Indeterminate" />
 }
 else
 {
@@ -22,78 +25,132 @@ else
     {
         <HorseForm Horse="editingHorse"
                    Mode="formMode"
+                   Schools="schools"
+                   Students = "students"
                    OnSave="HandleHorseSave"
                    OnCancel="CloseForm" />
+
+
     }
-    <!-- OVERVIEW -->
-    <div class="grid grid-cols-3 gap-4 mb-6">
-        <div class="card">
-            <h4>Total</h4>
-            <p>@overview.TotalHorses</p>
-        </div>
+    else
+    {
+        <RadzenStack Gap="20px">
 
-        <div class="card">
-            <h4>Escola</h4>
-            <p>@overview.SchoolHorses</p>
-        </div>
+            <!-- TITLE -->
+            <RadzenText TextStyle="TextStyle.H4">
+                Gestão de Cavalos
+            </RadzenText>
 
-        <div class="card">
-            <h4>Privados</h4>
-            <p>@overview.PrivateHorses</p>
-        </div>
-    </div>
+            <RadzenText TextStyle="TextStyle.Body2">
+                Lista e gestão dos cavalos da escola.
+            </RadzenText>
 
-    <!-- LIST -->
-    <div class="flex justify-between items-center mb-4">
-        <h4>Lista de Cavalos</h4>
+            <!-- OVERVIEW -->
+            <RadzenRow Gap="16px">
 
-        <RadzenButton Text="Novo Cavalo"
-                      Icon="add"
-                      ButtonStyle="ButtonStyle.Primary"
-                      Click="CreateHorse" />
-    </div>
-    <RadzenDataGrid Data="@overview.Horses" TItem="HorseListItemDto" Class="w-100">
-        <Columns>
+                <RadzenColumn Size="4">
+                    <RadzenCard>
+                        <RadzenText TextStyle="TextStyle.Subtitle2">Total</RadzenText>
+                        <RadzenText TextStyle="TextStyle.H5">@overview.TotalHorses</RadzenText>
+                    </RadzenCard>
+                </RadzenColumn>
 
-            <RadzenDataGridColumn TItem="HorseListItemDto" Property="HorseId" Title="ID" />
+                <RadzenColumn Size="4">
+                    <RadzenCard>
+                        <RadzenText TextStyle="TextStyle.Subtitle2">Escola</RadzenText>
+                        <RadzenText TextStyle="TextStyle.H5">@overview.SchoolHorses</RadzenText>
+                    </RadzenCard>
+                </RadzenColumn>
 
-            <RadzenDataGridColumn TItem="HorseListItemDto" Property="Name" Title="Nome" />
+                <RadzenColumn Size="4">
+                    <RadzenCard>
+                        <RadzenText TextStyle="TextStyle.Subtitle2">Privados</RadzenText>
+                        <RadzenText TextStyle="TextStyle.H5">@overview.PrivateHorses</RadzenText>
+                    </RadzenCard>
+                </RadzenColumn>
 
-            <RadzenDataGridColumn TItem="HorseListItemDto" Property="Breed" Title="Raça" />
+            </RadzenRow>
 
-            <RadzenDataGridColumn TItem="HorseListItemDto" Title="Idade">
-                <Template Context="h">
-                    @h.Age
-                </Template>
-            </RadzenDataGridColumn>
+            <!-- HEADER -->
+            <RadzenStack Orientation="Orientation.Horizontal"
+                         JustifyContent="JustifyContent.SpaceBetween"
+                         AlignItems="AlignItems.Center">
 
-            <RadzenDataGridColumn TItem="HorseListItemDto" Title="Propriedade">
-                <Template Context="h">
-                    @h.Ownership
-                </Template>
-            </RadzenDataGridColumn>
+                <RadzenText TextStyle="TextStyle.H6">
+                    Lista de Cavalos
+                </RadzenText>
 
-            <RadzenDataGridColumn TItem="HorseListItemDto" Title="Ações">
-                <Template Context="h">
-                    <RadzenButton Icon="visibility"
-                                  ButtonStyle="ButtonStyle.Info"
-                                  Size="ButtonSize.Small"
-                                  Click="@(() => ViewHorse(h.HorseId))" />
+                <RadzenButton Text="Novo Cavalo"
+                              Icon="add"
+                              ButtonStyle="ButtonStyle.Primary"
+                              Click="CreateHorse" />
 
-                    <RadzenButton Icon="edit"
-                                  ButtonStyle="ButtonStyle.Primary"
-                                  Size="ButtonSize.Small"
-                                  Click="@(() => EditHorse(h.HorseId))" />
+            </RadzenStack>
 
-                    <RadzenButton Icon="delete"
-                                  ButtonStyle="ButtonStyle.Danger"
-                                  Size="ButtonSize.Small"
-                                  Disabled="true" />
-                </Template>
-            </RadzenDataGridColumn>
+            <!-- GRID -->
+            <RadzenDataGrid Data="@overview.Horses"
+                            TItem="HorseListItemDto"
+                            AllowPaging="true"
+                            PageSize="10"
+                            AllowSorting="true"
+                            Class="w-100">
 
-        </Columns>
-    </RadzenDataGrid>
+                <Columns>
+
+                    <RadzenDataGridColumn TItem="HorseListItemDto"
+                                          Property="HorseId"
+                                          Title="ID" />
+
+                    <RadzenDataGridColumn TItem="HorseListItemDto"
+                                          Property="Name"
+                                          Title="Nome" />
+
+                    <RadzenDataGridColumn TItem="HorseListItemDto"
+                                          Property="Breed"
+                                          Title="Raça" />
+
+                    <RadzenDataGridColumn TItem="HorseListItemDto"
+                                          Title="Idade">
+                        <Template Context="h">
+                            @h.Age
+                        </Template>
+                    </RadzenDataGridColumn>
+
+                    <RadzenDataGridColumn TItem="HorseListItemDto"
+                                          Title="Propriedade">
+                        <Template Context="h">
+                            @h.Ownership
+                        </Template>
+                    </RadzenDataGridColumn>
+
+                    <RadzenDataGridColumn TItem="HorseListItemDto"
+                                          Title="Ações">
+                        <Template Context="h">
+
+                            <RadzenButton Icon="visibility"
+                                          ButtonStyle="ButtonStyle.Info"
+                                          Size="ButtonSize.Small"
+                                          Click="@(() => ViewHorse(h.HorseId))" />
+
+                            <RadzenButton Icon="edit"
+                                          ButtonStyle="ButtonStyle.Primary"
+                                          Size="ButtonSize.Small"
+                                          Click="@(() => EditHorse(h.HorseId))" />
+
+                            <RadzenButton Icon="delete"
+                                          ButtonStyle="ButtonStyle.Danger"
+                                          Size="ButtonSize.Small"
+                                          Disabled="true" />
+
+                        </Template>
+                    </RadzenDataGridColumn>
+
+                </Columns>
+
+            </RadzenDataGrid>
+
+        </RadzenStack>
+    }
 }
 
 @code {
@@ -101,11 +158,22 @@ else
 
     private HorseEditDto? editingHorse;
     private bool showForm;
+
+    private List<SchoolListDto> schools = new();
+    private List<AdminUserListItemDto> students = new();
     private ModalFormMode formMode;
+
     protected override async Task OnInitializedAsync()
     {
         overview = await HorseService.GetHorseOverviewAsync();
+        schools = await SchoolService.GetSchoolsListAsync();
+        students = await UserService.GetUserListItemsAsync();
         formMode = ModalFormMode.None;
+    }
+
+    private async Task Refresh()
+    {
+        overview = await HorseService.GetHorseOverviewAsync();
     }
 
     private async Task ViewHorse(int id)
@@ -122,27 +190,28 @@ else
         showForm = true;
     }
 
-    private async Task HandleHorseSave(HorseEditDto dto)
-    {
-        await HorseService.SaveHorseAsync(dto);
-
-        overview = await HorseService.GetHorseOverviewAsync();
-
-        showForm = false;
-
-        editingHorse = null;
-    }
-
     private void CreateHorse()
     {
         editingHorse = new HorseEditDto
         {
-            DateOfBirth = DateTime.Today
+            DateOfBirth = DateTime.Today,
+            SchoolId = schools.FirstOrDefault()?.SchoolId ?? 0
         };
+
         formMode = ModalFormMode.Create;
         showForm = true;
-
     }
+
+    private async Task HandleHorseSave(HorseEditDto dto)
+    {
+        await HorseService.SaveHorseAsync(dto);
+
+        await Refresh();
+
+        showForm = false;
+        editingHorse = null;
+    }
+
     private void CloseForm()
     {
         showForm = false;

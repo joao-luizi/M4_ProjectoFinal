@@ -167,24 +167,6 @@ namespace RepositoryLibrary.Data.Migrations.Identity
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            migrationBuilder.CreateTable(
-                name: "UserPhoto",
-                columns: table => new
-                {
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    FotoPath = table.Column<string>(type: "nvarchar(max)", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_UserPhoto", x => x.UserId);
-                    table.ForeignKey(
-                        name: "FK_UserPhoto_AspNetUsers_UserId",
-                        column: x => x.UserId,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
                 table: "AspNetRoleClaims",
@@ -242,9 +224,6 @@ namespace RepositoryLibrary.Data.Migrations.Identity
 
             migrationBuilder.DropTable(
                 name: "AspNetUserTokens");
-
-            migrationBuilder.DropTable(
-                name: "UserPhoto");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");

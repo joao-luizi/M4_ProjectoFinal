@@ -1,80 +1,139 @@
 ﻿@using Microsoft.AspNetCore.Components.Forms
 @using RepositoryLibrary.Features.Users.DTOs
+@using RepositoryLibrary.Features.Users.Entities
 @using RepositoryLibrary.Shared.Enums
+@using Radzen
+@using Radzen.Blazor
 
 @if (User is null)
 {
-    <p>Loading...</p>
+    <RadzenProgressBar Mode="ProgressBarMode.Indeterminate" />
 }
 else
 {
-    <EditForm Model="User" OnValidSubmit="Save">
+    <RadzenTemplateForm TItem="AdminUserDetailsDto"
+                        Data="@User"
+                        Submit="@Save">
 
-        <DataAnnotationsValidator />
+        <RadzenCard>
 
-        <!-- FOTO SECTION -->
-        <div style="margin-bottom:16px;">
-            <label>Profile Image</label>
-
-            <div style="display:flex; gap:16px; align-items:center;">
+            <!-- FOTO -->
+            <RadzenStack Orientation="Orientation.Horizontal"
+                         Gap="20px"
+                         AlignItems="AlignItems.Center"
+                         class="mb-4">
 
                 <img src="@(PreviewImage ?? User.PhotoPath ?? "User_default_image/user.png")"
-                     style="width:100px;height:100px;border-radius:8px;object-fit:cover;" />
+                     style="width:120px;height:120px;border-radius:12px;object-fit:cover;border:1px solid #ddd;" />
 
-                <InputFile OnChange="HandleImageSelected" />
+                @if (Mode != ModalFormMode.View)
+                {
+                    <InputFile OnChange="HandleImageSelected" />
+                }
 
-            </div>
-        </div>
+            </RadzenStack>
 
-        <hr />
+            <RadzenRow Gap="20px">
 
-        <!-- FORM FIELDS -->
-        <div>
-            <label>First Name</label>
-            <InputText @bind-Value="User.FirstName" />
-        </div>
+                <RadzenColumn Size="12" SizeMD="6">
+                    <RadzenFormField Text="First Name" Style="width:100%;">
+                        <RadzenTextBox @bind-Value="User.FirstName"
+                                       Name="FirstName"
+                                       Style="width:100%;"
+                                       Disabled="@IsView" />
+                    </RadzenFormField>
+                </RadzenColumn>
 
-        <div>
-            <label>Last Name</label>
-            <InputText @bind-Value="User.LastName" />
-        </div>
+                <RadzenColumn Size="12" SizeMD="6">
+                    <RadzenFormField Text="Last Name" Style="width:100%;">
+                        <RadzenTextBox @bind-Value="User.LastName"
+                                       Name="LastName"
+                                       Style="width:100%;"
+                                       Disabled="@IsView" />
+                    </RadzenFormField>
+                </RadzenColumn>
 
-        <div>
-            <label>Email</label>
-            <InputText @bind-Value="User.Email" disabled />
-        </div>
+                <RadzenColumn Size="12" SizeMD="6">
+                    <RadzenFormField Text="Email" Style="width:100%;">
+                        <RadzenTextBox @bind-Value="User.Email"
+                                       Style="width:100%;"
+                                       Disabled="@(!IsCreate)" />
+                    </RadzenFormField>
+                </RadzenColumn>
 
-        <div>
-            <label>Phone</label>
-            <InputText @bind-Value="User.PhoneNumber" />
-        </div>
+                <RadzenColumn Size="12" SizeMD="6">
+                    <RadzenFormField Text="Phone" Style="width:100%;">
+                        <RadzenTextBox @bind-Value="User.PhoneNumber"
+                                       Style="width:100%;"
+                                       Disabled="@IsView" />
+                    </RadzenFormField>
+                </RadzenColumn>
 
-        <div>
-            <label>Address</label>
-            <InputText @bind-Value="User.Address" />
-        </div>
-        <div>
-            <label>Birthdate</label>
-            <InputDate @bind-Value="User.Birthdate" />
-        </div>
-        <div>
-            <label>Active</label>
-            <InputCheckbox @bind-Value="User.IsActive" />
-        </div>
+                <RadzenColumn Size="12">
+                    <RadzenFormField Text="Address" Style="width:100%;">
+                        <RadzenTextBox @bind-Value="User.Address"
+                                       Style="width:100%;"
+                                       Disabled="@IsView" />
+                    </RadzenFormField>
+                </RadzenColumn>
 
-        <div>
-            <label>Role</label>
-            <span>@User.Role</span>
-        </div>
+                <RadzenColumn Size="12" SizeMD="6">
+                    <RadzenFormField Text="Birthdate" Style="width:100%;">
+                        <RadzenDatePicker @bind-Value="User.Birthdate"
+                                          DateFormat="dd/MM/yyyy"
+                                          Style="width:100%;"
+                                          Disabled="@IsView" />
+                    </RadzenFormField>
+                </RadzenColumn>
 
-        @if (Mode != ModalFormMode.View)
-        {
-            <button type="submit">Save</button>
-        }
+                <RadzenColumn Size="12" SizeMD="6">
+                    <RadzenFormField Text="Role" Style="width:100%;">
+                        <RadzenDropDown Data="@Roles"
+                                        @bind-Value="User.Role"
+                                        Style="width:100%;"
+                                        Disabled="@IsView" />
+                    </RadzenFormField>
+                </RadzenColumn>
 
-        <button type="button" @onclick="OnCancelClicked">Cancel</button>
+                <RadzenColumn Size="12">
+                    <RadzenCheckBox @bind-Value="User.IsActive"
+                                    Disabled="@IsView" />
+                    <RadzenLabel Text="Active" class="ms-2" />
+                </RadzenColumn>
+                @if (IsCreate)
+                {
+                    <RadzenColumn Size="12" SizeMD="6">
+                        <RadzenFormField Text="Password" Style="width:100%;">
+                            <RadzenPassword @bind-Value="User.Password"
+                                            Style="width:100%;" />
+                        </RadzenFormField>
+                    </RadzenColumn>
+                }
 
-    </EditForm>
+            </RadzenRow>
+
+            <RadzenStack Orientation="Orientation.Horizontal"
+                         Gap="10px"
+                         JustifyContent="JustifyContent.End"
+                         class="mt-4">
+
+                @if (Mode != ModalFormMode.View)
+                {
+                    <RadzenButton Text="Save"
+                                  Icon="save"
+                                  ButtonType="ButtonType.Submit" />
+                }
+
+                <RadzenButton Text="Cancel"
+                              Icon="close"
+                              ButtonStyle="ButtonStyle.Light"
+                              Click="OnCancelClicked" />
+
+            </RadzenStack>
+
+        </RadzenCard>
+
+    </RadzenTemplateForm>
 }
 
 @code {
@@ -89,6 +148,18 @@ else
 
     [Parameter] public EventCallback OnCancel { get; set; }
 
+    private bool IsView => Mode == ModalFormMode.View;
+    private bool IsCreate => Mode == ModalFormMode.Create;
+    private bool IsEdit => Mode == ModalFormMode.Edit;
+
+    private List<string> Roles = new()
+    {
+        StaticRole.Admin,
+        StaticRole.Teacher,
+        StaticRole.Student
+    };
+
+
     private async Task HandleImageSelected(InputFileChangeEventArgs e)
     {
         var file = e.File;
@@ -96,16 +167,17 @@ else
         if (file is null)
             return;
 
-        // guarda no DTO para o service tratar
         User!.NewPhoto = file;
 
-        // preview local (browser)
-        var buffer = new byte[file.Size];
+        await using var stream = file.OpenReadStream(5 * 1024 * 1024);
+        using var memoryStream = new MemoryStream();
 
-        await file.OpenReadStream(5 * 1024 * 1024)
-                  .ReadAsync(buffer);
+        await stream.CopyToAsync(memoryStream);
 
-        PreviewImage = $"data:{file.ContentType};base64,{Convert.ToBase64String(buffer)}";
+        var bytes = memoryStream.ToArray();
+
+        PreviewImage =
+            $"data:{file.ContentType};base64,{Convert.ToBase64String(bytes)}";
     }
 
 

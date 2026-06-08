@@ -91,29 +91,7 @@ namespace RepositoryLibrary.Features.Users.Services
             }
         }
 
-        public async Task<List<UserListDto>> GetSchoolUsersAsync(int schoolId)
-        {
-            _logger.LogInformation("A obter users da escola {SchoolId}", schoolId);
-
-            try
-            {
-                var users = await _schoolUserRepository.GetUsersBySchoolAsync(schoolId);
-
-                return users.Select(u => new UserListDto
-                {
-                    Id = u.UserId,
-                    FirstName = u.User.FirstName,
-                    LastName = u.User.LastName,
-                    Email = u.User.Email,
-                    IsActive = u.User.IsActive
-                }).ToList();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Erro ao obter users da escola {SchoolId}", schoolId);
-                throw;
-            }
-        }
+       
 
         public async Task<List<UserSchoolDto>> GetUserSchoolsAsync(string userId)
         {

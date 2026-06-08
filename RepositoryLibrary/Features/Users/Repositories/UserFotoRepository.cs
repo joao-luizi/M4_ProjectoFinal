@@ -10,11 +10,11 @@ using System.Threading.Tasks;
 
 namespace RepositoryLibrary.Features.Users.Repositories
 {
-    public class UserPhotoRepository : IUserPhotoRepository
+    public class UserFotoRepository : IUserFotoRepository
     {
         private readonly RideReadyDbContext _context;
 
-        public UserPhotoRepository(RideReadyDbContext context)
+        public UserFotoRepository(RideReadyDbContext context)
         {
             _context = context;
         }
@@ -24,21 +24,21 @@ namespace RepositoryLibrary.Features.Users.Repositories
             return _context.SaveChangesAsync();
         }
 
-        public async Task<UserPhoto?> GetByUserIdAsync(string userId)
+        public async Task<UserFoto?> GetByUserIdAsync(string userId)
         {
-            return await _context.Set<UserPhoto>()
+            return await _context.Set<UserFoto>()
                 .FirstOrDefaultAsync(x => x.UserId == userId);
         }
 
-        public async Task AddAsync(UserPhoto entity)
+        public async Task AddAsync(UserFoto entity)
         {
-            await _context.Set<UserPhoto>().AddAsync(entity);
+            await _context.Set<UserFoto>().AddAsync(entity);
             await _context.SaveChangesAsync();
         }
 
-        public async Task DeleteAsync(UserPhoto entity)
+        public async Task DeleteAsync(UserFoto entity)
         {
-            _context.Set<UserPhoto>().Remove(entity);
+            _context.Set<UserFoto>().Remove(entity);
             await _context.SaveChangesAsync();
         }
 

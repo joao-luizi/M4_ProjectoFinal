@@ -1,5 +1,5 @@
 ﻿@page "/admin/purchases"
-@attribute [Authorize(Roles = "Administrator")]
+@attribute [Authorize(Roles = StaticRole.Admin)]
 @rendermode InteractiveServer
 
 @using Microsoft.AspNetCore.Authorization
@@ -9,13 +9,25 @@
 @using RepositoryLibrary.Features.Purchases.Interfaces
 @using RepositoryLibrary.Features.Schools.DTOs
 @using RepositoryLibrary.Features.Schools.Interfaces
+@using RepositoryLibrary.Features.Users.Entities
 @using RideReady.Components.Features.Purchases.Modals
 
 @inject IPurchaseService PurchaseService
 @inject ISchoolService SchoolService
+@inject NotificationService NotificationService
 
 <PageTitle>Purchases</PageTitle>
 
+@if (_isloading)
+{
+    <p>Loading...</p>
+}
+else
+{
+    
+@if (!_showCreate && !_showHistory)
+{
+    
 <RadzenStack Gap="1rem">
 
     <RadzenDropDown Data="@_schools"
@@ -63,12 +75,12 @@
                         <RadzenButton Icon="visibility"
                                       ButtonStyle="ButtonStyle.Light"
                                       Size="ButtonSize.Small"
-                                      Click="@(() => OpenHistory(row.StudentId))" />
+                                      Click="@(() => OpenHistory(row))" />
 
                         <RadzenButton Icon="add"
                                       ButtonStyle="ButtonStyle.Primary"
                                       Size="ButtonSize.Small"
-                                      Click="@(() => OpenCreate(row.StudentId))" />
+                                      Click="@(() => OpenCreate(row))" />
 
                     </RadzenStack>
 
@@ -82,17 +94,21 @@
 
 </RadzenStack>
 
+}
 @if (_showHistory && _selectedStudentId is not null)
 {
-    <PurchaseHistoryModal StudentId="_selectedStudentId"
+    <PurchaseHistoryModal StudentId=@_selectedStudentId
+                          StudentName=@_selectedStudentName
                           OnClose="CloseHistory" />
 }
 
 @if (_showCreate && _selectedStudentId is not null)
 {
-    <PurchaseCreateModal StudentId="_selectedStudentId"
-                         OnSaved="OnPurchaseCreated"
-                         OnClose="CloseCreate" />
+        <PurchaseCreateModal StudentId=@_selectedStudentId
+                             StudentName=@_selectedStudentName
+                             OnSaved="OnPurchaseCreated"
+                             OnClose="CloseCreate" />
+}
 }
 
 @code {
@@ -102,13 +118,16 @@
 
     private int? _selectedSchoolId;
     private string? _selectedStudentId;
+    private string? _selectedStudentName;
 
-    private bool _showHistory;
-    private bool _showCreate;
+    private bool _isloading = true;
+    private bool _showHistory = false;
+    private bool _showCreate = false;
 
     protected override async Task OnInitializedAsync()
     {
         await LoadData();
+        _isloading = false;
     }
 
     private async Task LoadData()
@@ -123,9 +142,11 @@
             ? _students
             : _students.Where(x => x.SchoolId == _selectedSchoolId);
 
-    private void OpenHistory(string studentId)
+    private void OpenHistory(PurchaseStudentSummary student)
     {
-        _selectedStudentId = studentId;
+        _selectedStudentId = student.StudentId;
+        _selectedStudentName = student.StudentName;
+
         _showHistory = true;
     }
 
@@ -135,9 +156,10 @@
         _selectedStudentId = null;
     }
 
-    private void OpenCreate(string studentId)
+    private void OpenCreate(PurchaseStudentSummary student)
     {
-        _selectedStudentId = studentId;
+        _selectedStudentId = student.StudentId;
+        _selectedStudentName = student.StudentName;
         _showCreate = true;
     }
 
@@ -149,9 +171,16 @@
 
     private async Task OnPurchaseCreated()
     {
+        NotificationService.Notify(
+            NotificationSeverity.Success,
+            "Success",
+            "Purchase created successfully");
+
         _showCreate = false;
         _selectedStudentId = null;
 
         await LoadData();
     }
+
+    
 }

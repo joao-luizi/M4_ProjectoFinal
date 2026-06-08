@@ -1,22 +1,12 @@
-﻿using Microsoft.AspNetCore.Components.Forms;
-using Microsoft.AspNetCore.Identity;
+﻿
+
 using Microsoft.Extensions.Logging;
-using RepositoryLibrary.Data.Context;
-using RepositoryLibrary.Features.Bookings.Interfaces;
-using RepositoryLibrary.Features.Bookings.Repositories;
-using RepositoryLibrary.Features.Horses.DTOs;
-using RepositoryLibrary.Features.Horses.Interfaces;
-using RepositoryLibrary.Features.Horses.Repositories;
 using RepositoryLibrary.Features.Images.Interfaces;
-using RepositoryLibrary.Features.Lessons.Interfaces;
-using RepositoryLibrary.Features.Lessons.Repositories;
-using RepositoryLibrary.Features.Schools.Interfaces;
-using RepositoryLibrary.Features.Schools.Repositories;
 using RepositoryLibrary.Features.Users.DTOs;
 using RepositoryLibrary.Features.Users.Entities;
 using RepositoryLibrary.Features.Users.Interfaces;
-using RepositoryLibrary.Features.Users.Repositories;
-using RepositoryLibrary.Features.Users.Repository;
+using Microsoft.AspNetCore.Identity;
+
 
 
 namespace RepositoryLibrary.Features.Users.Service
@@ -25,22 +15,26 @@ namespace RepositoryLibrary.Features.Users.Service
     public class UserService : IUserService
     {
         private readonly IUserRepository _userRepo;
-        private readonly IUserPhotoRepository _userPhotoRepo;
+        
+        private readonly IUserFotoRepository _userPhotoRepo;
         private readonly IImageService _imageService;
         private readonly ISchoolUsersRepository _schoolUserRepo;
+        private readonly UserManager<EMUser> _userManager;
         private readonly ILogger<UserService> _logger;
 
         public UserService(
             IUserRepository userRepo,
-            IUserPhotoRepository userPhotoRepo,
+            IUserFotoRepository userPhotoRepo,
             ISchoolUsersRepository schoolUserRepo,
             IImageService imageService,
+            UserManager<EMUser> userManager,
             ILogger<UserService> logger)
         {
             _userRepo = userRepo;
             _userPhotoRepo = userPhotoRepo;
             _schoolUserRepo = schoolUserRepo;
             _imageService = imageService;
+            _userManager = userManager;
             _logger = logger;
         }
 
@@ -163,7 +157,7 @@ namespace RepositoryLibrary.Features.Users.Service
             // 4. Persistir relação UserPhoto
             if (existingPhoto is null)
             {
-                await _userPhotoRepo.AddAsync(new UserPhoto
+                await _userPhotoRepo.AddAsync(new UserFoto
                 {
                     UserId = user.Id,
                     FotoPath = newPath
@@ -176,11 +170,55 @@ namespace RepositoryLibrary.Features.Users.Service
             }
         }
 
+
         private async Task CreateUserAsync(AdminUserDetailsDto dto)
         {
-            //primeiro gravar o user porque o user id é usado na foto
-            //Fazer na feature Horses CreateHorseAsync
+            var user = new EMUser
+            {
+                UserName = dto.Email,
+                Email = dto.Email,
+
+                FirstName = dto.FirstName,
+                LastName = dto.LastName,
+                PhoneNumber = dto.PhoneNumber,
+
+                Birthdate = dto.Birthdate,
+                Address = dto.Address,
+
+                IsActive = dto.IsActive,
+                RegisterDate = DateTime.UtcNow
+            };
+
+            // 1. Identity (AspNetUsers)
+            var result = await _userManager.CreateAsync(user, dto.Password!);
+
+            if (!result.Succeeded)
+                throw new Exception(string.Join(", ", result.Errors.Select(e => e.Description)));
+
+            // 2. Role (Identity)
+            if (!string.IsNullOrWhiteSpace(dto.Role))
+            {
+                await _userManager.AddToRoleAsync(user, dto.Role);
+            }
+
+           
+
+            // 4. Photo (RideReadyDB)
+            if (dto.NewPhoto is not null)
+            {
+                var photoPath = await _imageService.SaveImageAsync(dto.NewPhoto, "users", user.Id);
+
+                var photo = new UserFoto
+                {
+                    UserId = user.Id,
+                    FotoPath = photoPath
+                };
+
+                await _userPhotoRepo.AddAsync(photo);
+            }
         }
+        
+        
         //V2 Implelmented
         public async Task SaveUserAsync(AdminUserDetailsDto dto)
         {
@@ -194,6 +232,29 @@ namespace RepositoryLibrary.Features.Users.Service
                 // update
                 await UpdateUserAsync(dto);
             }
+        }
+
+        //V2 Implemented 
+        public async Task<List<AdminUserListItemDto>> GetUserListItemsAsync()
+        {
+            var users = (await _userRepo.GetUsersForAdministrationAsync()).ToList();
+
+
+            return users
+                 .Select(x => new AdminUserListItemDto
+                 {
+                     Id = x.Id,
+                     FullName = $"{x.FirstName} {x.LastName}",
+                     Email = x.Email ?? string.Empty,
+                     PhoneNumber = x.PhoneNumber,
+                     Role = x.Role,
+                     IsActive = x.IsActive,
+                     PhotoPath = x.PhotoPath
+                 })
+                 .ToList();
+
+                
+           
         }
 
 

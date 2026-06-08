@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace RepositoryLibrary.Features.Users.DTOs
 {
-    public class UserPhotoDto
+    public class UserFotoDTO
     {
         public string UserId { get; set; }
         public string? FotoPath { get; set; }

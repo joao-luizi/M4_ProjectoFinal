@@ -10,7 +10,7 @@
 @using RideReady.Components.Features.Admin.Users.Modals
 
 @inject IUserService _usersService
-@inject DialogService dialogService
+@inject NotificationService NotificationService;
 
 <h1>User Management</h1>
 
@@ -25,8 +25,11 @@ else
         <UserForm User="editingUser"
                    Mode="formMode"
                    OnSave="SaveUser"
-                   OnCancel="CloseForm" />
+        OnCancel="CloseForm" />
     }
+    else
+    {
+        
     <RadzenButton Text="Create" Click="@CreateUser" />
     <RadzenDataGrid Data="@users" TItem="AdminUserListItemDto"
                     AllowPaging="true"
@@ -67,6 +70,7 @@ else
 
         </Columns>
     </RadzenDataGrid>
+    }
 }
 
 @code {
@@ -111,9 +115,29 @@ else
 
     private async Task SaveUser(AdminUserDetailsDto user)
     {
-        await _usersService.SaveUserAsync(user);
+        try
+        {
+            await _usersService.SaveUserAsync(user);
 
-        await Reload();
+            await Reload();
+
+            showForm = false;
+            editingUser = null;
+
+            NotificationService.Notify(
+                NotificationSeverity.Success,
+                "Success",
+                "User saved successfully"
+            );
+        }
+        catch (Exception ex)
+        {
+            NotificationService.Notify(
+                NotificationSeverity.Error,
+                "Error",
+                "Failed to save user"
+            );
+        }
     }
 
     private async Task EditUser(AdminUserListItemDto user)

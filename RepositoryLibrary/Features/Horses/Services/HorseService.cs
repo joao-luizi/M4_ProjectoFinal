@@ -60,7 +60,7 @@ public class HorseService : IHorseService
                 };
             }).ToList();
 
-            var schoolCount = horseList.Count(h => h.School != null);
+            var schoolCount = mapped.Count(h => h.Ownership != "Owner");
             var privateCount = total - schoolCount;
 
             return new HorseOverviewDto
@@ -127,6 +127,34 @@ public class HorseService : IHorseService
 
             await _horseRepo.SaveChangesAsync();
 
+            var existingOwner = await _horseRepo.GetUserHorseByHorseId(horseDto.HorseId);
+
+            if (string.IsNullOrWhiteSpace(horseDto.OwnerUserId))
+            {
+                if (existingOwner != null)
+                {
+                    await _horseRepo.Delete(existingOwner);
+                }
+            }
+            else
+            {
+                if (existingOwner == null)
+                {
+                    await _horseRepo.AddAsync(new UserHorse
+                    {
+                        HorseId = horseDto.HorseId,
+                        UserId = horseDto.OwnerUserId,
+                        Relationship = "Owner"
+                    });
+                }
+                else if (existingOwner.UserId != horseDto.OwnerUserId)
+                {
+                    existingOwner.UserId = horseDto.OwnerUserId;
+
+                    await _horseRepo.SaveChangesAsync();
+                }
+            }
+
             // 2. Se não há imagem nova, termina aqui
             if (horseDto.NewPhoto is null)
                 return;
@@ -170,14 +198,23 @@ public class HorseService : IHorseService
             {
                 Name = horseDto.Name,
                 Breed = horseDto.Breed,
-                DateOfBirth = horseDto.DateOfBirth
+                DateOfBirth = horseDto.DateOfBirth,
+                SchoolId = horseDto.SchoolId
             };
 
             await _horseRepo.AddAsync(horse);
 
-            await _horseRepo.SaveChangesAsync();
+            if (!string.IsNullOrWhiteSpace(horseDto.OwnerUserId))
+            {
+                var userHorse = new UserHorse
+                {
+                    UserId = horseDto.OwnerUserId,
+                    HorseId = horse.HorseId,
+                    Relationship = "Owner"
+                };
 
-            // horse.HorseId já existe aqui
+                await _horseRepo.AddAsync(userHorse);
+            }
 
             if (horseDto.NewPhoto is null)
                 return;
@@ -214,14 +251,18 @@ public class HorseService : IHorseService
             if (horse == null)
                 throw new KeyNotFoundException($"Horse {horseId} not found.");
 
+            var userHorse = await _horseRepo.GetUserHorseByHorseId(horseId);
+
             return new HorseEditDto
         {
             HorseId = horse.HorseId,
             Name = horse.Name,
             Breed = horse.Breed,
             DateOfBirth = horse.DateOfBirth,
-            PhotoPath = horse.HorseFoto?.FotoPath
-        };
+            PhotoPath = horse.HorseFoto?.FotoPath,
+            SchoolId = horse.SchoolId,
+            OwnerUserId = userHorse?.UserId, 
+            };
         }
         catch (Exception ex)
         {

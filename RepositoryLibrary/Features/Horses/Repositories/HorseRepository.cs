@@ -20,7 +20,11 @@ namespace RepositoryLibrary.Features.Horses.Repositories
             _logger = logger ?? NullLogger<HorseRepository>.Instance;
         }
 
-
+        public async Task AddAsync (UserHorse userHorse)
+        {
+            await _emContext.UserHorses.AddAsync(userHorse);
+            await _emContext.SaveChangesAsync();
+        }
 
         //V2 Implelmented
         public async Task SaveChangesAsync()
@@ -69,6 +73,29 @@ namespace RepositoryLibrary.Features.Horses.Repositories
         public async Task AddAsync(Horse horse)
         {
             await _emContext.Horses.AddAsync(horse);
+            await _emContext.SaveChangesAsync();
+        }
+
+        //V2 Implemented
+        public async Task<UserHorse?> GetUserHorseByHorseId(int horseId)
+        {
+            return await _emContext.UserHorses
+                .Where(x => x.HorseId ==  horseId)
+                .FirstOrDefaultAsync();
+        }
+
+        //V2 Implemented
+        public async Task<UserHorse?> GetUserHorseByUserId(string userId)
+        {
+            return await _emContext.UserHorses
+                .Where(x => x.UserId == userId)
+                .FirstOrDefaultAsync();
+        }
+
+        public async Task Delete(UserHorse userHorse)
+        {
+            _emContext.UserHorses.Remove(userHorse);
+            await _emContext.SaveChangesAsync();
         }
     }
 }

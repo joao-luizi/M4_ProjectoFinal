@@ -11,11 +11,21 @@ namespace RepositoryLibrary.Features.Schools.Interfaces
         //public Task<SchoolPhoto> GetSchoolLogoAsync(int schoolId, string logoName);
         //public Task<List<SchoolPhoto>> GetAllSchoolLogosAsync(int schoolId);
 
-        public Task<School> CreateSchoolAsync(School school);
-        public Task<School> GetSchoolAsync(int schoolId);
-        public Task<School> EditSchoolAsync(School school);
-        public Task<School> DeleteSchoolAsync(School school);
-        public Task<List<School>> GetUserSchoolsAsync(string userId);
-        public Task<List<School>> GetSchoolsAsync();
+        //V2 Implemented
+         Task AddAsync(School school);
+
+        //V2 Implemented
+        Task AddAsync(SchoolPhoto foto);
+        //V2 Implemented
+        Task UpdateAsync(SchoolPhoto foto);
+        //V2 Implemented
+        Task UpdateAsync(School school);
+        Task<SchoolPhoto?> GetSchoolPhotoByIsAsync(int schoolId);
+        Task<School> CreateSchoolAsync(School school);
+        Task<School> GetSchoolAsync(int schoolId);
+        Task<School> EditSchoolAsync(School school);
+        Task<School> DeleteSchoolAsync(School school);
+        Task<List<School>> GetUserSchoolsAsync(string userId);
+        Task<List<School>> GetSchoolsAsync();
     }
 }

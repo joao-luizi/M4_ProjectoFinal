@@ -1,4 +1,5 @@
 ﻿@using RepositoryLibrary.Features.Purchases.DTOs
+@using RepositoryLibrary.Features.Purchases.Enums
 
 <RadzenCard Style="padding:1rem">
 
@@ -17,35 +18,82 @@
                 <RadzenRow AlignItems="AlignItems.Center" Gap="1rem">
 
                     <RadzenColumn Size="6">
-                        <b>@line.ProductName</b>
-                        <div style="font-size:12px; opacity:0.7">
-                            @line.Kind
+
+                        <div>
+                            <b>@line.ProductName</b>
                         </div>
+
+                        @if (line.Kind == PurchaseLineKind.Subscription)
+                        {
+                            <div>
+                                Subscription - @line.Months month(s)
+                            </div>
+
+                            <div>
+                                @SubscriptionStart.ToString("dd/MM/yyyy")
+                                →
+                                @GetSubscriptionEnd(line).ToString("dd/MM/yyyy")
+                            </div>
+                        }
+                        else
+                        {
+                            <div>
+                                Credit Packs: @line.Quantity
+                            </div>
+                        }
+
                     </RadzenColumn>
 
                     <RadzenColumn Size="3">
-                        @line.Quantity x @line.UnitPrice.ToString("0.00") €
+
+                        <div>
+                            Unit: @line.UnitPrice.ToString("0.00") €
+                        </div>
+
+                    </RadzenColumn>
+
+                    <RadzenColumn Size="2">
+
+                        @if (line.Kind == PurchaseLineKind.Subscription)
+                        {
+                            <span>
+                                @line.Months × @line.UnitPrice.ToString("0.00") € = @GetLineTotal(line).ToString("0.00") €
+                            </span>
+                        }
+                        else
+                        {
+                            <span>
+                                @line.Quantity × @line.UnitPrice.ToString("0.00") € = @GetLineTotal(line).ToString("0.00") €
+                            </span>
+                        }
+
                     </RadzenColumn>
 
                     <RadzenColumn Size="1">
-                        <RadzenButton Icon="close"
-                                      Size="ButtonSize.Small"
+
+                        <RadzenButton Icon="delete"
                                       ButtonStyle="ButtonStyle.Danger"
+                                      Size="ButtonSize.Small"
                                       Click="@(() => Remove(line))" />
+
                     </RadzenColumn>
 
                 </RadzenRow>
+
+                <hr />
             }
 
-            <hr />
+            <RadzenRow>
 
-            <RadzenStack Orientation="Orientation.Horizontal"
-                         JustifyContent="JustifyContent.SpaceBetween">
+                <RadzenColumn Size="9">
+                    <b>Total</b>
+                </RadzenColumn>
 
-                <b>Total:</b>
-                <b>@Total.ToString("0.00") €</b>
+                <RadzenColumn Size="3">
+                    <b>@Total.ToString("0.00") €</b>
+                </RadzenColumn>
 
-            </RadzenStack>
+            </RadzenRow>
         }
 
     </RadzenStack>
@@ -59,7 +107,7 @@
     [Parameter] public EventCallback<List<CreatePurchaseLineDto>> LinesChanged { get; set; }
 
     private decimal Total =>
-        Lines.Sum(x => x.Quantity * GetUnitPrice(x));
+       Lines.Sum(GetLineTotal);
 
     private decimal GetUnitPrice(CreatePurchaseLineDto line)
         => line.UnitPrice;
@@ -69,4 +117,37 @@
         Lines.Remove(line);
         await LinesChanged.InvokeAsync(Lines);
     }
+
+    private decimal GetLineTotal(CreatePurchaseLineDto line)
+    {
+        return line.Kind switch
+        {
+            PurchaseLineKind.Subscription =>
+                (line.Months ?? 0) * line.UnitPrice,
+
+            PurchaseLineKind.CreditPack =>
+                (line.Quantity ?? 0) * line.UnitPrice,
+
+            _ => 0
+        };
+    }
+
+    private DateOnly SubscriptionStart =>
+    new(DateTime.Today.Year,
+        DateTime.Today.Month,
+        1);
+
+    private DateOnly GetSubscriptionEnd(CreatePurchaseLineDto line)
+    {
+        var months = line.Months ?? 0;
+
+        if (months <= 0)
+            return SubscriptionStart;
+
+        return SubscriptionStart
+            .AddMonths(months)
+            .AddDays(-1);
+    }
+
+
 }

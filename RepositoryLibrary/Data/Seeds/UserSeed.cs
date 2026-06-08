@@ -90,34 +90,28 @@ namespace RepositoryLibrary.Data.Seeds
                 }
 
               
-                List<EMUser> users = new();
 
-                users.AddRange(await CreateUsers(
+
+               await CreateUsers(
                     serviceProvider,
                     startIndex: 1,
                     amount: 1,
-                    role: StaticRole.Admin));
+                    role: StaticRole.Admin);
 
-                users.AddRange(await CreateUsers(
+                await CreateUsers(
                     serviceProvider,
                     startIndex: 1,
                     amount: 3,
-                    role: StaticRole.Teacher));
+                    role: StaticRole.Teacher);
 
-                users.AddRange(await CreateUsers(
+                await CreateUsers(
                     serviceProvider,
                     startIndex: 1,
                     amount: 10,
-                    role: StaticRole.Student));
+                    role: StaticRole.Student);
 
-
-
-                if (!users.Any())
-                {
-                    throw new Exception("No users were created.");
-                }
-                await emContext.AddRangeAsync(users);
-                await emContext.SaveChangesAsync();
+               
+                
             }
             catch (Exception e)
             {

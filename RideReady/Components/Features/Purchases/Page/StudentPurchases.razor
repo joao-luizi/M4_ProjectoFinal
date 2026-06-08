@@ -1,5 +1,133 @@
-﻿<h3>StudentPurchases</h3>
+﻿@page "/student/purchases"
+@attribute [Authorize(Roles = StaticRole.Student)]
+@rendermode InteractiveServer
+
+@using Microsoft.AspNetCore.Authorization
+@using Radzen
+@using Radzen.Blazor
+@using RepositoryLibrary.Features.Purchases.DTOs
+@using RepositoryLibrary.Features.Purchases.Interfaces
+@using RepositoryLibrary.Features.Users.Entities
+@using RideReady.Components.Features.Purchases.Modals
+@using System.Security.Claims
+
+@inject IPurchaseService PurchaseService
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NotificationService NotificationService
+@inject NavigationManager NavigationManager
+
+<PageTitle>My Purchases</PageTitle>
+
+@if (_isLoading)
+{
+    <RadzenProgressBar Mode="ProgressBarMode.Indeterminate" />
+}
+else
+{
+
+        @if (_showCreate)
+        {
+            <PurchaseCreateModal StudentId="@_userId"
+                                 OnSaved="OnPurchaseCreated"
+            OnClose="CloseCreate" />
+        }
+        else
+        {
+    <RadzenStack Gap="1rem">
+            
+        <RadzenStack Orientation="Orientation.Horizontal"
+                     JustifyContent="JustifyContent.SpaceBetween"
+                     AlignItems="AlignItems.Center">
+
+            <h3>My Purchases</h3>
+
+            <RadzenButton Icon="add"
+                          Text="New Purchase"
+                          ButtonStyle="ButtonStyle.Primary"
+                          Click="@OpenCreate" />
+        </RadzenStack>
+
+        <!-- HISTÓRICO SEM MODAL -->
+        <RadzenDataGrid Data="@_purchases"
+                        TItem="PurchaseHistoryDto"
+                        AllowPaging="true"
+                        PageSize="10"
+                        EmptyText="No purchases found">
+
+            <Columns>
+
+                <RadzenDataGridColumn TItem="PurchaseHistoryDto"
+                                          Property="PurchasedAtUtc"
+                                      Title="Date"
+                                      FormatString="{0:yyyy-MM-dd}" />
+
+                <RadzenDataGridColumn TItem="PurchaseHistoryDto"
+                                      Property="TotalAmount"
+                                      Title="Amount" />
+
+            </Columns>
+
+        </RadzenDataGrid>
+    </RadzenStack>
+
+        }
+}
+
+
 
 @code {
 
+    private string? _userId;
+
+    private List<PurchaseHistoryDto> _purchases = [];
+
+    private bool _isLoading = true;
+    private bool _showCreate = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        _userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        if (_userId is null)
+        {
+            NavigationManager.NavigateTo("/Account/AccessDenied");
+            return;
+        }
+
+        await LoadData();
+        _isLoading = false;
+    }
+
+    private async Task LoadData()
+    {
+        if (_userId is null)
+            return;
+
+        _purchases = await PurchaseService.GetStudentPurchaseHistoryAsync(_userId);
+    }
+
+    private void OpenCreate()
+    {
+        _showCreate = true;
+    }
+
+    private void CloseCreate()
+    {
+        _showCreate = false;
+    }
+
+    private void OnPurchaseCreated()
+    {
+        NotificationService.Notify(
+            NotificationSeverity.Success,
+            "Success",
+            "Purchase created successfully");
+
+        _showCreate = false;
+
+        _ = LoadData();
+    }
 }

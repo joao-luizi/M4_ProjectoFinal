@@ -18,8 +18,10 @@ namespace RepositoryLibrary.Features.Users.Interfaces
         //V2 Implemented
         Task<List<EMUser>> GetUsersBySchoolAndRole(int schoolId, string role);
 
-        //V2 Implemented GetUsersBySchoolAndRole
+        //V2 Implemented 
         Task SaveUserAsync(AdminUserDetailsDto dto);
+        //V2 Implemented 
+        Task<List<AdminUserListItemDto>> GetUserListItemsAsync();
 
     }
 }

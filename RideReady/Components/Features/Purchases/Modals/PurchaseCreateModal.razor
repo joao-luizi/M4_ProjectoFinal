@@ -7,8 +7,9 @@
 
 @inject IProductService ProductService
 @inject IPurchaseService PurchaseService
+@inject NotificationService NotificationService
 
-<h3>Create Purchase</h3>
+
 
 @if (_loading)
 {
@@ -16,37 +17,66 @@
 }
 else
 {
+
+
     <RadzenStack Gap="1rem">
 
-        <!-- TABS -->
-        <RadzenTabs>
-            
-            <!-- SUBSCRIPTIONS -->
-            <RadzenTabsItem Text="Subscriptions">
+        <RadzenText Text="Create Purchase" TextStyle="TextStyle.H5" />
+
+        @if (!string.IsNullOrWhiteSpace(StudentName))
+        {
+            <p>Student: <b>@StudentName</b></p>
+        }
+       
+        <RadzenAccordion>
+            <Items>
+                <RadzenAccordionItem Text="Subscriptions">
                 @foreach (var p in _subscriptionProducts)
                 {
                     <RadzenRow AlignItems="AlignItems.Center" Gap="1rem">
 
-                        <RadzenColumn Size="6">
-                            <b>@p.Name</b>
-                        </RadzenColumn>
+                            <RadzenColumn Size="6">
+                                <b>@p.Name</b>
+                                <br />
+                                @p.Price.ToString("0.00") €/mês
+                            </RadzenColumn>
 
-                        <RadzenColumn Size="3">
-                            @p.Price.ToString("0.00") €
-                        </RadzenColumn>
+                            <RadzenColumn Size="4">
 
-                        <RadzenColumn Size="3">
-                            <RadzenButton Icon="add"
-                                          Size="ButtonSize.Small"
-                                          Click="@(() => AddSubscription(p))" />
-                        </RadzenColumn>
+                                <small>
+                                    Início: @SubscriptionStart.ToString("dd/MM/yyyy")
+                                </small>
+
+                                <br />
+
+                                <small>
+                                    Fim: @GetSubscriptionEnd(p).ToString("dd/MM/yyyy")
+                                </small>
+
+                                <br />
+
+                                <small>
+                                    Meses: @GetSubscriptionMonths(p)
+                                </small>
+
+                            </RadzenColumn>
+
+                            <RadzenColumn Size="2">
+
+                                <RadzenButton Icon="remove"
+                                              Click="@(() => AddSubscription(p, -1))" />
+
+                                <RadzenButton Icon="add"
+                                              Click="@(() => AddSubscription(p, 1))" />
+
+                            </RadzenColumn>
 
                     </RadzenRow>
                 }
-            </RadzenTabsItem>
+                    
+                </RadzenAccordionItem>
 
-            <!-- CREDIT PACKS -->
-            <RadzenTabsItem Text="Credits">
+                <RadzenAccordionItem Text="Credits">
                 @foreach (var p in _creditProducts)
                 {
                     <RadzenRow AlignItems="AlignItems.Center" Gap="1rem">
@@ -60,22 +90,30 @@ else
                         </RadzenColumn>
 
                         <RadzenColumn Size="3">
-                            <RadzenNumeric TValue="int"
-                                           Min="0"
-                                           @bind-Value="p.Quantity"
-                                           Style="width:100%" />
+                                <RadzenColumn Size="3">
+                                    <RadzenButton Icon="remove"
+                                                  Size="ButtonSize.Small"
+                                                  Click="@(() => AddCredit(p, -1))" />
+
+                                    <RadzenButton Icon="add"
+                                                  Size="ButtonSize.Small"
+                                                  Click="@(() => AddCredit(p, +1))" />
+                                </RadzenColumn>
                         </RadzenColumn>
 
                     </RadzenRow>
                 }
-            </RadzenTabsItem>
-
-        </RadzenTabs>
+                    
+                </RadzenAccordionItem>
+            </Items>
+        </RadzenAccordion>
+           
 
         <!-- CART -->
         <CartPreview Lines="@_cartLines"
                      LinesChanged="@OnCartChanged" />
 
+        
         <!-- ACTIONS -->
         <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem">
             <RadzenButton Text="Cancel" ButtonStyle="ButtonStyle.Light" Click="@Close" />
@@ -83,6 +121,10 @@ else
                           Icon="payment"
                           ButtonStyle="ButtonStyle.Primary"
                           Click="@Create" />
+
+            <RadzenCheckBox @bind-Value="_paymentReceived" />
+
+            <RadzenLabel Text="Payment received" />
         </RadzenStack>
 
     </RadzenStack>
@@ -91,9 +133,10 @@ else
 @code {
 
     [Parameter] public string StudentId { get; set; } = string.Empty;
+    [Parameter] public string StudentName { get; set; } = string.Empty;
     [Parameter] public EventCallback OnSaved { get; set; }
     [Parameter] public EventCallback OnClose { get; set; }
-
+    private bool _paymentReceived = true;
     private List<CreatePurchaseLineDto> _cartLines = [];
 
     private bool _loading = true;
@@ -101,6 +144,36 @@ else
     private List<ProductVm> _subscriptionProducts = [];
     private List<ProductVm> _creditProducts = [];
 
+
+    private DateOnly SubscriptionStart =>
+    new(DateTime.Today.Year,
+        DateTime.Today.Month,
+        1);
+
+    private int GetSubscriptionMonths(ProductVm product)
+    {
+        return _cartLines
+            .FirstOrDefault(x =>
+                x.ProductId == product.ProductId &&
+                x.Kind == PurchaseLineKind.Subscription)
+            ?.Months ?? 0;
+    }
+
+    private DateOnly GetSubscriptionEnd(ProductVm product)
+    {
+        var line = _cartLines.FirstOrDefault(x =>
+            x.ProductId == product.ProductId &&
+            x.Kind == PurchaseLineKind.Subscription);
+
+        var months = line?.Months ?? 0;
+
+        if (months <= 0)
+            return SubscriptionStart;
+
+        return SubscriptionStart
+            .AddMonths(months)
+            .AddDays(-1);
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -129,17 +202,39 @@ else
         _loading = false;
     }
 
-    private void AddSubscription(ProductVm p)
+    private void AddSubscription(ProductVm p, int delta)
     {
-        _cartLines.Add(new CreatePurchaseLineDto
+        var line = _cartLines
+            .FirstOrDefault(x => x.ProductId == p.ProductId &&
+                                  x.Kind == PurchaseLineKind.Subscription);
+
+        if (line is null)
         {
-            ProductId = p.ProductId,
-            ProductName = p.Name,
-            UnitPrice = p.Price,
-            Quantity = 1,
-            Kind = PurchaseLineKind.Subscription
-        });
+            if (delta <= 0) return;
+
+            _cartLines.Add(NewLine(p, delta));
+            return;
+        }
+
+        var newValue = (line.Months ?? 0) + delta;
+
+        if (newValue <= 0)
+        {
+            _cartLines.Remove(line);
+            return;
+        }
+
+        line.Months = newValue;
     }
+
+    private CreatePurchaseLineDto NewLine(ProductVm p, int months) => new()
+    {
+        ProductId = p.ProductId,
+        ProductName = p.Name,
+        UnitPrice = p.Price,
+        Kind = PurchaseLineKind.Subscription,
+        Months = months
+    };
 
     private async Task Create()
     {
@@ -149,13 +244,24 @@ else
         var dto = new CreatePurchaseDto
         {
             UserId = StudentId,
-            PaymentReceived = true,
+            PaymentReceived = _paymentReceived,
             Lines = _cartLines
         };
 
-        await PurchaseService.CreatePurchaseAsync(dto);
+        try
+        {
+            await PurchaseService.CreatePurchaseAsync(dto);
 
-        await OnSaved.InvokeAsync();
+            await OnSaved.InvokeAsync();
+        }
+        catch
+        {
+            NotificationService.Notify(
+             NotificationSeverity.Error,
+             "Purchase failed",
+             "An error occurred while creating the purchase.");
+        }
+
     }
 
     private async Task Close()
@@ -168,29 +274,38 @@ else
         _cartLines = lines;
     }
 
-    private void AddToCart(ProductVm p)
+    private void AddCredit(ProductVm p, int delta)
     {
-        if (p.Quantity <= 0)
-            return;
-
         var existing = _cartLines
-            .FirstOrDefault(x => x.ProductId == p.ProductId);
+            .FirstOrDefault(x =>
+                x.ProductId == p.ProductId &&
+                x.Kind == PurchaseLineKind.CreditPack);
 
-        if (existing is not null)
+        if (existing is null)
         {
-            existing.Quantity += p.Quantity;
+            if (delta <= 0)
+                return;
+
+            _cartLines.Add(new CreatePurchaseLineDto
+            {
+                ProductId = p.ProductId,
+                ProductName = p.Name,
+                UnitPrice = p.Price,
+                Kind = PurchaseLineKind.CreditPack,
+                Quantity = delta
+            });
+
             return;
         }
 
-        _cartLines.Add(new CreatePurchaseLineDto
-        {
-            ProductId = p.ProductId,
-            ProductName = p.Name,
-            UnitPrice = p.Price,
-            Quantity = p.Quantity,
-            Kind = PurchaseLineKind.CreditPack
-        });
+        existing.Quantity += delta;
 
-        p.Quantity = 0;
+        // 🧯 regra de negócio: não pode ser <= 0
+        if (existing.Quantity <= 0)
+        {
+            _cartLines.Remove(existing);
+        }
     }
+
+    
 }

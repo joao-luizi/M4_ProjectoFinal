@@ -8,12 +8,18 @@
 }
 else
 {
+    @if (!string.IsNullOrWhiteSpace(StudentName))
+    {
+        <h3>Purchase history - @StudentName</h3>
+    }
     <RadzenDataGrid Data="@_history"
                     TItem="PurchaseHistoryDto"
                     AllowPaging="true"
                     PageSize="10">
 
         <Columns>
+
+ 
 
             <RadzenDataGridColumn TItem="PurchaseHistoryDto"
                                   Property="PurchasedAtUtc"
@@ -37,6 +43,7 @@ else
 
 @code {
     [Parameter] public string StudentId { get; set; } = string.Empty;
+    [Parameter] public string StudentName { get; set; } = string.Empty;
     [Parameter] public EventCallback OnClose { get; set; }
 
     private List<PurchaseHistoryDto> _history = [];

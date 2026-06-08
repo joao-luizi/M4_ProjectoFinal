@@ -7,14 +7,14 @@ using System.Threading.Tasks;
 
 namespace RepositoryLibrary.Features.Users.Interfaces
 {
-    public interface IUserPhotoRepository
+    public interface IUserFotoRepository
     {
-        Task<UserPhoto?> GetByUserIdAsync(string userId);
+        Task<UserFoto?> GetByUserIdAsync(string userId);
 
         Task SaveChangesAsync();
 
-        Task AddAsync(UserPhoto entity);
+        Task AddAsync(UserFoto entity);
 
-        Task DeleteAsync(UserPhoto entity);
+        Task DeleteAsync(UserFoto entity);
     }
 }

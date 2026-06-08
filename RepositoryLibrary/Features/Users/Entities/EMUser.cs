@@ -21,6 +21,6 @@ namespace RepositoryLibrary.Features.Users.Entities
         public DateTime Birthdate { get; set; }
         public string Address { get; set; }
 
-        public UserPhoto? UserPhoto { get; set; }
+       
     }
 }

@@ -1,4 +1,5 @@
 ﻿using DocumentFormat.OpenXml.InkML;
+using DocumentFormat.OpenXml.Office2021.Excel.RichDataWebImage;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -33,24 +34,38 @@ namespace RepositoryLibrary.Features.Users.Repository
         {
             _logger.LogInformation("BD: a obter utilizadores para administração.");
 
-            var query =
-                from user in _context.Users
+            var users = await _userManager.Users.ToListAsync();
+            var userRoles = await _context.UserRoles.ToListAsync();
+            var roles = await _context.Roles.ToListAsync();
+            var photos = await _emContext.UserFotos.ToListAsync();
 
-                join userRole in _context.UserRoles
-                    on user.Id equals userRole.UserId into ur
+            var roleDict = roles.ToDictionary(r => r.Id, r => r.Name);
 
-                from userRole in ur.DefaultIfEmpty()
+            var userRoleDict = userRoles
+                .GroupBy(x => x.UserId)
+                .ToDictionary(
+                    g => g.Key,
+                    g => g.FirstOrDefault()?.RoleId
+                );
 
-                join role in _context.Roles
-                    on userRole.RoleId equals role.Id into r
+            var photoDict = photos
+                .GroupBy(p => p.UserId)
+                .ToDictionary(
+                    g => g.Key,
+                    g => g.FirstOrDefault()?.FotoPath
+                );
 
-                from role in r.DefaultIfEmpty()
+            var result = new List<UserAdminProjectionDto>();
 
-                from photo in _context.Set<UserPhoto>()
-                    .Where(p => p.UserId == user.Id)
-                    .DefaultIfEmpty()
+            foreach (var user in users)
+            {
+                userRoleDict.TryGetValue(user.Id, out var roleId);
 
-                select new UserAdminProjectionDto
+                roleDict.TryGetValue(roleId ?? string.Empty, out var roleName);
+
+                photoDict.TryGetValue(user.Id, out var photoPath);
+
+                result.Add(new UserAdminProjectionDto
                 {
                     Id = user.Id,
                     FirstName = user.FirstName,
@@ -58,27 +73,12 @@ namespace RepositoryLibrary.Features.Users.Repository
                     Email = user.Email ?? string.Empty,
                     PhoneNumber = user.PhoneNumber,
                     IsActive = user.IsActive,
-                    Role = role != null ? role.Name : string.Empty,
-                    PhotoPath = photo != null ? photo.FotoPath : null
-                };
+                    Role = roleName,
+                    PhotoPath = photoPath
+                });
+            }
 
-            var result = await query.ToListAsync();
-
-            // evita duplicação por múltiplas roles
-            return result
-                .GroupBy(x => x.Id)
-                .Select(g => new UserAdminProjectionDto
-                {
-                    Id = g.Key,
-                    FirstName = g.First().FirstName,
-                    LastName = g.First().LastName,
-                    Email = g.First().Email,
-                    PhoneNumber = g.First().PhoneNumber,
-                    IsActive = g.First().IsActive,
-                    Role = g.First().Role,
-                    PhotoPath = g.First().PhotoPath
-                })
-                .ToList();
+            return result;
         }
 
         //V2 Implemented
@@ -99,7 +99,6 @@ namespace RepositoryLibrary.Features.Users.Repository
                 "BD: a obter todos os utilizadores.");
 
             return await _userManager.Users
-                .Include(x => x.UserPhoto)
                 .OrderBy(x => x.FirstName)
                 .ThenBy(x => x.LastName)
                 .ToListAsync();
@@ -196,6 +195,7 @@ namespace RepositoryLibrary.Features.Users.Repository
             existing.IsActive = user.IsActive;
 
             await _userManager.UpdateAsync(existing);
+
         }
 
         //V2 Implemented
@@ -203,6 +203,13 @@ namespace RepositoryLibrary.Features.Users.Repository
         {
             return await _userManager.Users
                 .FirstOrDefaultAsync(x => x.Id == id);
+        }
+
+        //V2 Implemented
+        public async Task CreateUserAsync(EMUser user)
+        {
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
         }
 
 

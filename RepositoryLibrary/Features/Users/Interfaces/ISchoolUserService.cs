@@ -13,7 +13,7 @@ namespace RepositoryLibrary.Features.Users.Interfaces
 
         Task RemoveUserFromSchoolAsync(string userId, int schoolId);
 
-        Task<List<UserListDto>> GetSchoolUsersAsync(int schoolId);
+      
 
         Task<List<UserSchoolDto>> GetUserSchoolsAsync(string userId);
     }

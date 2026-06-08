@@ -115,7 +115,7 @@ builder.Services.AddScoped<ISchoolUserService, SchoolUserService>();
 builder.Services.AddScoped<ISchoolUsersRepository, SchoolUsersRepository>();
 builder.Services.AddScoped<IStudentExportService, StudentExportService>();
 //builder.Services.AddScoped<IUserHorseService, UserHorseService>();
-builder.Services.AddScoped<IUserPhotoRepository, UserPhotoRepository>();
+builder.Services.AddScoped<IUserFotoRepository, UserFotoRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
 

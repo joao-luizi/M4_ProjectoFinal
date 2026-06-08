@@ -27,7 +27,6 @@ namespace RepositoryLibrary.Features.Users.Repositories
         public async Task<List<SchoolUser>> GetAllWithIncludesAsync()
         {
             return await _context.SchoolUsers
-           .Include(x => x.User)
            .Include(x => x.School)
            .ToListAsync();
         }

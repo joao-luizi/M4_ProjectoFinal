@@ -32,15 +32,10 @@ namespace RepositoryLibrary.Features.DashBoard.Services
         {
             var now = DateTime.UtcNow;
 
-            var bookingsTask = _bookingRepo.GetBookingsByUserIdAsync(studentId);
-            var subscriptionsTask = _entitlementRepo.GetSubscriptionEntitlementsAsync(studentId);
-            var creditsTask = _entitlementRepo.GetCreditLedgerAsync(studentId);
 
-            await Task.WhenAll(bookingsTask, subscriptionsTask, creditsTask);
-
-            var bookings = await bookingsTask;
-            var subscriptions = await subscriptionsTask;
-            var creditEntries = await creditsTask;
+            var bookings = await _bookingRepo.GetBookingsByUserIdAsync(studentId); 
+            var subscriptions = await _entitlementRepo.GetSubscriptionEntitlementsAsync(studentId); 
+            var creditEntries = await _entitlementRepo.GetCreditLedgerAsync(studentId); ;
 
             // -------------------------
             // BOOKINGS

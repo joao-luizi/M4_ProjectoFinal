@@ -12,7 +12,7 @@ namespace RepositoryLibrary.Features.Users.DTOs
         public int CitizenNumber { get; set; }
         public long SocialHealthNumber { get; set; }
         public int TaxIdentificationNumber { get; set; }
-        public UserPhoto? UserPhoto { get; set; }
+        public UserFoto? UserFoto { get; set; }
         public bool IsActive { get; set; }
     }
 }

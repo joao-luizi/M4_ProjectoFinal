@@ -67,5 +67,26 @@ namespace RepositoryLibrary.Features.Entitlements.Repositories
                 throw;
             }
         }
+
+        //V2 Implemented
+        public async Task AddAsync(UserSubscription subscription)
+        {
+            await _emContext.UserSubscriptions.AddAsync(subscription);
+            await _emContext.SaveChangesAsync();
+        }
+        //V2 Implemented
+        public async Task AddAsync(UserCreditLedgerEntry creditLedgerEntry)
+        {
+            await _emContext.UserCreditLedgerEntries.AddAsync(creditLedgerEntry);
+            await _emContext.SaveChangesAsync();
+        }
+        //V2 Implemented
+        public async Task AddAsync(List<UserCreditLedgerEntry> credsList)
+        {
+            await _emContext.UserCreditLedgerEntries.AddRangeAsync(credsList);
+            await _emContext.SaveChangesAsync();
+        }
+
+
     }
 }

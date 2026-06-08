@@ -13,5 +13,6 @@ namespace RepositoryLibrary.Features.Purchases.DTOs
         public DateTime PurchasedAtUtc { get; set; }
         public PurchaseStatus Status { get; set; }
         public decimal TotalAmount { get; set; }
+
     }
 }

@@ -10,15 +10,15 @@ namespace RepositoryLibrary.Features.Purchases.DTOs
     public class CreatePurchaseLineDto
     {
         public int ProductId { get; set; }
-
         public string ProductName { get; set; } = string.Empty;
+        public decimal UnitPrice { get; set; }
 
         public PurchaseLineKind Kind { get; set; }
 
-        public int Quantity { get; set; }
+        // Credit
+        public int? Quantity { get; set; }
 
-        public decimal UnitPrice { get; set; }
-
-        public int? SubscriptionMonths { get; set; }
+        // Subscription
+        public int? Months { get; set; }
     }
 }

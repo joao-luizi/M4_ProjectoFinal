@@ -8,6 +8,8 @@ namespace RepositoryLibrary.Features.Horses.Entities
     {
         public int HorseId { get; set; }
 
+        public int SchoolId { get; set; }
+
         public School School { get; set; }
 
         public string Name { get; set; }

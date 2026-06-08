@@ -7,15 +7,20 @@ namespace RepositoryLibrary.Features.Schools.Interfaces;
 public interface ISchoolService
 {
 
-    public Task<School> CreateSchoolAsync(School school);
-    public Task CreateUserSchoolAsync(string userId, int schoolId);
-    public Task<School> GetSchoolByIdAsync(int schoolId);
-    public Task<School> EditSchoolByIdAsync(School school);
-    public Task<School> DeleteSchoolByIdAsync(int schoolId);
+    
+    Task CreateUserSchoolAsync(string userId, int schoolId);
+    Task<School> EditSchoolByIdAsync(School school);
+    Task<School> DeleteSchoolByIdAsync(int schoolId);
     //V2 Implemented
     Task<List<School>> GetSchoolsAsync();
     //V2 Implemented
-    public Task<List<SchoolListDto>> GetSchoolsListAsync();
-    public Task<List<School>> GetUserSchoolsAsync(string userId);
+    Task<List<SchoolListDto>> GetSchoolsListAsync();
+
+    //V2 Implemented
+    Task<AdminSchoolDetailsDto> GetAdminSchoolByIdAsync(int schoolId);
+    //V2 Implemented
+    Task<List<AdminSchoolListItemDto>> GetAdminSchoolsAsync();
+    Task SaveSchoolAsync(AdminSchoolDetailsDto dto);
+    Task<List<School>> GetUserSchoolsAsync(string userId);
 
 }

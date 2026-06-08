@@ -12,7 +12,7 @@ using RideReady.Data;
 namespace RepositoryLibrary.Data.Migrations.Identity
 {
     [DbContext(typeof(AppIdentityDbContext))]
-    [Migration("20260606170234_InitialIdentity")]
+    [Migration("20260607101843_InitialIdentity")]
     partial class InitialIdentity
     {
         /// <inheritdoc />
@@ -259,19 +259,6 @@ namespace RepositoryLibrary.Data.Migrations.Identity
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("RepositoryLibrary.Features.Users.Entities.UserPhoto", b =>
-                {
-                    b.Property<string>("UserId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("FotoPath")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("UserId");
-
-                    b.ToTable("UserPhoto");
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -321,22 +308,6 @@ namespace RepositoryLibrary.Data.Migrations.Identity
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("RepositoryLibrary.Features.Users.Entities.UserPhoto", b =>
-                {
-                    b.HasOne("RepositoryLibrary.Features.Users.Entities.EMUser", "User")
-                        .WithOne("UserPhoto")
-                        .HasForeignKey("RepositoryLibrary.Features.Users.Entities.UserPhoto", "UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("RepositoryLibrary.Features.Users.Entities.EMUser", b =>
-                {
-                    b.Navigation("UserPhoto");
                 });
 #pragma warning restore 612, 618
         }
