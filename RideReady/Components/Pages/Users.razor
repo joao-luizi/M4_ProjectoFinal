@@ -14,7 +14,9 @@
 @using RepositoryLibrary.IServices
 @using RepositoryLibrary.Services
 @using RideReady.Services
+@using RideReady.Components.Shared
 @using RideReady.Components.Modals
+
 
 @inject IUserService _userService
 @inject ISchoolService _schoolService
@@ -31,6 +33,11 @@
 <RadzenDataGrid AllowFiltering="false" AllowColumnResize="true" AllowAlternatingRows="false" FilterMode="FilterMode.Advanced" AllowSorting="true" PageSize="10" AllowPaging="true" PagerHorizontalAlign="HorizontalAlign.Left" ShowPagingSummary="true"
 Data="@users" TItem="UpdateUserDto" ColumnWidth="300px" LogicalFilterOperator="LogicalFilterOperator.Or" 
 SelectionMode="DataGridSelectionMode.Single">
+    <EmptyTemplate>
+        <EmptyState Icon="people_outline"
+                    Title="Ainda não há utilizadores"
+                    Message="Quando alguém se registar na tua escola, vai aparecer aqui." />
+    </EmptyTemplate>
     <Columns>
         <RadzenDataGridColumn 
         Title="User" 

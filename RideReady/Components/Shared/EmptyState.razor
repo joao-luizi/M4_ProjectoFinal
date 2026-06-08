@@ -1,0 +1,40 @@
+﻿<div class="rideready-empty-state">
+    <RadzenIcon Icon="@Icon" Style="@IconStyle" />
+    <h4 class="rideready-empty-state__title">@Title</h4>
+    @if (!string.IsNullOrWhiteSpace(Message))
+    {
+        <p class="rideready-empty-state__message">@Message</p>
+    }
+</div>
+
+<style>
+    .rideready-empty-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 3rem 1rem;
+        color: var(--rz-text-tertiary-color);
+        text-align: center;
+    }
+
+    .rideready-empty-state__title {
+        margin: 0 0 0.5rem 0;
+        font-weight: 500;
+        color: var(--rz-text-secondary-color);
+    }
+
+    .rideready-empty-state__message {
+        margin: 0;
+        font-size: 0.9rem;
+        max-width: 320px;
+    }
+</style>
+
+@code {
+    [Parameter] public string Icon { get; set; } = "info";
+    [Parameter] public string Title { get; set; } = string.Empty;
+    [Parameter] public string? Message { get; set; }
+
+    private string IconStyle => "font-size: 3rem; margin-bottom: 1rem; opacity: 0.4;";
+}

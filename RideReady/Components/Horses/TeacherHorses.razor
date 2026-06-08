@@ -1,6 +1,7 @@
 ﻿@using System.Globalization
 @using RepositoryLibrary.Features.Horses
 @using RepositoryLibrary.Features.Horses.Interfaces
+@using RideReady.Components.Shared
 @inject IHorseService HorseService
 
 @code {
@@ -98,6 +99,11 @@
 </div>
 
 <RadzenDataGrid Data="@horses" TItem="HorsesData" Style="border-radius: 8px;" Class="w-100">
+    <EmptyTemplate>
+        <EmptyState Icon="pets"
+                    Title="Sem cavalos atribuídos"
+                    Message="Ainda não há cavalos para mostrar." />
+    </EmptyTemplate>
     <Columns>
         <RadzenDataGridColumn TItem="HorsesData" Property="HorseId" Title="ID" />
         <RadzenDataGridColumn TItem="HorsesData" Property="Name" Title="Nome" />
