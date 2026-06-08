@@ -79,7 +79,7 @@ builder.Services.AddIdentityCore<EMUser>(options =>
 
 builder.Services.AddScoped<IUserClaimsPrincipalFactory<EMUser>, CustomUserClaimsPrincipalFactory>();
 
-builder.Services.AddSingleton<IEmailSender<EMUser>, IdentityNoOpEmailSender>();
+builder.Services.AddSingleton<IEmailSender<EMUser>, SmtpEmailSender>();
 
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IStudentExportService, StudentExportService>();
