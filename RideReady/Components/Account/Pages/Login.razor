@@ -16,21 +16,24 @@
 <div class="row d-flex justify-content-center">
     <div class="col-md-4">
         <section>
-            
+
             <RadzenCard class="rz-my-12 rz-mx-auto rz-p-4 rz-p-md-12" style="max-width: 600px;">
                 <EditForm Model="Input" method="post" OnValidSubmit="LoginUser" FormName="login">
                     <DataAnnotationsValidator />
                     <h1 class="text-primary">Log in</h1>
                     <hr />
-                    <ValidationSummary class="text-danger" role="alert" />
+                    @if (!string.IsNullOrEmpty(errorMessage))
+                    {
+                        <div class="alert alert-danger" role="alert">@errorMessage</div>
+                    }
                     <div class="form-floating mb-3">
-                        <InputText @bind-Value="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
-                        <label for="email" class="form-label">Email</label>
+                        <InputText id="email" @bind-Value="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" autofocus />
+                        <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
                         <ValidationMessage For="() => Input.Email" class="text-danger" />
                     </div>
                     <div class="form-floating mb-3">
-                        <InputText type="password" @bind-Value="Input.Password" class="form-control" autocomplete="current-password" aria-required="true" placeholder="password" />
-                        <label for="password" class="form-label">Password</label>
+                        <InputText id="password" type="password" @bind-Value="Input.Password" class="form-control" autocomplete="current-password" aria-required="true" placeholder="password" />
+                        <label for="password" class="form-label">Password <span class="text-danger">*</span></label>
                         <ValidationMessage For="() => Input.Password" class="text-danger" />
                     </div>
                     <div class="checkbox mb-3">
@@ -57,7 +60,7 @@
             </RadzenCard>
         </section>
     </div>
-    
+
 </div>
 
 @code {
@@ -89,7 +92,7 @@
         if (result.Succeeded)
         {
             Logger.LogInformation("User logged in.");
-            RedirectManager.RedirectTo(ReturnUrl);
+            RedirectManager.RedirectTo(ReturnUrl ?? "/dashboard");
         }
         else if (result.RequiresTwoFactor)
         {
@@ -102,19 +105,23 @@
             Logger.LogWarning("User account locked out.");
             RedirectManager.RedirectTo("Account/Lockout");
         }
+        else if (result.IsNotAllowed)
+        {
+            errorMessage = "Your account is not confirmed yet. Please check your email for the confirmation link.";
+        }
         else
         {
-            errorMessage = "Error: Invalid login attempt.";
+            errorMessage = "Invalid email or password. Please try again.";
         }
     }
 
     private sealed class InputModel
     {
-        [Required]
-        [EmailAddress]
+        [Required(ErrorMessage = "Please enter your email address.")]
+        [EmailAddress(ErrorMessage = "Please enter a valid email address.")]
         public string Email { get; set; } = "";
 
-        [Required]
+        [Required(ErrorMessage = "Please enter your password.")]
         [DataType(DataType.Password)]
         public string Password { get; set; } = "";
 
