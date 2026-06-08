@@ -24,109 +24,103 @@
 
 <PageTitle>Register</PageTitle>
 
-@if(Schools is null) 
+@if (Schools is null)
 {
     <RadzenProgressBarCircular ProgressBarStyle="ProgressBarStyle.Dark" Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
 }
-else 
+else
 {
 
     <div class="row d-flex justify-content-center">
         <div class="col-md-4">
             <StatusMessage Message="@Message" />
             <RadzenCard class="rz-my-12 rz-mx-auto rz-p-4 rz-p-md-12" style="max-width: 600px;">
-                <EditForm Model="Input" asp-route-returnUrl="@ReturnUrl" method="post" OnValidSubmit="RegisterUser" FormName="register">
+                <EditForm Model="Input" asp-route-returnUrl="@ReturnUrl" method="post" OnValidSubmit="RegisterUser" OnInvalidSubmit="HandleInvalidSubmit" FormName="register">
                     <DataAnnotationsValidator />
                     <h1 class="text-primary">Register</h1>
                     <h2>Create a new account.</h2>
                     <hr />
-                    <ValidationSummary class="text-danger" role="alert" />
                     <div class="form-floating mb-3">
-                        <InputText @bind-Value="Input.FirstName" class="form-control" autocomplete="firstname" aria-required="true" placeholder="Your first name" />
-                        <label for="firstName">First Name</label>
+                        <InputText id="firstName" @bind-Value="Input.FirstName" class="form-control" autocomplete="given-name" aria-required="true" placeholder="Your first name" autofocus />
+                        <label for="firstName">First Name <span class="text-danger">*</span></label>
                         <ValidationMessage For="() => Input.FirstName" class="text-danger" />
                     </div>
                     <div class="form-floating mb-3">
-                        <InputText @bind-Value="Input.LastName" class="form-control" autocomplete="lastname" aria-required="true" placeholder="Your last name" />
-                        <label for="lastName">Last Name</label>
+                        <InputText id="lastName" @bind-Value="Input.LastName" class="form-control" autocomplete="family-name" aria-required="true" placeholder="Your last name" />
+                        <label for="lastName">Last Name <span class="text-danger">*</span></label>
                         <ValidationMessage For="() => Input.LastName" class="text-danger" />
                     </div>
 
                     <div class="form-floating mb-3">
-                        <InputText @bind-Value="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
-                        <label for="email">Email</label>
+                        <InputText id="email" @bind-Value="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
+                        <label for="email">Email <span class="text-danger">*</span></label>
                         <ValidationMessage For="() => Input.Email" class="text-danger" />
                     </div>
 
                     <div class="form-floating mb-3">
-                        <InputText type="password" @bind-Value="Input.Password" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
-                        <label for="password">Password</label>
+                        <InputText id="password" type="password" @bind-Value="Input.Password" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
+                        <label for="password">Password <span class="text-danger">*</span></label>
                         <ValidationMessage For="() => Input.Password" class="text-danger" />
                     </div>
 
                     <div class="form-floating mb-3">
-                        <InputText type="password" @bind-Value="Input.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
-                        <label for="confirm-password">Confirm Password</label>
+                        <InputText id="confirm-password" type="password" @bind-Value="Input.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
+                        <label for="confirm-password">Confirm Password <span class="text-danger">*</span></label>
                         <ValidationMessage For="() => Input.ConfirmPassword" class="text-danger" />
                     </div>
 
                     <div class="form-floating mb-3">
-                        <InputText @bind-Value="Input.Address" class="form-control" autocomplete="address" aria-required="true" placeholder="Your current address" />
+                        <InputText id="address" @bind-Value="Input.Address" class="form-control" autocomplete="street-address" placeholder="Your current address" />
                         <label for="address">Address</label>
                         <ValidationMessage For="() => Input.Address" class="text-danger" />
                     </div>
 
                     <div class="form-floating mb-3">
-                        <InputDate @bind-Value="Input.Birthdate" class="form-control" autocomplete="birthdate" aria-required="true" placeholder="dd/mm/yyyy" />
-                        <label for="birthdate">Birthdate</label>
-                        <ValidationMessage For="() => Input.Birthdate" class="text-danger" />
+                        <InputDate id="birthdate" @bind-Value="Input.Birthdate" class="form-control" autocomplete="bday" aria-required="true" placeholder="dd/mm/yyyy" />
+                        <label for="birthdate">Birthdate <span class="text-danger">*</span></label>
+                        @if (birthdateError != null)
+                        {
+                            <div class="text-danger">@birthdateError</div>
+                        }
                     </div>
 
                     <div class="form-floating mb-3">
-                        <InputText @bind-Value="Input.CitizenNumber" class="form-control" autocomplete="address" aria-required="true" placeholder="Citizen Number" />
-                        <label for="address">Citizen Number</label>
+                        <InputText id="citizenNumber" @bind-Value="Input.CitizenNumber" class="form-control" autocomplete="off" placeholder="Citizen Number" />
+                        <label for="citizenNumber">Citizen Number</label>
                         <ValidationMessage For="() => Input.CitizenNumber" class="text-danger" />
                     </div>
                     <div class="form-floating mb-3">
-                        <InputText @bind-Value="Input.TaxIdentificationNumber" class="form-control" autocomplete="taxnumber" aria-required="true" placeholder="Tax identification Number" />
-                        <label for="address">Tax Identification Number</label>
+                        <InputText id="taxNumber" @bind-Value="Input.TaxIdentificationNumber" class="form-control" autocomplete="off" placeholder="Tax identification Number" />
+                        <label for="taxNumber">Tax Identification Number</label>
                         <ValidationMessage For="() => Input.TaxIdentificationNumber" class="text-danger" />
                     </div>
                     <div class="form-floating mb-3">
-                        <InputText @bind-Value="Input.SocialHealthNumber" class="form-control" autocomplete="healthnumber" aria-required="true" placeholder="Social Health Number" />
-                        <label for="address">Social Health Number</label>
+                        <InputText id="healthNumber" @bind-Value="Input.SocialHealthNumber" class="form-control" autocomplete="off" placeholder="Social Health Number" />
+                        <label for="healthNumber">Social Health Number</label>
                         <ValidationMessage For="() => Input.SocialHealthNumber" class="text-danger" />
                     </div>
 
-                    <div class="form-floating">
-                        <div class="form mb-3">
-                            <InputCheckbox @bind-Value="Input.ImageAuthorized" class="form-check-input" autocomplete="healthnumber" aria-required="true" placeholder="Social Health Number" />
-                            <label for="address">I Agree to Store My Image</label>
-                            <ValidationMessage For="() => Input.ImageAuthorized" class="text-danger" />
-                        </div>
-
-                        <div class="form mb-3">
-                            <InputCheckbox @bind-Value="Input.InformationAuthorized" class="form-check-input" autocomplete="informationauthorized" aria-required="true" placeholder="Information Authorized" />
-                            <label class="form-check-label" for="informationauthorized">Allow Storage of My Information</label>
-                            <ValidationMessage For="() => Input.InformationAuthorized" class="text-danger" />
-                        </div>
+                    <div class="form mb-3">
+                        <InputCheckbox id="informationAuthorized" @bind-Value="Input.InformationAuthorized" class="form-check-input" aria-required="true" />
+                        <label class="form-check-label" for="informationAuthorized">I agree that the school stores my basic personal data (name, email, address) to manage my registration and lessons. <span class="text-danger">*</span></label>
+                        <ValidationMessage For="() => Input.InformationAuthorized" class="text-danger" />
                     </div>
 
                     <div class="form mb-3">
-                        <label for="school">Select School</label>
-                        <InputSelect 
-                        @bind-Value="Input.SchoolId" 
-                        class="form-control" 
-                        autocomplete="school" 
-                        aria-required="true" 
-                        placeholder="Information Authorized"
-                        TValue="int">
-                            @foreach(var school in Schools) 
+                        <label for="school">Select School <span class="text-danger">*</span></label>
+                        <InputSelect id="school"
+                                     @bind-Value="Input.SchoolId"
+                                     class="form-control"
+                                     autocomplete="off"
+                                     aria-required="true"
+                                     TValue="int">
+                            <option value="0">-- Select your school --</option>
+                            @foreach (var school in Schools)
                             {
                                 <option value="@school.SchoolId">@school.SchoolName</option>
                             }
                         </InputSelect>
-                        <ValidationMessage For="() => Input.InformationAuthorized" class="text-danger" />
+                        <ValidationMessage For="() => Input.SchoolId" class="text-danger" />
                     </div>
 
                     <button type="submit" class="w-100 btn btn-lg btn-primary">Register</button>
@@ -143,6 +137,8 @@ else
     [SupplyParameterFromForm]
     private InputModel Input { get; set; } = new();
 
+    private string? birthdateError = null;
+
     [SupplyParameterFromQuery]
     private string? ReturnUrl { get; set; }
 
@@ -155,18 +151,30 @@ else
         Schools = await _schoolService.GetSchoolsAsync();
     }
 
+    private void HandleInvalidSubmit()
+    {
+        birthdateError = Input.Birthdate == null ? "The Birthdate field is required." : null;
+    }
+
     public async Task RegisterUser(EditContext editContext)
     {
+        if (Input.Birthdate == null)
+        {
+            birthdateError = "The Birthdate field is required.";
+            return;
+        }
+        birthdateError = null;
+
         var user = CreateUser();
         user.RegisterDate = DateTime.Now;
         user.Birthdate = (DateTime)Input.Birthdate;
-        user.Address = Input.Address;
-        user.CitizenNumber = Convert.ToInt32(Input.CitizenNumber);
-        user.SocialHealthNumber = Convert.ToInt64(Input.SocialHealthNumber);
-        user.TaxIdentificationNumber = Convert.ToInt32(Input.TaxIdentificationNumber);
+        user.Address = Input.Address ?? string.Empty;
+        user.CitizenNumber = string.IsNullOrWhiteSpace(Input.CitizenNumber) ? 0 : Convert.ToInt32(Input.CitizenNumber);
+        user.SocialHealthNumber = string.IsNullOrWhiteSpace(Input.SocialHealthNumber) ? 0 : Convert.ToInt64(Input.SocialHealthNumber);
+        user.TaxIdentificationNumber = string.IsNullOrWhiteSpace(Input.TaxIdentificationNumber) ? 0 : Convert.ToInt32(Input.TaxIdentificationNumber);
         user.FirstName = Input.FirstName;
         user.LastName = Input.LastName;
-        user.ImageAuthorized = Input.ImageAuthorized;
+        user.ImageAuthorized = false;
         user.InformationAuthorized = Input.InformationAuthorized;
 
         await UserStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
@@ -203,7 +211,7 @@ else
         }
 
         await SignInManager.SignInAsync(user, isPersistent: false);
-        RedirectManager.RedirectTo(ReturnUrl);
+        RedirectManager.RedirectTo(ReturnUrl ?? "/dashboard");
     }
 
     private EMUser CreateUser()
@@ -256,41 +264,29 @@ else
 
         [Required]
         [Display(Name = "Information Authorization")]
-        [Range(typeof(bool), "true", "true", ErrorMessage = "You must authorize the use of your image.")]
+        [Range(typeof(bool), "true", "true", ErrorMessage = "You must agree to allow the school to store your basic personal data.")]
         public bool InformationAuthorized { get; set; }
 
-        [Required]
-        [Display(Name = "Image Authorization")]
-        [Range(typeof(bool), "true", "true", ErrorMessage = "You must authorize the use of your image.")]
-        public bool ImageAuthorized { get; set; }
-
-        [Required]
         [Display(Name = "NIF")]
-        [RegularExpression(@"^\d+$", ErrorMessage = "Please enter only numbers.")]
-        [StringLength(9, ErrorMessage = "The {0} must be {1} digits long.")]
+        [RegularExpression(@"^\d{9}$", ErrorMessage = "The NIF must be exactly 9 digits long.")]
         public string TaxIdentificationNumber { get; set; }
 
-        [Required]
         [Display(Name = "Social Health Number")]
-        [RegularExpression(@"^\d+$", ErrorMessage = "Please enter only numbers.")]
-        [StringLength(11, ErrorMessage = "The {0} must be {1} digits long.")]
+        [RegularExpression(@"^\d{11}$", ErrorMessage = "The Social Health Number must be exactly 11 digits long.")]
         public string SocialHealthNumber { get; set; }
 
-        [Required]
         [Display(Name = "Citizen Number")]
-        [RegularExpression(@"^\d+$", ErrorMessage = "Please enter only numbers.")]
-        [StringLength(8, ErrorMessage = "The {0} must be {1} digits long.")]
+        [RegularExpression(@"^\d{1,8}$", ErrorMessage = "The Citizen Number must be at most 8 digits long.")]
         public string CitizenNumber { get; set; }
 
-        [Required]
         [Display(Name = "Birthdate")]
         public DateTime? Birthdate { get; set; }
 
-        [Required]
         [Display(Name = "Address")]
         public string Address { get; set; }
 
         [Required]
+        [Range(1, int.MaxValue, ErrorMessage = "You must select a school.")]
         [Display(Name = "School")]
         public int SchoolId { get; set; }
     }
