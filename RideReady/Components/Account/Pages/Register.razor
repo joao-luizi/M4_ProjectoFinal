@@ -1,4 +1,4 @@
-﻿@page "/Account/Register"
+@page "/Account/Register"
 
 @using System.ComponentModel.DataAnnotations
 @using System.Text
@@ -32,7 +32,7 @@ else
 {
 
     <div class="row d-flex justify-content-center">
-        <div class="col-md-4">
+        <div class="col-12">
             <StatusMessage Message="@Message" />
             <RadzenCard class="rz-my-12 rz-mx-auto rz-p-4 rz-p-md-12" style="max-width: 600px;">
                 <EditForm Model="Input" asp-route-returnUrl="@ReturnUrl" method="post" OnValidSubmit="RegisterUser" OnInvalidSubmit="HandleInvalidSubmit" FormName="register">
