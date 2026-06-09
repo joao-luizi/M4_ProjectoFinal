@@ -6,6 +6,7 @@ using RepositoryLibrary.Features.Horses.DTOs;
 using RepositoryLibrary.Features.Horses.Entities;
 using RepositoryLibrary.Features.Horses.Interfaces;
 using RepositoryLibrary.Features.Images.Interfaces;
+using RepositoryLibrary.Features.Users.DTOs;
 using RepositoryLibrary.Features.Users.Entities;
 
 
@@ -31,7 +32,18 @@ public class HorseService : IHorseService
         _logger = logger;
     }
 
-
+    //V2 Implelmented
+    public async Task<List<SelectHorseDto>> GetSelectHorseAsync(int schoolId)
+    {
+        var horses = await _horseRepo.GetAllBySchoolAsync(schoolId);
+        return horses
+        .Select(u => new SelectHorseDto
+        {
+            Id = u.HorseId,
+            Name = u.Name
+        })
+        .ToList();
+    }
 
     //V2 Implelmented
     public async Task<HorseOverviewDto> GetHorseOverviewAsync()

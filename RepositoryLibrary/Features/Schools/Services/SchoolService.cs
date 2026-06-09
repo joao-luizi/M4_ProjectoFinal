@@ -205,7 +205,7 @@ public class SchoolService : ISchoolService
         }
     }
 
-    public async Task<List<SchoolListDto>> GetSchoolsListAsync()
+    public async Task<List<SelectSchoolDto>> GetSchoolsListAsync()
     {
         _logger.LogInformation("A obter a lista de todas as escolas.");
         try
@@ -213,7 +213,7 @@ public class SchoolService : ISchoolService
             var schools = await _schoolRepo.GetSchoolsAsync();
 
             _logger.LogInformation("Obtidas {Count} escolas.", schools.Count);
-            return schools.Select (s => new SchoolListDto
+            return schools.Select (s => new SelectSchoolDto
             {
                 SchoolId = s.SchoolId,
                 SchoolName = s.SchoolName,

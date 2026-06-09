@@ -29,6 +29,9 @@ namespace RepositoryLibrary.Features.Horses.Interfaces
         //V2 Implemented
         Task Delete(UserHorse userHorse);
 
+        //V2 Implemented
+        Task<List<Horse>> GetAllBySchoolAsync(int schoolId);
+
 
     }
 }

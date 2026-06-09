@@ -1,0 +1,208 @@
+﻿@using RepositoryLibrary.Features.Horses.DTOs
+@using RepositoryLibrary.Features.Horses.Interfaces
+@using RepositoryLibrary.Features.Lessons.DTOs
+
+@using RepositoryLibrary.Features.Lessons.Interfaces
+@using RepositoryLibrary.Features.Products.DTOs
+@using RepositoryLibrary.Features.Products.Interfaces
+@using RepositoryLibrary.Features.Schools.DTOs
+@using RepositoryLibrary.Features.Schools.Interfaces
+@using RepositoryLibrary.Features.Users.DTOs
+@using RepositoryLibrary.Features.Users.Entities
+@using RepositoryLibrary.Features.Users.Interfaces
+@using RepositoryLibrary.Shared.Enums
+
+@inject DialogService DialogService
+@inject ILessonService LessonService
+@inject ISchoolService ShoolService
+@inject IUserService UserService
+@inject IHorseService HorseService 
+@inject IProductService ProductService
+@rendermode InteractiveServer
+
+<RadzenTemplateForm Data="@Model" TItem="LessonEditDto" Submit="@Save">
+
+    <RadzenStack Gap="1rem">
+
+        <RadzenText TextStyle="TextStyle.H5">
+            @Title
+        </RadzenText>
+
+        <RadzenRow>
+
+
+            
+
+            <RadzenColumn Size="6">
+                <RadzenLabel Text="Lesson Type" />
+                <RadzenDropDown Data="@lessonTypes"
+                                TextProperty="Name"
+                                ValueProperty="Id"
+                                @bind-Value="Model.LessonTypeId"
+                                Disabled="@IsReadOnly" />
+            </RadzenColumn>
+
+        </RadzenRow>
+
+        <RadzenRow>
+
+            <RadzenColumn Size="6">
+                <RadzenLabel Text="Begin" />
+                <RadzenDatePicker @bind-Value="Model.BeginOfLesson"
+                                  ShowTime="true"
+                                  DateFormat="dd/MM/yyyy HH:mm"
+                                  Disabled="@IsReadOnly" />
+            </RadzenColumn>
+
+            <RadzenColumn Size="6">
+                <RadzenLabel Text="End" />
+                <RadzenDatePicker @bind-Value="Model.EndOfLesson"
+                                  ShowTime="true"
+                                  DateFormat="dd/MM/yyyy HH:mm"
+                                  Disabled="@IsReadOnly" />
+            </RadzenColumn>
+
+        </RadzenRow>
+
+        <RadzenRow>
+
+            <RadzenColumn Size="6">
+                <RadzenLabel Text="Capacity" />
+                <RadzenNumeric @bind-Value="Model.MaxSpots"
+                               Min="1"
+                               Disabled="@IsReadOnly" />
+            </RadzenColumn>
+
+        </RadzenRow>
+
+        <RadzenRow>
+
+            <RadzenColumn Size="6">
+                <RadzenLabel Text="Teachers" />
+                <RadzenDropDown Style="width:100%;" Data="@teachers"
+                                TextProperty="Name"
+                                ValueProperty="Id"
+                                Multiple="true"
+                                MaxSelectedLabels="1"
+                                AllowFiltering="true"
+                                FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                                Placeholder="Select teachers..."
+                                @bind-Value="Model.TeacherIds" />
+            </RadzenColumn>
+
+            <RadzenColumn Size="6">
+                <RadzenLabel Text="Horses" />
+                <RadzenDropDown Style="width:100%;"  Data="@horses"
+                                TextProperty="Name"
+                                ValueProperty="Id"
+                                Multiple="true"
+                                MaxSelectedLabels="1"
+                                AllowFiltering="true"
+                                FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                                Placeholder="Select horses..."
+                                @bind-Value="Model.HorseIds" />
+            </RadzenColumn>
+
+        </RadzenRow>
+
+        <RadzenStack Orientation="Orientation.Horizontal"
+                     JustifyContent="JustifyContent.End"
+                     Gap="1rem">
+
+            <RadzenButton Text="Close"
+                          ButtonStyle="ButtonStyle.Light"
+                          Click="Close" />
+
+            @if (Mode != ModalFormMode.View)
+            {
+                <RadzenButton Text="Save"
+                              Icon="save"
+                              ButtonStyle="ButtonStyle.Primary"
+                              ButtonType="ButtonType.Submit" />
+            }
+
+        </RadzenStack>
+
+    </RadzenStack>
+
+</RadzenTemplateForm>
+
+@code {
+
+    [Parameter]
+    public ModalFormMode Mode { get; set; }
+
+    [Parameter]
+    public int? LessonId { get; set; }
+
+    [Parameter]
+    public DateOnly? Date { get; set; }
+
+    [Parameter]
+    public string? SchoolName { get; set; }
+
+    [Parameter]
+    public int? SchoolId { get; set; }
+
+    List<SelectTeacherDto> teachers = new();
+    List<SelectHorseDto> horses = new();
+    List<SelectLessonTypeDto> lessonTypes = new();
+    private LessonEditDto Model = new();
+
+    private bool IsReadOnly =>
+        Mode == ModalFormMode.View;
+
+    private string Title =>
+        Mode switch
+        {
+            ModalFormMode.Create => "Create Lesson",
+            ModalFormMode.Edit => "Edit Lesson",
+            ModalFormMode.View => "Lesson Details",
+            _ => "Lesson"
+        };
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        teachers = await UserService.GetSelectUsersBySchoolAndRole(SchoolId ?? 0, StaticRole.Teacher);
+        horses = await HorseService.GetSelectHorseAsync(SchoolId ?? 0);
+        lessonTypes = await ProductService.GetAllSelectLessonTypeAsync();
+        if (Date is not null)
+        {
+            Model.BeginOfLesson =
+                Date.Value.ToDateTime(new TimeOnly(9, 0));
+
+            Model.EndOfLesson =
+                Date.Value.ToDateTime(new TimeOnly(10, 0));
+            Model.SchoolId = SchoolId ?? 0;
+        }
+    }
+
+    private async Task Save(LessonEditDto model)
+    {
+        try
+        {
+            switch (Mode)
+            {
+                case ModalFormMode.Create:
+                    await LessonService.CreateAsync(model);
+                    break;
+
+                case ModalFormMode.Edit:
+                    await LessonService.UpdateAsync(model);
+                    break;
+            }
+
+            DialogService.Close(true);
+        }
+        catch
+        {
+            DialogService.Close(false);
+        }
+    }
+
+    private void Close()
+    {
+        DialogService.Close(false);
+    }
+}

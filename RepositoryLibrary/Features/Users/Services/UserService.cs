@@ -98,6 +98,32 @@ namespace RepositoryLibrary.Features.Users.Service
                 throw new Exception(e.Message, e.InnerException);
             }
         }
+        public async Task<List<SelectTeacherDto>> GetSelectUsersBySchoolAndRole(int schoolId, string role)
+        {
+            try
+            {
+                var users = await _userRepo.GetUsersByRoleAsync(role);
+                var schoolUsers = await _schoolUserRepo.GetUsersBySchoolAsync(schoolId);
+
+                var schoolUserIds = schoolUsers
+                .Select(su => su.UserId)
+                .ToHashSet();
+
+                return users
+                  .Where(u => schoolUserIds.Contains(u.Id))
+                  .Select(u => new SelectTeacherDto
+                  {
+                      Id = u.Id,
+                      Name = u.FirstName + " " + u.LastName + "(" + u.UserName + ")"
+                  })
+                  .ToList();
+
+            }
+            catch (Exception e)
+            {
+                throw new Exception(e.Message, e.InnerException);
+            }
+        }
 
         public async Task<AdminUserDetailsDto?> GetUserDetailsAsync(string userId)
         {

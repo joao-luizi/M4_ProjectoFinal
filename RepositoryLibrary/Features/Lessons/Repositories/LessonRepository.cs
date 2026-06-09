@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using DocumentFormat.OpenXml.InkML;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using RepositoryLibrary.Data.Context;
@@ -37,7 +38,49 @@ namespace RepositoryLibrary.Features.Lessons.Repositories
             _logger.LogInformation("BD: obtidas {Count} aulas para o professor {TeacherId}.", lessons.Count, teacherId);
             return lessons;
         }
+        //V2 Implemented
+        public async Task<List<Lesson>> GetLessonsByDateRangeAsync(DateTime from, DateTime to, int selectedSchoolId)
+        {
+            return await _emContext.Lessons
+               .Where(l => l.BeginOfLesson >= from && l.BeginOfLesson < to && l.School.SchoolId == selectedSchoolId)
+               .Include(l => l.School)
+               .Include(l => l.LessonType)
+               .Include(l => l.Bookings)
+               .Include(l => l.LessonProfs)
+               .Include(l => l.LessonHorses)
+               .ToListAsync();
+        }
+        //V2 Implemented
+        public async Task<Lesson?> GetByIdWithDetailsAsync(int lessonId)
+        {
+            return await _emContext.Lessons
+              .Where(l => l.LessonId == lessonId)
+              .Include(l => l.School)
+              .Include(l => l.LessonType)
+              .Include(l => l.Bookings)
+              .Include(l => l.LessonProfs)
+              .Include(l => l.LessonHorses)
+              .FirstOrDefaultAsync();
+        }
+        //V2 Implemented
+        public async Task AddAsync(Lesson lesson)
+        {
+            await _emContext.Lessons.AddAsync(lesson);
+            await _emContext.SaveChangesAsync();
+        }
 
-       
+        //V2 Implemented
+        public async Task UpdateAsync(Lesson lesson)
+        {
+            await _emContext.SaveChangesAsync();
+        }
+
+        //V2 Implemented
+        public async Task DeleteAsync(Lesson lesson)
+        {
+            _emContext.Lessons.Remove(lesson);
+            await _emContext.SaveChangesAsync();
+        }
+
     }
 }

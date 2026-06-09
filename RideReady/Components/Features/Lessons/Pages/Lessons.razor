@@ -1,0 +1,163 @@
+﻿@page "/lessons"
+@rendermode InteractiveServer
+
+@using Radzen
+@using RepositoryLibrary.Features.Lessons.DTOs
+@using RepositoryLibrary.Features.Lessons.Interfaces
+@using RepositoryLibrary.Features.Schools.DTOs
+@using RepositoryLibrary.Features.Schools.Interfaces
+@using RideReady.Components.Features.Lessons.Components
+@inject ILessonScheduleService LessonScheduleService
+@inject ISchoolService SchoolService
+
+<RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" class="rz-p-3">
+
+    <RadzenStack Orientation="Orientation.Vertical" Gap="0.2rem">
+        <RadzenLabel Text="Year" />
+        <RadzenNumeric @bind-Value="year" Change="@((int _) => OnScopeChanged())" />
+    </RadzenStack>
+
+    <RadzenStack Orientation="Orientation.Vertical" Gap="0.2rem">
+        <RadzenLabel Text="Month" />
+        <RadzenDropDown @bind-Value="month"
+                        Data="@months"
+                        Change="@OnScopeChanged" />
+
+        
+    </RadzenStack>
+
+    <RadzenStack Orientation="Orientation.Vertical" Gap="0.2rem">
+        <RadzenLabel Text="School" />
+        <RadzenDropDown Data="@schools"
+                        TextProperty="SchoolName"
+                        ValueProperty="SchoolId"
+                        @bind-Value="selectedSchoolId"
+                        Change="OnScopeChanged" />
+    </RadzenStack>
+
+</RadzenStack>
+
+@if (calendarDays is not null)
+{
+    @if (selectedDay is not null)
+    {
+        <DayLessonsDetails Day="selectedDay"
+                           SchoolId="@selectedSchoolId"
+                           SchoolName="@schools.FirstOrDefault(x => x.SchoolId == selectedSchoolId)?.SchoolName"
+                           OnClose="() => selectedDay = null"
+                           OnLessonChanged="ReloadAfterLessonChange" />
+    }
+    else
+    {
+        <div class="calendar-grid">
+
+            @foreach (var day in calendarDays)
+            {
+                <RadzenCard class="day-card"
+                            Style="cursor:pointer"
+                            @onclick="() => SelectDay(day)">
+
+                    <div class="day-header">
+                        <b>@day.Date.Day</b>
+                        <span class="weekday">
+                            @day.Date.DayOfWeek
+                        </span>
+                    </div>
+
+                    <div>
+                        Lessons: @day.Lessons.Count
+                    </div>
+
+                    <div>
+                        Free slots: @CalculateFreeSlots(day)
+                    </div>
+
+                </RadzenCard>
+            }
+
+        </div>
+    }
+}
+
+
+
+@code {
+
+    int? selectedSchoolId;
+    int year = 2026;
+    int month = 6;
+
+    List<int> months = Enumerable.Range(1, 12).ToList();
+
+    MonthScheduleDto? schedule;
+    List<DayScheduleDto>? calendarDays;
+    DayScheduleDto? selectedDay;
+    public List<SelectSchoolDto> schools;
+    async Task OnScopeChanged()
+    {
+        await LoadCalendar();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCalendar();
+        selectedSchoolId = schools.FirstOrDefault()?.SchoolId;
+    }
+
+    private async Task ReloadAfterLessonChange()
+    {
+        await LoadCalendar();
+
+        selectedDay = calendarDays?
+            .FirstOrDefault(x => x.Date == selectedDay?.Date);
+    }
+
+    async Task LoadCalendar()
+    {
+        schools = await SchoolService.GetSchoolsListAsync();
+       
+        schedule = await LessonScheduleService
+            .GetMonthlyScheduleAsync(year, month, selectedSchoolId ?? 0);
+
+        BuildCalendar();
+        selectedDay = null;
+    }
+
+
+    void BuildCalendar()
+    {
+        calendarDays = new List<DayScheduleDto>();
+
+        var daysInMonth = DateTime.DaysInMonth(year, month);
+
+        for (int i = 1; i <= daysInMonth; i++)
+        {
+            var date = new DateOnly(year, month, i);
+
+            var existing = schedule?.Days
+                .FirstOrDefault(d => d.Date == date);
+
+            calendarDays.Add(existing ?? new DayScheduleDto
+            {
+                Date = date,
+                Lessons = new List<LessonCalendarDto>()
+            });
+        }
+    }
+
+    void SelectDay(DayScheduleDto day)
+    {
+        selectedDay = day;
+    }
+
+    int CalculateFreeSlots(DayScheduleDto day)
+    {
+        if (day.Lessons == null || !day.Lessons.Any())
+            return 0;
+
+        int totalMax = day.Lessons.Sum(l => l.MaxSpots);
+        int totalBooked = day.Lessons.Sum(l => l.BookedSpots);
+
+        return totalMax - totalBooked;
+    }
+}

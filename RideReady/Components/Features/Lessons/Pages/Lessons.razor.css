@@ -1,0 +1,25 @@
+﻿.calendar-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.day-card {
+    width: 160px;
+    height: 120px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 10px;
+}
+
+.day-header {
+    font-size: 16px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.weekday {
+    font-size: 12px;
+    opacity: 0.7;
+}

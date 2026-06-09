@@ -38,7 +38,6 @@
 	  <Folder Include="Features\Images\Entities\" />
 	  <Folder Include="Features\Images\DTOs\" />
 	  <Folder Include="Features\Images\Repositories\" />
-	  <Folder Include="Features\Lessons\DTOs\" />
 	  <Folder Include="Features\Lessons\Snapshots\" />
 	  <Folder Include="Features\Lessons\Views\" />
 	  <Folder Include="Features\Payments\DTOs\" />
@@ -48,7 +47,6 @@
 	  <Folder Include="Features\Payments\Services\" />
 	  <Folder Include="Features\Payments\Snapshots\" />
 	  <Folder Include="Features\Payments\Views\" />
-	  <Folder Include="Features\Products\DTOs\" />
 	  <Folder Include="Features\Products\Snapshots\" />
 	  <Folder Include="Features\Products\Views\" />
 	  <Folder Include="Features\Purchases\Views\" />

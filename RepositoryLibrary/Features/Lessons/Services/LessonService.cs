@@ -1,189 +1,174 @@
 ﻿using Microsoft.Extensions.Logging;
 using RepositoryLibrary.Data.Context;
+using RepositoryLibrary.Features.Bookings.Entities;
+using RepositoryLibrary.Features.Bookings.Interfaces;
+using RepositoryLibrary.Features.Lessons.DTOs;
 using RepositoryLibrary.Features.Lessons.Entities;
 using RepositoryLibrary.Features.Lessons.Interfaces;
-using RepositoryLibrary.Features.Lessons.Repositories;
-using RepositoryLibrary.Features.Users.Entities;
-using RepositoryLibrary.Features.Users.Interfaces;
+
 
 namespace RepositoryLibrary.Features.Lessons.Services
 {
     public class LessonService : ILessonService
     {
-        private readonly LessonRepository _lessonRepository;
-        private readonly IUserService _userService;
+        private readonly ILessonRepository _lessonRepo;
+        private readonly IBookingRepository _bookRepo;
         private readonly ILogger<LessonService> _logger;
 
-        public LessonService(RideReadyDbContext context, IUserService userService, ILogger<LessonService> logger, ILogger<LessonRepository> repoLogger)
+        public LessonService(RideReadyDbContext context, ILessonRepository lessonRepo, IBookingRepository bookRepo, ILogger<LessonService> logger)
         {
-            _lessonRepository = new LessonRepository(context, repoLogger);
-            _userService = userService;
+            _lessonRepo = lessonRepo;
+            _bookRepo = bookRepo;
             _logger = logger;
         }
 
-        //public async Task<IEnumerable<Lesson>> GetAllLessonsAsync()
-        //{
-        //    _logger.LogInformation("A obter a lista de todas as aulas.");
-        //    var lessons = await _lessonRepository.GetAllLessonsAsync();
-        //    _logger.LogInformation("Obtidas {Count} aulas.", lessons.Count());
-        //    return lessons;
-        //}
+        private async Task ValidateHorseAvailabilityAsync(
+    LessonEditDto dto)
+        {
+            // TODO:
+            // Validate horse workload rules.
+            //
+            // Rules:
+            // - Max 2 lessons per horse/day
+            // - If only rides, max 4 rides/day
+            // - After 1 ride -> only 1 lesson allowed
+            // - After 2 rides -> no lessons allowed
+            // - Horses must have 2 rest days/week
+        }
+        public async Task<int> CreateAsync(LessonEditDto dto)
+        {
 
-        //public async Task<Lesson?> GetLessonByIdAsync(int lessonId)
-        //{
-        //    _logger.LogInformation("A obter a aula {LessonId}.", lessonId);
-        //    var lesson = await _lessonRepository.GetLessonByIdAsync(lessonId);
+            //await ValidateHorseAvailabilityAsync(dto);
 
-        //    if (lesson == null)
-        //    {
-        //        _logger.LogWarning("Aula {LessonId} não encontrada.", lessonId);
-        //    }
-        //    else
-        //    {
-        //        _logger.LogInformation("Aula {LessonId} obtida com sucesso.", lessonId);
-        //    }
+            var lesson = new Lesson
+            {
+                SchoolId = dto.SchoolId,
+                LessonTypeId = dto.LessonTypeId,
+                BeginOfLesson = dto.BeginOfLesson,
+                EndOfLesson = dto.EndOfLesson,
+                MaxSpots = dto.MaxSpots,
 
-        //    return lesson;
-        //}
+                Bookings = new List<Booking>(),
+                LessonProfs = new List<LessonProf>(),
+                LessonHorses = new List<LessonHorse>()
+            };
 
-        //public async Task<bool> CreateLessonAsync(Lesson lesson)
-        //{
-        //    _logger.LogInformation("A criar uma nova aula.");
+            if (dto.TeacherIds != null)
+            {
+                foreach (var teacherId in dto.TeacherIds)
+                {
+                    lesson.LessonProfs.Add(new LessonProf
+                    {
+                        UserId = teacherId,
+                        Lesson = lesson
+                    });
+                }
+            }
 
-        //    if (lesson == null || lesson.MaxSpots <= 0)
-        //    {
-        //        _logger.LogWarning("Tentativa de criar aula inválida (lesson nula: {IsNull}, MaxSpots: {MaxSpots}).", lesson == null, lesson?.MaxSpots);
-        //        return false;
-        //    }
+            if (dto.HorseIds != null)
+            {
+                foreach (var horseId in dto.HorseIds)
+                {
+                    lesson.LessonHorses.Add(new LessonHorse
+                    {
+                        HorseId = horseId,
+                        Lesson = lesson
+                    });
+                }
+            }
 
-        //    await _lessonRepository.CreateLessonAsync(lesson);
-        //    _logger.LogInformation("Aula {LessonId} criada com sucesso.", lesson.LessonId);
-        //    return true;
-        //}
+            await _lessonRepo.AddAsync(lesson);
 
-        //public async Task<bool> UpdateLessonAsync(Lesson lesson)
-        //{
-        //    _logger.LogInformation("A atualizar a aula {LessonId}.", lesson?.LessonId);
+            return lesson.LessonId;
+        }
+        public async Task UpdateAsync(LessonEditDto dto)
+        {
+            var lesson = await _lessonRepo.GetByIdWithDetailsAsync(dto.LessonId);
 
-        //    if (lesson == null || lesson.MaxSpots <= 0)
-        //    {
-        //        _logger.LogWarning("Tentativa de atualizar aula inválida (lesson nula: {IsNull}, MaxSpots: {MaxSpots}).", lesson == null, lesson?.MaxSpots);
-        //        return false;
-        //    }
+            if (lesson == null)
+                throw new Exception($"Lesson {dto.LessonId} not found");
 
-        //    await _lessonRepository.UpdateLessonAsync(lesson);
-        //    _logger.LogInformation("Aula {LessonId} atualizada com sucesso.", lesson.LessonId);
-        //    return true;
-        //}
+            lesson.BeginOfLesson = dto.BeginOfLesson;
+            lesson.EndOfLesson = dto.EndOfLesson;
 
-        //public async Task<bool> DeleteLessonAsync(int lessonId)
-        //{
-        //    _logger.LogInformation("A eliminar a aula {LessonId}.", lessonId);
+            // Capacity rule: não pode ser menor que bookings existentes
+            var currentBookings = lesson.Bookings?.Count ?? 0;
 
-        //    var lesson = await _lessonRepository.GetLessonByIdAsync(lessonId);
-        //    if (lesson == null)
-        //    {
-        //        _logger.LogWarning("Não foi possível eliminar: aula {LessonId} não encontrada.", lessonId);
-        //        return false;
-        //    }
+            if (dto.MaxSpots < currentBookings)
+                throw new Exception("Cannot reduce capacity below current bookings");
 
-        //    await _lessonRepository.DeleteLessonAsync(lessonId);
-        //    _logger.LogInformation("Aula {LessonId} eliminada com sucesso.", lessonId);
-        //    return true;
-        //}
+            lesson.MaxSpots = dto.MaxSpots;
 
-        //public async Task<IEnumerable<Lesson>> GetLessonsByTeacherAsync(string teacherId)
-        //{
-        //    _logger.LogInformation("A obter aulas do professor {TeacherId}.", teacherId);
-        //    try
-        //    {
-        //        var roles = await _userService.GetUserRole(teacherId);
+            await _lessonRepo.UpdateAsync(lesson);
+        }
+        public async Task DeleteAsync(int lessonId)
+        {
+            var lesson = await _lessonRepo.GetByIdWithDetailsAsync(lessonId);
 
-        //        IEnumerable<Lesson> lessons = new List<Lesson>();
+            if (lesson == null)
+                throw new Exception($"Lesson {lessonId} not found");
 
-        //        if (!roles.Contains(StaticRole.Teacher))
-        //        {
-        //            _logger.LogWarning("Utilizador {TeacherId} não tem papel de professor.", teacherId);
-        //            throw new Exception($"The user with Id = {teacherId} is not a teacher.");
-        //        }
+            // regra: não apagar se já tem bookings confirmados (opcional mas recomendado)
+            if (lesson.Bookings.Any())
+                throw new Exception("Cannot delete lesson with bookings");
 
-        //        lessons = await _lessonRepository.GetLessonsByTeacherAsync(teacherId);
+            await _lessonRepo.DeleteAsync(lesson);
+        }
+        public async Task AssignHorseAsync(int lessonId, int horseId)
+        {
+            var lesson = await _lessonRepo.GetByIdWithDetailsAsync(lessonId);
 
-        //        _logger.LogInformation("Obtidas {Count} aulas para o professor {TeacherId}.", lessons.Count(), teacherId);
-        //        return lessons;
-        //    }
-        //    catch (Exception e)
-        //    {
-        //        _logger.LogError(e, "Erro ao obter aulas do professor {TeacherId}.", teacherId);
-        //        throw new Exception(e.Message, e.InnerException);
-        //    }
-        //}
+            if (lesson == null)
+                throw new Exception("Lesson not found");
 
-        //public async Task<IEnumerable<Lesson>> GetLessonsByStudentAsync(string studentId)
-        //{
-        //    _logger.LogInformation("A obter aulas do aluno {StudentId}.", studentId);
-        //    try
-        //    {
-        //        var roles = await _userService.GetUserRole(studentId);
+            var exists = lesson.LessonHorses.Any(h => h.HorseId == horseId);
 
-        //        IEnumerable<Lesson> lessons = new List<Lesson>();
+            if (exists)
+                return;
 
-        //        if (!roles.Contains(StaticRole.Student))
-        //        {
-        //            _logger.LogWarning("Utilizador {StudentId} não tem papel de aluno.", studentId);
-        //            throw new Exception($"The user with Id = {studentId} is not a teacher.");
-        //        }
+            lesson.LessonHorses.Add(new LessonHorse
+            {
+                LessonId = lessonId,
+                HorseId = horseId
+            });
 
-        //        lessons = await _lessonRepository.GetLessonsByStudentAsync(studentId);
+            await _lessonRepo.UpdateAsync(lesson);
+        }
+        public async Task AssignTeacherAsync(int lessonId, string userId)
+        {
+            var lesson = await _lessonRepo.GetByIdWithDetailsAsync(lessonId);
 
-        //        _logger.LogInformation("Obtidas {Count} aulas para o aluno {StudentId}.", lessons.Count(), studentId);
-        //        return lessons;
-        //    }
-        //    catch (Exception e)
-        //    {
-        //        _logger.LogError(e, "Erro ao obter aulas do aluno {StudentId}.", studentId);
-        //        throw new Exception(e.Message, e.InnerException);
-        //    }
-        //}
+            if (lesson == null)
+                throw new Exception("Lesson not found");
 
-        //public async Task<IEnumerable<Lesson>> GetAvailableLessonsAsync()
-        //{
-        //    _logger.LogInformation("A obter aulas disponíveis.");
-        //    var lessons = await _lessonRepository.GetAvailableLessonsAsync();
-        //    _logger.LogInformation("Obtidas {Count} aulas disponíveis.", lessons.Count());
-        //    return lessons;
-        //}
+            var exists = lesson.LessonProfs.Any(p => p.UserId == userId);
 
-        //public async Task<IEnumerable<Lesson>> GetLessonsByHorseIdAsync(int horseId)
-        //{
-        //    _logger.LogInformation("A obter aulas do cavalo {HorseId}.", horseId);
-        //    var lessons = await _lessonRepository.GetLessonsByHorseIdAsync(horseId);
-        //    _logger.LogInformation("Obtidas {Count} aulas para o cavalo {HorseId}.", lessons.Count(), horseId);
-        //    return lessons;
-        //}
+            if (exists)
+                return;
 
-        //public async Task<IEnumerable<Lesson>> GetLessonsByDateAsync(DateTime date)
-        //{
-        //    _logger.LogInformation("A obter aulas para {Date:yyyy-MM-dd}.", date);
-        //    var lessons = await _lessonRepository.GetLessonsByDateAsync(date);
-        //    _logger.LogInformation("Obtidas {Count} aulas para {Date:yyyy-MM-dd}.", lessons.Count(), date);
-        //    return lessons;
-        //}
+            lesson.LessonProfs.Add(new LessonProf
+            {
+                LessonId = lessonId,
+                UserId = userId
+            });
 
-        //public async Task<List<Lesson>> GetLessonByHorseAndDate(int horseId, DateTime date)
-        //{
-        //    _logger.LogInformation("A obter aulas do cavalo {HorseId} em {Date:yyyy-MM-dd}.", horseId, date);
-        //    try
-        //    {
-        //        var lessons = await _lessonRepository.GetLessonByHorseAndDate(horseId, date);
-        //        _logger.LogInformation("Obtidas {Count} aulas para o cavalo {HorseId} em {Date:yyyy-MM-dd}.", lessons.Count, horseId, date);
-        //        return lessons;
-        //    }
-        //    catch (Exception e)
-        //    {
-        //        _logger.LogError(e, "Erro ao obter aulas do cavalo {HorseId} em {Date:yyyy-MM-dd}.", horseId, date);
-        //        throw new Exception(e.Message, e.InnerException);
-        //    }
-        //}
+            await _lessonRepo.UpdateAsync(lesson);
+        }
+        public async Task ChangeCapacityAsync(int lessonId, int maxSpots)
+        {
+            var lesson = await _lessonRepo.GetByIdWithDetailsAsync(lessonId);
+
+            if (lesson == null)
+                throw new Exception("Lesson not found");
+
+            var bookings = lesson.Bookings?.Count ?? 0;
+
+            if (maxSpots < bookings)
+                throw new Exception("Cannot reduce capacity below current bookings");
+
+            lesson.MaxSpots = maxSpots;
+
+            await _lessonRepo.UpdateAsync(lesson);
+        }
     }
 }

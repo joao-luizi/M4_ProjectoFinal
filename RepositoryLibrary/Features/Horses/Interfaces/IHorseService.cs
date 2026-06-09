@@ -21,5 +21,8 @@ public interface IHorseService
     //V2 Implelmented
     Task SaveHorseAsync(HorseEditDto dto);
 
+    //V2 Implelmented
+    Task<List<SelectHorseDto>> GetSelectHorseAsync(int schoolId);
+
 }
 

@@ -49,7 +49,7 @@ else
     private HorseOverviewDto data = new();
     private List<HorseListItemDto> filteredHorses = new();
 
-    private List<SchoolListDto> schools = new();
+    private List<SelectSchoolDto> schools = new();
 
     private int? selectedSchoolId;
 
@@ -62,7 +62,7 @@ else
 
         schools = data.Horses
             .GroupBy(x => new { x.SchoolId, x.SchoolName })
-            .Select(g => new SchoolListDto
+            .Select(g => new SelectSchoolDto
             {
                 SchoolId = g.Key.SchoolId,
                 SchoolName = g.Key.SchoolName

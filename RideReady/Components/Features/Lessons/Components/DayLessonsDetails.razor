@@ -1,0 +1,118 @@
+﻿@using Radzen
+@using RepositoryLibrary.Features.Lessons.DTOs
+@using RepositoryLibrary.Shared.Enums
+@using RideReady.Components.Features.Lessons.Modals
+@rendermode InteractiveServer
+@inject DialogService DialogService
+@inject NotificationService NotificationService
+
+@if (Day is null)
+{
+    <RadzenCard>
+        <p>Select a day to see details</p>
+    </RadzenCard>
+}
+else
+{
+    <RadzenCard class="rz-p-3">
+
+        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween">
+
+            <h4>
+                @Day.Date.DayOfWeek - @Day.Date.ToString("yyyy-MM-dd")
+            </h4>
+
+            <RadzenButton Text="Close"
+                          ButtonStyle="ButtonStyle.Secondary"
+                          Click="@OnClose" />
+        </RadzenStack>
+        <RadzenButton Text="Create Lesson"
+                      Icon="add_circle"
+                      Click="CreateLesson" />
+       
+
+        @foreach (var lesson in Day.Lessons)
+        {
+            <RadzenCard class="rz-mb-2">
+
+                <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween">
+
+                    <div>
+                        <b>@lesson.LessonType</b><br />
+                        @lesson.Begin.ToString("HH:mm") - @lesson.End.ToString("HH:mm")<br />
+                        @lesson.SchoolName
+                    </div>
+
+                    <div>
+                        @lesson.BookedSpots / @lesson.MaxSpots
+                    </div>
+
+                    <div>
+                        Free: @lesson.FreeSpots
+                    </div>
+
+                </RadzenStack>
+
+                <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" class="rz-mt-2">
+
+                    <RadzenButton Text="Edit" ButtonStyle="ButtonStyle.Primary" />
+                    <RadzenButton Text="Horses" ButtonStyle="ButtonStyle.Secondary" />
+                    <RadzenButton Text="Attendance" ButtonStyle="ButtonStyle.Warning" />
+                    <RadzenButton Text="Delete" ButtonStyle="ButtonStyle.Danger" />
+
+
+                </RadzenStack>
+
+            </RadzenCard>
+        }
+
+    </RadzenCard>
+}
+
+@code {
+
+    [Parameter]
+    public DayScheduleDto? Day { get; set; }
+
+    [Parameter]
+    public string? SchoolName { get; set; }
+
+    [Parameter]
+    public int? SchoolId { get; set; }
+
+    [Parameter]
+    public EventCallback OnClose { get; set; }
+
+    [Parameter]
+    public EventCallback OnLessonChanged { get; set; }
+
+    private async Task CreateLesson()
+    {
+        var result = await DialogService.OpenAsync<LessonForm>(
+            "Create Lesson",
+            new Dictionary<string, object>
+            {
+                ["Mode"] = ModalFormMode.Create,
+                ["Date"] = Day.Date,
+                ["SchoolName"] = SchoolName ?? "",
+                ["SchoolId"] = SchoolId ?? 0,
+            },
+            new DialogOptions
+            {
+                Width = "1000px",
+                Height = "auto",
+                Resizable = true,
+                Draggable = true
+            });
+
+        if (result is bool success && success)
+        {
+            NotificationService.Notify(
+               NotificationSeverity.Success,
+               "Success",
+               "Lesson created successfully");
+            await OnLessonChanged.InvokeAsync();
+        }
+    }
+
+}

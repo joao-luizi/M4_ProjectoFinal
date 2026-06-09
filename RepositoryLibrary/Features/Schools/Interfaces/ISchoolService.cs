@@ -14,7 +14,7 @@ public interface ISchoolService
     //V2 Implemented
     Task<List<School>> GetSchoolsAsync();
     //V2 Implemented
-    Task<List<SchoolListDto>> GetSchoolsListAsync();
+    Task<List<SelectSchoolDto>> GetSchoolsListAsync();
 
     //V2 Implemented
     Task<AdminSchoolDetailsDto> GetAdminSchoolByIdAsync(int schoolId);

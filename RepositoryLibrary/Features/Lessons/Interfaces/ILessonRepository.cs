@@ -8,20 +8,23 @@ namespace RepositoryLibrary.Features.Lessons.Interfaces
     {
         //V2 Implemented
         Task<int> CountFutureLessonsAsync(DateTime now);
-        //Task<IEnumerable<Lesson>> GetAllLessonsAsync();
-        //Task<Lesson?> GetLessonByIdAsync(int lessonId);
-        //Task CreateLessonAsync(Lesson lesson);
-        //Task UpdateLessonAsync(Lesson lesson);
-        //Task DeleteLessonAsync(int lessonId);
+
 
         //V2 Implemented
         Task<List<Lesson>> GetLessonsByTeacherAsync(string teacherId);
-        //Task<List<Lesson>> GetLessonsByStudentAsync(string studentId);
-        //Task<List<Lesson>> GetAvailableLessonsAsync();
-        //Task<List<Lesson>> GetLessonsByHorseIdAsync(int horseId);
-        //Task<List<Lesson>> GetLessonsByDateAsync(DateTime date);
-        //Task<List<Lesson>> GetLessonByHorseAndDate(int horseId, DateTime date);
 
+        //V2 Implemented
+        Task<List<Lesson>> GetLessonsByDateRangeAsync(DateTime from, DateTime to, int selectedSchoolId);
+
+        //V2 Implemented
+        Task<Lesson?> GetByIdWithDetailsAsync(int lessonId);
+        //V2 Implemented
+        Task AddAsync(Lesson lesson);
+
+        //V2 Implemented
+        Task UpdateAsync(Lesson lesson);
+        //V2 Implemented
+        Task DeleteAsync(Lesson lesson);
 
     }
 

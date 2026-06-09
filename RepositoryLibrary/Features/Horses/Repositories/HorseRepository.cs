@@ -41,6 +41,16 @@ namespace RepositoryLibrary.Features.Horses.Repositories
                 .FirstOrDefaultAsync(x => x.HorseId == horseId);
         }
         //V2 Implelmented
+        public async Task<List<Horse>> GetAllBySchoolAsync(int schoolId)
+        {
+            return await _emContext.Horses.Where(u => u.SchoolId == schoolId)
+                .Include(x => x.HorseFoto)
+                .Include(x => x.UserHorses)
+                .Include(x => x.School)
+                .ToListAsync();
+        }
+
+        //V2 Implelmented
         public async Task<List<Horse>> GetAllAsync()
         {
             return await _emContext.Horses

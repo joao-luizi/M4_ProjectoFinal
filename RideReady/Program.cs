@@ -119,6 +119,9 @@ builder.Services.AddScoped<IUserFotoRepository, UserFotoRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
 
+builder.Services.AddScoped<ILessonService, LessonService>();
+builder.Services.AddScoped<ILessonScheduleService, LessonScheduleService>();
+
 builder.Services.AddScoped<IPurchaseService, PurchaseService>();
 builder.Services.AddScoped<IPurchaseRepository, PurchaseRepository>();
 
