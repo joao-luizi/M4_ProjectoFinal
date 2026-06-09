@@ -1,0 +1,153 @@
+/* ============================================================
+   RideReady — Fundação visual
+   Direção: Azul + castanho + Manrope
+   Autoria: Susana · frontend
+   ------------------------------------------------------------
+   "Fonte de verdade" do visual. Tudo o resto herda daqui:
+   cores, espaçamento, cantos, sombras, tipografia e movimento.
+   Os tokens têm prefixo --rr- para não chocarem com as
+   variáveis do Bootstrap nem do Radzen.
+   ============================================================ */
+
+:root {
+  /* --- Superfícies (chrome calmo) --- */
+  --rr-paper:    #f3efe8;  /* fundo creme quente */
+  --rr-paper-2:  #ece6da;  /* fundo um tom abaixo */
+  --rr-card:     #fbf8f2;  /* cartões */
+  --rr-border:   #ddd2bd;  /* linhas/bordas */
+
+  /* --- Tinta (texto) --- */
+  --rr-ink:      #262019;  /* texto principal */
+  --rr-muted:    #6f6453;  /* texto secundário */
+  --rr-hint:     #988b76;  /* texto ténue / legendas */
+
+  /* --- Acentos: azul-ardósia + castanho --- */
+  --rr-navy:     #2f4256;  /* acento principal (faixas, botões) */
+  --rr-navy-d:   #243443;  /* navy escuro */
+  --rr-blue:     #3f7fae;  /* azul de realce / CTAs */
+  --rr-blue-lt:  #6fa8d0;
+  --rr-brown:    #8a5a2b;  /* 2.º acento: reaquece o azul */
+  --rr-brown-d:  #5e3c1c;
+  --rr-tan:      #b98a52;
+
+  /* --- Cores de dados (o "pop" dos gráficos) --- */
+  --rr-good:     #3f7fae;  /* em dia */
+  --rr-amber:    #d9a531;  /* pendente */
+  --rr-alert:    #c6582f;  /* atraso/dívida — SÓ para o que é mau */
+
+  /* --- Espaçamento (escala simples) --- */
+  --rr-s1: 4px;  --rr-s2: 8px;  --rr-s3: 12px;
+  --rr-s4: 16px; --rr-s5: 24px; --rr-s6: 40px;
+
+  /* --- Cantos --- */
+  --rr-radius:    8px;
+  --rr-radius-lg: 14px;
+
+  /* --- Sombras --- */
+  --rr-shadow:    0 6px 18px -12px rgba(38,32,25,.35);
+  --rr-shadow-lg: 0 14px 30px -16px rgba(38,32,25,.40);
+}
+
+/* ============================================================
+   Tipografia base — Manrope (par único)
+   Manchetes a 800, corpo a 400/500.
+   ============================================================ */
+
+html, body {
+  font-family: 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  background-color: var(--rr-paper);
+  color: var(--rr-ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4 {
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--rr-ink);
+  line-height: 1.1;
+}
+h1 { font-size: 2.4rem; }
+h2 { font-size: 1.7rem; }
+h3 { font-size: 1.3rem; }
+h4 { font-size: 1.1rem; }
+
+a, .btn-link { color: var(--rr-blue); }
+
+/* Rótulo pequeno em maiúsculas (eyebrow) — reutilizável nas montras */
+.rr-eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--rr-navy);
+}
+
+/* Número grande de destaque (StatCards, donut) */
+.rr-display {
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  color: var(--rr-ink);
+}
+
+/* ============================================================
+   Camada de movimento (CSS) — baixo risco
+   Classes utilitárias que vais reutilizar nas montras.
+   ============================================================ */
+
+/* Revelação ao scroll: começa invisível, a classe .rr-in (posta
+   pelo JS) fá-lo surgir. */
+.rr-reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity .55s ease, transform .55s ease;
+}
+.rr-reveal.rr-in { opacity: 1; transform: none; }
+
+/* Levantar ao passar o rato */
+.rr-lift { transition: transform .18s ease, box-shadow .18s ease; }
+.rr-lift:hover { transform: translateY(-3px); box-shadow: var(--rr-shadow-lg); }
+
+/* Vidro (transparência) — usar SOBRE fotos/cor, nunca sobre fundo liso */
+.rr-glass {
+  background: rgba(251, 248, 242, .62);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, .55);
+  border-radius: var(--rr-radius-lg);
+}
+/* Vidro para fundo escuro (faixas de foto) */
+.rr-glass-dark {
+  background: rgba(255, 255, 255, .13);
+  backdrop-filter: blur(11px);
+  -webkit-backdrop-filter: blur(11px);
+  border: 1px solid rgba(255, 255, 255, .28);
+  border-radius: var(--rr-radius-lg);
+}
+
+/* Zoom lento contínuo da foto (Ken Burns) — pôr na <img class="rr-kenburns"> */
+.rr-kenburns { animation: rr-kenburns 24s ease-in-out infinite alternate; }
+@keyframes rr-kenburns {
+  from { transform: scale(1.06) translate(0, 0); }
+  to   { transform: scale(1.18) translate(-2%, -2%); }
+}
+
+/* Transição de entrada da foto do hero (pan+zoom).
+   A foto começa em .rr-photo (ampliada/deslocada) e, quando o pai
+   recebe .rr-in, desliza para a posição. */
+.rr-photo { transform: scale(1.28) translateX(-7%); }
+.rr-in .rr-photo {
+  animation: rr-photo-in 1.7s cubic-bezier(.22,.61,.36,1) forwards;
+}
+@keyframes rr-photo-in {
+  from { transform: scale(1.28) translateX(-7%); }
+  to   { transform: scale(1.08) translateX(0); }
+}
+
+/* Pintar a superfície do Radzen com o creme da fundação
+   (o RadzenBody/Layout traz fundo branco por predefinição) */
+.rz-layout,
+.rz-body,
+.rz-body > .rz-p-4 {
+    background-color: var(--rr-paper);
+}
