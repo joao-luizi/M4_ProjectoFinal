@@ -34,6 +34,11 @@ namespace RepositoryLibrary.Features.Lessons.Repositories
             _logger.LogInformation("BD: a consultar aulas do professor {TeacherId}.", teacherId);
             var lessons = await _emContext.Lessons
                 .Where(l => l.LessonProfs.Any(lp => lp.UserId == teacherId))
+                .Include(l => l.School)
+               .Include(l => l.LessonType)
+               .Include(l => l.Bookings)
+               .Include(l => l.LessonProfs)
+               .Include(l => l.LessonHorses)
                 .ToListAsync();
             _logger.LogInformation("BD: obtidas {Count} aulas para o professor {TeacherId}.", lessons.Count, teacherId);
             return lessons;
