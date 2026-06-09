@@ -91,6 +91,7 @@ builder.Services.AddIdentityCore<EMUser>(options =>
 builder.Services.AddScoped<IUserClaimsPrincipalFactory<EMUser>, CustomUserClaimsPrincipalFactory>();
 
 builder.Services.AddSingleton<IEmailSender<EMUser>, SmtpEmailSender>();
+builder.Services.AddScoped<IToastService, ToastService>();
 
 builder.Services.AddScoped<IBookingService, BookingService>();
 builder.Services.AddScoped<IBookingRepository, BookingRepository>();
