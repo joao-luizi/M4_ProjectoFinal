@@ -144,7 +144,7 @@
     [Parameter]
     public int? SchoolId { get; set; }
 
-    List<SelectTeacherDto> teachers = new();
+    List<SelectUserDto> teachers = new();
     List<SelectHorseDto> horses = new();
     List<SelectLessonTypeDto> lessonTypes = new();
     private LessonEditDto Model = new();
@@ -164,19 +164,37 @@
 
     protected override async Task OnInitializedAsync()
     {
-        teachers = await UserService.GetSelectUsersBySchoolAndRole(SchoolId ?? 0, StaticRole.Teacher);
-        horses = await HorseService.GetSelectHorseAsync(SchoolId ?? 0);
-        lessonTypes = await ProductService.GetAllSelectLessonTypeAsync();
-        if (Date is not null)
-        {
-            Model.BeginOfLesson =
-                Date.Value.ToDateTime(new TimeOnly(9, 0));
+        teachers = await UserService.GetSelectUsersBySchoolAndRole(
+            SchoolId ?? 0,
+            StaticRole.Teacher);
 
-            Model.EndOfLesson =
-                Date.Value.ToDateTime(new TimeOnly(10, 0));
-            Model.SchoolId = SchoolId ?? 0;
+        horses = await HorseService.GetSelectHorseAsync(SchoolId ?? 0);
+
+        lessonTypes = await ProductService.GetAllSelectLessonTypeAsync();
+
+        if (Mode == ModalFormMode.Create)
+        {
+            InitializeCreateModel();
+        }
+        else if (LessonId.HasValue)
+        {
+            Model = await LessonService.GetForEditAsync(LessonId.Value);
         }
     }
+
+    private void InitializeCreateModel()
+{
+    if (Date is null)
+        return;
+
+    Model.BeginOfLesson =
+        Date.Value.ToDateTime(new TimeOnly(9, 0));
+
+    Model.EndOfLesson =
+        Date.Value.ToDateTime(new TimeOnly(10, 0));
+
+    Model.SchoolId = SchoolId ?? 0;
+}
 
     private async Task Save(LessonEditDto model)
     {

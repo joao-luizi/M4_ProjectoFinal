@@ -181,6 +181,12 @@ else
 
         var roleResult = await UserManager.AddToRoleAsync(user, StaticRole.Student);
 
+        if (!roleResult.Succeeded)
+        {
+            identityErrors = roleResult.Errors;
+            return;
+        }
+
         await _schoolService.CreateUserSchoolAsync(user.Id, Input.SchoolId);
 
         Logger.LogInformation("User created a new account with password.");
@@ -200,7 +206,7 @@ else
                 "Account/RegisterConfirmation",
                 new() { ["email"] = Input.Email, ["returnUrl"] = ReturnUrl });
         }
-
+        //user.EmailConfirmed = true; //we need this until a proper email confirmation is done - didnt work even with email confirmed no login happened
         await SignInManager.SignInAsync(user, isPersistent: false);
         RedirectManager.RedirectTo(ReturnUrl);
     }

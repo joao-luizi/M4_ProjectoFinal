@@ -1,10 +1,13 @@
 ﻿@using Radzen
+@using RepositoryLibrary.Features.Email.DTOs
 @using RepositoryLibrary.Features.Lessons.DTOs
+@using RepositoryLibrary.Features.Lessons.Interfaces
 @using RepositoryLibrary.Shared.Enums
 @using RideReady.Components.Features.Lessons.Modals
 @rendermode InteractiveServer
 @inject DialogService DialogService
 @inject NotificationService NotificationService
+@inject ILessonService LessonService
 
 @if (Day is null)
 {
@@ -55,10 +58,15 @@ else
 
                 <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" class="rz-mt-2">
 
-                    <RadzenButton Text="Edit" ButtonStyle="ButtonStyle.Primary" />
-                    <RadzenButton Text="Horses" ButtonStyle="ButtonStyle.Secondary" />
-                    <RadzenButton Text="Attendance" ButtonStyle="ButtonStyle.Warning" />
-                    <RadzenButton Text="Delete" ButtonStyle="ButtonStyle.Danger" />
+                    <RadzenButton Text="Edit"
+                                  ButtonStyle="ButtonStyle.Primary"
+                                  Click="@(() => EditLesson(lesson))" />
+                    <RadzenButton Text="Attendance"
+                                  ButtonStyle="ButtonStyle.Warning"
+                                  Click="@(() => OpenAttendance(lesson))" />
+                    <RadzenButton Text="Delete"
+                                  ButtonStyle="ButtonStyle.Danger"
+                                  Click="@(() => DeleteLesson(lesson))" />
 
 
                 </RadzenStack>
@@ -86,16 +94,17 @@ else
     [Parameter]
     public EventCallback OnLessonChanged { get; set; }
 
-    private async Task CreateLesson()
+    private async Task CallDialog(ModalFormMode mode, string title, int lessonId)
     {
         var result = await DialogService.OpenAsync<LessonForm>(
-            "Create Lesson",
+            title,
             new Dictionary<string, object>
             {
-                ["Mode"] = ModalFormMode.Create,
+                ["Mode"] = mode,
                 ["Date"] = Day.Date,
                 ["SchoolName"] = SchoolName ?? "",
                 ["SchoolId"] = SchoolId ?? 0,
+                ["LessonId"] = lessonId
             },
             new DialogOptions
             {
@@ -107,12 +116,102 @@ else
 
         if (result is bool success && success)
         {
+            string message = "";
+            if (mode == ModalFormMode.Create)
+                message = "Lesson created successfully";
+            if (mode == ModalFormMode.Edit)
+                message = "Lesson updated successfully";
             NotificationService.Notify(
                NotificationSeverity.Success,
                "Success",
-               "Lesson created successfully");
+               message);
             await OnLessonChanged.InvokeAsync();
         }
     }
+
+    private async Task CreateLesson()
+    {
+        await CallDialog(ModalFormMode.Create, "Create Lesson", 0);
+    }
+
+    private async Task EditLesson(LessonCalendarDto lesson)
+    {
+        await CallDialog(ModalFormMode.Edit, "Edit Lesson", lesson.LessonId);
+    }
+
+    private async Task ViewLesson(LessonCalendarDto lesson)
+    {
+        await CallDialog(ModalFormMode.View, "View Lesson", lesson.LessonId);
+    }
+    private async Task DeleteLesson(LessonCalendarDto lesson)
+    {
+        bool? confirm = await DialogService.Confirm(
+            "Delete this lesson?",
+            "Confirm",
+            new ConfirmOptions
+            {
+                OkButtonText = "Yes",
+                CancelButtonText = "No"
+            });
+
+        if (confirm != true)
+            return;
+
+        try
+        {
+            var userIdsForEmails = await LessonService.DeleteAsync(lesson.LessonId);
+
+            var emailDto = new EmailSenderDto
+            {
+                UserIds = userIdsForEmails,
+                Subject = "Lesson cancelled",
+                Body = $"The lesson on {lesson.Begin:dd/MM HH:mm} has been cancelled."
+            };
+
+            //await EmailService.SendAsync(emailDto);
+
+            NotificationService.Notify(
+                NotificationSeverity.Success,
+                "Deleted",
+                $"Lesson deleted and users notified  Count: {userIdsForEmails.Count}");
+
+            await OnLessonChanged.InvokeAsync();
+        }
+        catch (Exception ex)
+        {
+            NotificationService.Notify(
+                NotificationSeverity.Error,
+                "Error",
+                ex.Message);
+        }
+    }
+
+    private async Task OpenAttendance(LessonCalendarDto lesson)
+    {
+        var result = await DialogService.OpenAsync<AttendanceForm>(
+            "Lesson Attendance",
+            new Dictionary<string, object>
+            {
+                ["LessonId"] = lesson.LessonId
+            },
+            new DialogOptions
+            {
+                Width = "900px",
+                Height = "600px",
+                Resizable = true,
+                Draggable = true
+            });
+
+        if (result is bool success && success)
+        {
+            NotificationService.Notify(
+                NotificationSeverity.Success,
+                "Saved",
+                "Attendance updated successfully");
+
+            await OnLessonChanged.InvokeAsync();
+        }
+    }
+   
 
 }

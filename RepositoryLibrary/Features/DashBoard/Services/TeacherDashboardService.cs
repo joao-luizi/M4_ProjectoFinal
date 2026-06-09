@@ -65,13 +65,7 @@ namespace RepositoryLibrary.Features.DashBoard.Services
 
                 var students = await _userRepo.GetUsersByIdsAsync(studentIds);
 
-                var lessonsByStudent = teacherLessons
-                .SelectMany(l => l.Bookings.Select(b => new { b.UserId, Lesson = l }))
-                .GroupBy(x => x.UserId)
-                .ToDictionary(
-                    g => g.Key,
-                    g => g.Select(x => x.Lesson).ToList()
-                );
+
 
                 var studentItems = students.Select(s =>
                 {

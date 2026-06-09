@@ -1,0 +1,167 @@
+﻿@using System.Security.Claims
+@using RepositoryLibrary.Features.Lessons.DTOs
+@using RepositoryLibrary.Features.Lessons.Interfaces
+@using RepositoryLibrary.Features.Users.Entities
+@inject ILessonService LessonService
+@inject AuthenticationStateProvider AuthStateProvider
+@inject DialogService DialogService
+
+<RadzenStack Gap="1rem">
+
+    <RadzenText TextStyle="TextStyle.H5">
+        Lesson Participation
+    </RadzenText>
+
+    <RadzenDivider />
+
+    @foreach (var row in Model.Students)
+    {
+        <RadzenCard class="rz-p-2">
+
+            <RadzenStack Orientation="Orientation.Horizontal"
+                         JustifyContent="JustifyContent.SpaceBetween"
+                         AlignItems="AlignItems.Center">
+
+                <!-- NAME -->
+                <div>
+                    <b>@row.Name</b>
+                </div>
+
+                <!-- TEACHER / ADMIN -->
+                @if (CanEditAttendance)
+                {
+                    <RadzenCheckBox TValue="bool"
+                                    @bind-Value="row.WasPresent" />
+                }
+
+                <!-- STUDENT ACTION -->
+                
+
+            </RadzenStack>
+
+        </RadzenCard>
+    }
+
+    @if (IsStudent)
+    {
+        <RadzenCard class="rz-p-3">
+
+            <b>You</b>
+
+            @if (MyRow?.IsBooked == true)
+            {
+                <RadzenBadge BadgeStyle="BadgeStyle.Success">
+                    You are enrolled
+                </RadzenBadge>
+
+                <RadzenButton Text="Cancel"
+                              ButtonStyle="ButtonStyle.Danger"
+                              Click="@Cancel" />
+            }
+            else
+            {
+                <RadzenBadge BadgeStyle="BadgeStyle.Light">
+                    Not enrolled
+                </RadzenBadge>
+
+                <RadzenButton Text="Join lesson"
+                              ButtonStyle="ButtonStyle.Primary"
+                              Click="@Join" />
+            }
+
+        </RadzenCard>
+    }
+
+    <RadzenStack Orientation="Orientation.Horizontal"
+                 JustifyContent="JustifyContent.End"
+                 Gap="1rem">
+
+        <RadzenButton Text="Close"
+                      ButtonStyle="ButtonStyle.Light"
+                      Click="@Close" />
+
+        @if (CanEditAttendance)
+        {
+            <RadzenButton Text="Save"
+                          Icon="save"
+                          ButtonStyle="ButtonStyle.Primary"
+                          Click="@Save" />
+        }
+
+    </RadzenStack>
+
+</RadzenStack>
+
+<style>
+    .attendance-row {
+        border-radius: 10px;
+        transition: all 0.15s ease-in-out;
+    }
+
+    .attendance-row:hover {
+        transform: scale(1.01);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+</style>
+
+
+@code {
+
+    [Parameter] public int LessonId { get; set; }
+
+    private LessonAttendanceDto Model = new();
+
+    private LessonAttendanceUserDto? MyRow;
+
+    private string? _userId;
+    private string? _role;
+
+    private bool CanEditAttendance =>
+        _role is StaticRole.Admin or StaticRole.Teacher;
+
+    private bool IsStudent =>
+        _role == StaticRole.Student;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var auth = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = auth.User;
+
+        _userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        _role = user.FindFirst(ClaimTypes.Role)?.Value;
+
+        await Load();
+    }
+
+    private async Task Load()
+    {
+        Model = await LessonService.GetAttendanceAsync(LessonId);
+
+        MyRow = Model.Students
+        .FirstOrDefault(x => x.UserId == _userId);
+    }
+
+    // TEACHER / ADMIN SAVE
+    private async Task Save()
+    {
+        await LessonService.UpdateAttendanceAsync(Model);
+        DialogService.Close(true);
+    }
+
+    // STUDENT JOIN
+    private async Task Join()
+    {
+        await LessonService.BookLessonAsync(LessonId, _userId!);
+        await Load();
+    }
+
+    // STUDENT CANCEL
+    private async Task Cancel()
+    {
+        await LessonService.CancelBookingAsync(LessonId, _userId!);
+        await Load();
+    }
+
+    private void Close()
+        => DialogService.Close(false);
+}

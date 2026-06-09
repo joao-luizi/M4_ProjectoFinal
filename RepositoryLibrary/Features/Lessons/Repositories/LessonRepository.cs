@@ -79,6 +79,11 @@ namespace RepositoryLibrary.Features.Lessons.Repositories
         {
             await _emContext.SaveChangesAsync();
         }
+        //V2 Implemented
+        public async Task SaveChangesAsync()
+        {
+            await _emContext.SaveChangesAsync();
+        }
 
         //V2 Implemented
         public async Task DeleteAsync(Lesson lesson)

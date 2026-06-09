@@ -25,6 +25,8 @@ namespace RepositoryLibrary.Features.Lessons.Interfaces
         Task UpdateAsync(Lesson lesson);
         //V2 Implemented
         Task DeleteAsync(Lesson lesson);
+        //V2 Implemented
+        Task SaveChangesAsync();
 
     }
 

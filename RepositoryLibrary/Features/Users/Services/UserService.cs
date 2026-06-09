@@ -98,7 +98,7 @@ namespace RepositoryLibrary.Features.Users.Service
                 throw new Exception(e.Message, e.InnerException);
             }
         }
-        public async Task<List<SelectTeacherDto>> GetSelectUsersBySchoolAndRole(int schoolId, string role)
+        public async Task<List<SelectUserDto>> GetSelectUsersBySchoolAndRole(int schoolId, string role)
         {
             try
             {
@@ -111,7 +111,7 @@ namespace RepositoryLibrary.Features.Users.Service
 
                 return users
                   .Where(u => schoolUserIds.Contains(u.Id))
-                  .Select(u => new SelectTeacherDto
+                  .Select(u => new SelectUserDto
                   {
                       Id = u.Id,
                       Name = u.FirstName + " " + u.LastName + "(" + u.UserName + ")"

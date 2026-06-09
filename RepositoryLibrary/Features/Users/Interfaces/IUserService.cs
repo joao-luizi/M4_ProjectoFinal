@@ -19,7 +19,7 @@ namespace RepositoryLibrary.Features.Users.Interfaces
         Task<List<EMUser>> GetUsersBySchoolAndRole(int schoolId, string role);
 
         //V2 Implemented
-        Task<List<SelectTeacherDto>> GetSelectUsersBySchoolAndRole(int schoolId, string role);
+        Task<List<SelectUserDto>> GetSelectUsersBySchoolAndRole(int schoolId, string role);
 
         //V2 Implemented 
         Task SaveUserAsync(AdminUserDetailsDto dto);

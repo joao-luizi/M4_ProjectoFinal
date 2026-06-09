@@ -1,8 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using DocumentFormat.OpenXml.Spreadsheet;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using RepositoryLibrary.Data.Context;
 using RepositoryLibrary.Features.Bookings.Entities;
 using RepositoryLibrary.Features.Bookings.Interfaces;
+using RepositoryLibrary.Features.Lessons.Entities;
 
 namespace RepositoryLibrary.Features.Bookings.Repositories
 {
@@ -40,10 +42,33 @@ namespace RepositoryLibrary.Features.Bookings.Repositories
                 .ToListAsync();
         }
 
-       
+        //V2 Implemented
+        public async Task Delete(Booking booking)
+        {
+            _emContext.Bookings.Remove(booking);
+            await _emContext.SaveChangesAsync();
+        }
+        //V2 Implemented
+        public async Task SaveChanges()
+        {
+            await _emContext.SaveChangesAsync();
+        }
 
-       
-  
+        public async  Task<Booking?> GetByLessonandUserIdsAsync(int lessonId, string userId)
+        {
+            return await _emContext.Bookings.Where(x => x.UserId == userId && x.LessonId == lessonId).FirstOrDefaultAsync();
+        }
+
+        public async Task addAsync(Booking booking)
+        {
+            await _emContext.AddAsync(booking);
+
+        }
+
+
+
+
+
 
 
     }

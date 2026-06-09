@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace RepositoryLibrary.Features.Users.DTOs
 {
-    public class SelectTeacherDto
+    public class SelectUserDto
     {
         public string Id { get; set; }
         public string Name { get; set; }

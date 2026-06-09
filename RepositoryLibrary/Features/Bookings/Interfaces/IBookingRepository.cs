@@ -10,7 +10,19 @@ namespace RepositoryLibrary.Features.Bookings.Interfaces
         Task<List<Booking>> GetBookingsForStudentsAsync(List<string> studentIds);
         //public Task<Booking?> GetLastAttendedBookingAsync(string userId, DateTime now);
         //V2 Implemented
-        public Task<List<Booking>> GetBookingsByUserIdAsync(string userId);
+        Task<List<Booking>> GetBookingsByUserIdAsync(string userId);
+        //V2 Implemented
+        Task Delete(Booking booking);
+        //V2 Implemented
+        Task SaveChanges();
+        //V2 Implemented
+        Task<Booking?> GetByLessonandUserIdsAsync(int lessonId, string userId);
+
+        //V2 Implemented
+        Task addAsync(Booking booking);
+
+
+
         //public Task<Booking> GetBookingAsync(string userId, int lessonId);
         //public Task<List<Booking>> GetAllBookedLessonsAsync();
         //public Task<List<Booking>> GetBookingByDateAsync(DateTime date);
@@ -19,8 +31,8 @@ namespace RepositoryLibrary.Features.Bookings.Interfaces
         //public Task<Booking> ChangeBookingPresenceAsync(Booking booking);
         //public Task<List<Booking>> GetBookingsByLessonId(int lessonId);
 
-    	//public Task<bool> IsLessonBookedAsync(int lessonId, string studentId);
+        //public Task<bool> IsLessonBookedAsync(int lessonId, string studentId);
 
- 
+
     }
 }

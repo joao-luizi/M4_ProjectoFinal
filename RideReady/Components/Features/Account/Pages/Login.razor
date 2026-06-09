@@ -102,6 +102,10 @@
             Logger.LogWarning("User account locked out.");
             RedirectManager.RedirectTo("Account/Lockout");
         }
+        else if (result.IsNotAllowed)
+        {
+            errorMessage = "Account is not allowed to login.";
+        }
         else
         {
             errorMessage = "Error: Invalid login attempt.";
