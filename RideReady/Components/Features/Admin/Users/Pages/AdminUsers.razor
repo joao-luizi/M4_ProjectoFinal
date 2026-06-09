@@ -9,8 +9,14 @@
 @using RepositoryLibrary.Shared.Enums
 @using RideReady.Components.Features.Admin.Users.Modals
 
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IJSRuntime JSRuntime
+@inject IStudentExportService _studentExportService
 @inject IUserService _usersService
 @inject NotificationService NotificationService;
+
+
+
 
 <h1>User Management</h1>
 
@@ -31,6 +37,7 @@ else
     {
         
     <RadzenButton Text="Create" Click="@CreateUser" />
+    <RadzenButton Text="Exportar alunos para Excel" Icon="download" ButtonStyle="ButtonStyle.Success" Click="@(args => ExportToExcel())" class="rz-mb-3 rz-ml-2" />
     <RadzenDataGrid Data="@users" TItem="AdminUserListItemDto"
                     AllowPaging="true"
                     AllowSorting="true"
@@ -104,6 +111,27 @@ else
     {
         var data = await _usersService.GetAdminUsersAsync();
         users = data.Users;
+    }
+
+    private async Task<int> GetSchoolIdAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        return Convert.ToInt32(authState.User.FindFirst("SchoolId")?.Value);
+    }
+
+    private async Task ExportToExcel()
+    {
+        try
+        {
+            int schoolId = await GetSchoolIdAsync();
+            byte[] fileBytes = await _studentExportService.ExportStudentsToExcelAsync(schoolId);
+            string base64 = Convert.ToBase64String(fileBytes);
+            await JSRuntime.InvokeVoidAsync("downloadFileFromBytes", "Alunos.xlsx", base64);
+        }
+        catch (Exception)
+        {
+            NotificationService.Notify(NotificationSeverity.Error, "Erro", "Falha ao exportar os alunos.");
+        }
     }
 
     private async Task ViewUser(AdminUserListItemDto user)
