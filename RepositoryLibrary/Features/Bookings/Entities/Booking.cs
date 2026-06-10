@@ -1,4 +1,5 @@
-﻿using RepositoryLibrary.Features.Lessons.Entities;
+﻿using RepositoryLibrary.Features.Bookings.Enums;
+using RepositoryLibrary.Features.Lessons.Entities;
 using System.ComponentModel.DataAnnotations.Schema;
 namespace RepositoryLibrary.Features.Bookings.Entities
 {
@@ -9,5 +10,7 @@ namespace RepositoryLibrary.Features.Bookings.Entities
         public int LessonId { get; set; }
         public Lesson Lesson { get; set; }
         public bool WasPresent { get; set; } = false;
+
+        public BookingFundingType FundingType { get; set; }
     }
 }

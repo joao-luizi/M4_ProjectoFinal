@@ -1,4 +1,5 @@
 dotnet ef database drop --context AppIdentityDbContext --project RepositoryLibrary --startup-project RideReady --force
+dotnet ef database drop --context RideReadyDbContext   --project RepositoryLibrary --startup-project RideReady --force
 
 
 ----------------------------CRAIAÇÃO INICIAL ___________________________
@@ -8,11 +9,24 @@ dotnet ef migrations add InitialIdentity --context AppIdentityDbContext --projec
 dotnet ef migrations add InitialCreate --context RideReadyDbContext --project RepositoryLibrary --startup-project RideReady --output-dir Data/Migrations/RideReady
 
 __________________________________________________________________________
-dotnet ef migrations add <nome-da-migração> --context RideReadyDbContext --project RepositoryLibrary --startup-project RideReady
-
-
 
 
 dotnet ef database update --context RideReadyDbContext --project RepositoryLibrary --startup-project RideReady
 
 dotnet ef database update --context AppIdentityDbContext --project RepositoryLibrary --startup-project RideReady  
+
+Program.cs Database identification and setup lines:
+
+var identityConn = builder.Configuration.GetConnectionString("IdentityDb")
+    ?? throw new InvalidOperationException("IdentityDb not found");
+
+var rideConn = builder.Configuration.GetConnectionString("RideReadyDB")
+    ?? throw new InvalidOperationException("RideReadyDB not found");
+
+builder.Services.AddDbContext<AppIdentityDbContext>(options =>
+    options.UseSqlServer(identityConn, x =>
+        x.MigrationsHistoryTable("__EFMigrationsHistory_Identity")));
+
+builder.Services.AddDbContext<RideReadyDbContext>(options =>
+    options.UseSqlServer(rideConn, x =>
+        x.MigrationsHistoryTable("__EFMigrationsHistory_RideReady")));
