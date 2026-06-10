@@ -1,4 +1,4 @@
-﻿@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Identity
 @using RepositoryLibrary.Features.Users.Entities
 @inject NavigationManager NavigationManager
 @inject SignInManager<EMUser> SignInManager
@@ -8,32 +8,40 @@
 <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0" class="ms-3">
     <RadzenSidebarToggle Click="@(() => sidebarExpanded = !sidebarExpanded)" />
 </RadzenStack>
+
 <RadzenSidebar Responsive="false" @bind-Expanded="@sidebarExpanded" style="position: absolute; z-index: 3;">
     <RadzenStack AlignItems="AlignItems.End" class="rz-p-2">
         <RadzenButton Icon="west" Variant="Variant.Text" ButtonStyle="ButtonStyle.Secondary" Click="@(() => sidebarExpanded = false)" />
     </RadzenStack>
+
     <RadzenPanelMenu>
-        <RadzenPanelMenuItem Path="/dashboard" Text="Home" Icon="home" Style="font-size: 1.2rem" Click="@(() => sidebarExpanded = !sidebarExpanded)" />
-        <AuthorizeView Roles="@StaticRole.Admin">
-            <Authorized>
-                <RadzenPanelMenuItem Path="/admin/schools" Text="Schools" Icon="account_box" Style="font-size: 1.2rem" Click="@(() => sidebarExpanded = !sidebarExpanded)" />
-                <RadzenPanelMenuItem Path="/admin/users" Text="Users" Icon="account_box" Style="font-size: 1.2rem" Click="@(() => sidebarExpanded = !sidebarExpanded)" />
-                <RadzenPanelMenuItem Path="/admin/horses" Text="Horses" Icon="motorcycle" Style="font-size: 1.2rem" Click="@(() => sidebarExpanded = !sidebarExpanded)" />
-                <RadzenPanelMenuItem Path="/admin/purchases" Text="Payments" Icon="payments" Style="font-size: 1.2rem" Click="@(() => sidebarExpanded = !sidebarExpanded)" />
-            </Authorized>
-        </AuthorizeView>
+
+        @* --- Para toda a gente --- *@
+        <RadzenPanelMenuItem Path="/dashboard" Text="Início" Icon="home" Click="@(() => sidebarExpanded = false)" />
+
         <AuthorizeView>
             <Authorized>
-                <RadzenPanelMenuItem Path="/lessons" Text="Lessons" Icon="event" Style="font-size: 1.2rem" Click="@(() => sidebarExpanded = !sidebarExpanded)" />
+                <RadzenPanelMenuItem Path="/lessons" Text="Aulas" Icon="calendar_month" Click="@(() => sidebarExpanded = false)" />
             </Authorized>
         </AuthorizeView>
+
+        @* --- Aluno --- *@
         <AuthorizeView Roles="@StaticRole.Student">
-            <RadzenPanelMenuItem Path="/student/purchases"
-                                     Text="Payments"
-                                     Icon="payments"
-                                     Style="font-size: 1.2rem"
-                                     Click="@(() => sidebarExpanded = !sidebarExpanded)" />
+            <Authorized>
+                <RadzenPanelMenuItem Path="/student/purchases" Text="Os meus pagamentos" Icon="payments" Click="@(() => sidebarExpanded = false)" />
+            </Authorized>
         </AuthorizeView>
+
+        @* --- Administração --- *@
+        <AuthorizeView Roles="@StaticRole.Admin">
+            <Authorized>
+                <RadzenPanelMenuItem Path="/admin/users" Text="Utilizadores" Icon="group" Click="@(() => sidebarExpanded = false)" />
+                <RadzenPanelMenuItem Path="/admin/horses" Text="Cavalos" Icon="pets" Click="@(() => sidebarExpanded = false)" />
+                <RadzenPanelMenuItem Path="/admin/schools" Text="Escolas" Icon="school" Click="@(() => sidebarExpanded = false)" />
+                <RadzenPanelMenuItem Path="/admin/purchases" Text="Pagamentos" Icon="payments" Click="@(() => sidebarExpanded = false)" />
+            </Authorized>
+        </AuthorizeView>
+
     </RadzenPanelMenu>
 </RadzenSidebar>
 
@@ -45,4 +53,3 @@
 @code {
     bool sidebarExpanded = false;
 }
-

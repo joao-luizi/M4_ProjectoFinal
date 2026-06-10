@@ -1,7 +1,6 @@
 /* ============================================================
    RideReady — Fundação visual
    Direção: Azul + castanho + Manrope
-   Autoria: Susana · frontend
    ------------------------------------------------------------
    "Fonte de verdade" do visual. Tudo o resto herda daqui:
    cores, espaçamento, cantos, sombras, tipografia e movimento.
@@ -10,6 +9,12 @@
    ============================================================ */
 
 :root {
+  /* === TAMANHO-BASE GLOBAL ===
+     Muda SO este valor para escalar tudo (landing + paginas Radzen).
+     ex.: 19px maior, 17px menor, 24px para testar exagerado. */
+  --rr-base: 18px;
+  --rz-root-font-size: var(--rr-base);   /* destrava o tamanho dentro do Radzen */
+
   /* --- Superfícies (chrome calmo) --- */
   --rr-paper:    #f3efe8;  /* fundo creme quente */
   --rr-paper-2:  #ece6da;  /* fundo um tom abaixo */
@@ -26,16 +31,16 @@
   --rr-navy-d:   #243443;  /* navy escuro */
   --rr-blue:     #3f7fae;  /* azul de realce / CTAs */
   --rr-blue-lt:  #6fa8d0;
-  --rr-brown:    #8a5a2b;  /* 2.º acento: reaquece o azul */
+  --rr-brown:    #8a5a2b;  /* 2.o acento: reaquece o azul */
   --rr-brown-d:  #5e3c1c;
   --rr-tan:      #b98a52;
 
-  /* --- Cores de dados (o "pop" dos gráficos) --- */
+  /* --- Cores de dados (o "pop" dos graficos) --- */
   --rr-good:     #3f7fae;  /* em dia */
   --rr-amber:    #d9a531;  /* pendente */
-  --rr-alert:    #c6582f;  /* atraso/dívida — SÓ para o que é mau */
+  --rr-alert:    #c6582f;  /* atraso/divida - SO para o que e mau */
 
-  /* --- Espaçamento (escala simples) --- */
+  /* --- Espacamento (escala simples) --- */
   --rr-s1: 4px;  --rr-s2: 8px;  --rr-s3: 12px;
   --rr-s4: 16px; --rr-s5: 24px; --rr-s6: 40px;
 
@@ -49,14 +54,18 @@
 }
 
 /* ============================================================
-   Tipografia base — Manrope (par único)
-   Manchetes a 800, corpo a 400/500.
+   Tipografia base - Manrope (par unico)
    ============================================================ */
+
+html {
+  font-size: var(--rr-base);
+}
 
 html, body {
   font-family: 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;
   background-color: var(--rr-paper);
   color: var(--rr-ink);
+  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -73,7 +82,6 @@ h4 { font-size: 1.1rem; }
 
 a, .btn-link { color: var(--rr-blue); }
 
-/* Rótulo pequeno em maiúsculas (eyebrow) — reutilizável nas montras */
 .rr-eyebrow {
   font-size: 11px;
   font-weight: 700;
@@ -82,7 +90,6 @@ a, .btn-link { color: var(--rr-blue); }
   color: var(--rr-navy);
 }
 
-/* Número grande de destaque (StatCards, donut) */
 .rr-display {
   font-weight: 800;
   letter-spacing: -0.02em;
@@ -91,12 +98,9 @@ a, .btn-link { color: var(--rr-blue); }
 }
 
 /* ============================================================
-   Camada de movimento (CSS) — baixo risco
-   Classes utilitárias que vais reutilizar nas montras.
+   Camada de movimento (CSS)
    ============================================================ */
 
-/* Revelação ao scroll: começa invisível, a classe .rr-in (posta
-   pelo JS) fá-lo surgir. */
 .rr-reveal {
   opacity: 0;
   transform: translateY(18px);
@@ -104,11 +108,9 @@ a, .btn-link { color: var(--rr-blue); }
 }
 .rr-reveal.rr-in { opacity: 1; transform: none; }
 
-/* Levantar ao passar o rato */
 .rr-lift { transition: transform .18s ease, box-shadow .18s ease; }
 .rr-lift:hover { transform: translateY(-3px); box-shadow: var(--rr-shadow-lg); }
 
-/* Vidro (transparência) — usar SOBRE fotos/cor, nunca sobre fundo liso */
 .rr-glass {
   background: rgba(251, 248, 242, .62);
   backdrop-filter: blur(10px);
@@ -116,7 +118,6 @@ a, .btn-link { color: var(--rr-blue); }
   border: 1px solid rgba(255, 255, 255, .55);
   border-radius: var(--rr-radius-lg);
 }
-/* Vidro para fundo escuro (faixas de foto) */
 .rr-glass-dark {
   background: rgba(255, 255, 255, .13);
   backdrop-filter: blur(11px);
@@ -125,16 +126,12 @@ a, .btn-link { color: var(--rr-blue); }
   border-radius: var(--rr-radius-lg);
 }
 
-/* Zoom lento contínuo da foto (Ken Burns) — pôr na <img class="rr-kenburns"> */
 .rr-kenburns { animation: rr-kenburns 24s ease-in-out infinite alternate; }
 @keyframes rr-kenburns {
   from { transform: scale(1.06) translate(0, 0); }
   to   { transform: scale(1.18) translate(-2%, -2%); }
 }
 
-/* Transição de entrada da foto do hero (pan+zoom).
-   A foto começa em .rr-photo (ampliada/deslocada) e, quando o pai
-   recebe .rr-in, desliza para a posição. */
 .rr-photo { transform: scale(1.28) translateX(-7%); }
 .rr-in .rr-photo {
   animation: rr-photo-in 1.7s cubic-bezier(.22,.61,.36,1) forwards;
@@ -144,10 +141,139 @@ a, .btn-link { color: var(--rr-blue); }
   to   { transform: scale(1.08) translateX(0); }
 }
 
-/* Pintar a superfície do Radzen com o creme da fundação
-   (o RadzenBody/Layout traz fundo branco por predefinição) */
+/* ============================================================
+   Superficies do Radzen - pintar com o creme da fundacao
+   (o RadzenLayout/RadzenBody trazem fundo branco por defeito)
+   ============================================================ */
+
 .rz-layout,
 .rz-body,
 .rz-body > .rz-p-4 {
-    background-color: var(--rr-paper);
+  background-color: var(--rr-paper);
+}
+
+/* O Radzen define o SEU tamanho-base nesta regra (:root:has(.rz-layout))
+   e o tema dele carrega depois do nosso, por isso sobrepoe-se. Forcamos
+   com a mesma regra + !important para o nosso --rr-base ganhar. */
+:root:has(.rz-layout) {
+  --rz-root-font-size: var(--rr-base) !important;   /* escala componentes/espacos */
+  --rz-body-font-size: var(--rr-base) !important;   /* escala o TEXTO corrente */
+}
+
+/* ============================================================
+   Shell - moldura da app (barra de topo + conteudo)
+   ============================================================ */
+
+/* Barra de topo: creme, linha subtil e uma sombra leve */
+.rz-header {
+  background-color: var(--rr-card);
+  border-bottom: 1px solid var(--rr-border);
+  box-shadow: 0 2px 12px -10px rgba(38,32,25,.5);
+  min-height: 64px;
+}
+
+/* Conteudo centrado, com largura maxima confortavel de leitura */
+.rz-body > .rz-p-4 {
+  max-width: 1120px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* Nome do utilizador no menu de perfil */
+.rz-profile-menu .rz-label {
+  color: var(--rr-ink);
+  font-weight: 600;
+}
+
+/* Botoes "Registar" e "Entrar" (quando nao ha sessao) */
+.rz-header .nav-link {
+  color: var(--rr-navy);
+  font-weight: 600;
+  text-decoration: none;
+}
+.rz-header .nav-link.btn-primary {
+  background-color: var(--rr-blue);
+  border-color: var(--rr-blue);
+  border-radius: var(--rr-radius);
+  color: #fff;
+}
+.rz-header .nav-link.btn-primary:hover {
+  background-color: #356d96;
+  border-color: #356d96;
+}
+
+/* ============================================================
+   Menu lateral (NavMenu / RadzenSidebar) - barra CLARA
+   ============================================================ */
+
+/* Fundo creme (forcado: o Radzen poe a barra escura por defeito) */
+.rz-sidebar {
+  background-color: var(--rr-card) !important;
+  border-right: 1px solid var(--rr-border) !important;
+}
+
+/* O menu e os itens NAO devem ter fundo proprio - deixar passar o creme.
+   (era isto que faltava: o RadzenPanelMenu tinha fundo escuro por cima.) */
+.rz-sidebar .rz-panel-menu,
+.rz-sidebar .rz-navigation-item,
+.rz-sidebar .rz-navigation-item-wrapper,
+.rz-sidebar .rz-navigation-item-link {
+  background-color: transparent !important;
+}
+
+/* Texto e icones navy (legiveis sobre o creme) */
+.rz-sidebar .rz-navigation-item-link,
+.rz-sidebar .rz-navigation-item-link * {
+  color: var(--rr-navy) !important;
+  font-weight: 600;
+}
+.rz-sidebar .rz-navigation-item-link {
+  border-radius: var(--rr-radius);
+  margin: 2px 8px;
+}
+.rz-sidebar .rz-navigation-item-icon {
+  color: var(--rr-navy) !important;
+}
+
+/* Botao de fechar (a setinha) tambem navy */
+.rz-sidebar .rz-button,
+.rz-sidebar .rz-button .rzi {
+  color: var(--rr-navy) !important;
+}
+
+/* Hover: creme um tom abaixo */
+.rz-sidebar .rz-navigation-item-link:hover {
+  background-color: var(--rr-paper-2) !important;
+}
+
+/* Item ativo (rota atual): pilula NAVY + tudo branco */
+.rz-sidebar .rz-selected,
+.rz-sidebar .rz-selected > .rz-navigation-item-link,
+.rz-sidebar .rz-navigation-item-link.rz-selected {
+  background-color: var(--rr-navy) !important;
+}
+.rz-sidebar .rz-selected,
+.rz-sidebar .rz-selected *,
+.rz-sidebar .rz-navigation-item-link.rz-selected,
+.rz-sidebar .rz-navigation-item-link.rz-selected * {
+  color: #fff !important;
+}
+
+/* ------------------------------------------------------------
+   Item da pagina atual — cobre as duas formas possiveis:
+   (a) a classe "active" do Blazor no link;
+   (b) o estado interno do Radzen (a barrinha azul).
+   Pilula navy + texto/icone brancos.
+   ------------------------------------------------------------ */
+.rz-sidebar a.rz-navigation-item-link.active,
+.rz-sidebar a.rz-navigation-item-link[aria-current],
+.rz-sidebar a.rz-navigation-item-link[href]:focus {
+  background-color: var(--rr-navy) !important;
+  border-radius: var(--rr-radius) !important;
+}
+.rz-sidebar a.rz-navigation-item-link.active,
+.rz-sidebar a.rz-navigation-item-link.active *,
+.rz-sidebar a.rz-navigation-item-link[aria-current],
+.rz-sidebar a.rz-navigation-item-link[aria-current] * {
+  color: #fff !important;
 }

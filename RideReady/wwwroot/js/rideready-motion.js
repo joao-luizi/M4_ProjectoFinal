@@ -1,6 +1,5 @@
 /* ============================================================
    RideReady — Camada de movimento (JS)
-   Autoria: Susana · frontend
    ------------------------------------------------------------
    Dois ajudantes, sem bibliotecas:
    1) Revelação ao scroll  — qualquer elemento com a classe
