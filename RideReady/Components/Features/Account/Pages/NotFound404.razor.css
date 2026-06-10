@@ -1,0 +1,167 @@
+/* 404 — o pónei despenha-se do céu e erra a aterragem.
+   Página SSR: tudo em CSS puro, animações de uma só vez. */
+
+.nf {
+    position: relative;
+    min-height: 100vh;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: linear-gradient(180deg,
+        #141f2b 0%, #1d2f42 22%, #2f4f6e 46%,
+        #4a6b8a 66%, #8aa0ae 84%, #c9b28a 96%, #41566b 100%);
+}
+
+.nf-brand {
+    position: absolute; top: 28px; left: 36px; z-index: 4;
+    display: inline-flex; align-items: center; gap: 12px; text-decoration: none;
+}
+.nf-brand img { height: 46px; width: 46px; border-radius: 9px; }
+.nf-brand span { color: #fff; font-weight: 800; font-size: 1.55rem; }
+
+.nf-ground {
+    position: absolute; left: 0; right: 0; bottom: 0; height: 34px;
+    background: #26331f; border-top: 2px solid var(--rr-tan);
+}
+
+/* nuvens */
+.nf-cloud { position: absolute; z-index: 1; pointer-events: none; }
+.nf-cloud svg { width: 100%; display: block; }
+.nf-cloud g rect { fill: #f3efe8; }
+.nf-cloud-1 { top: 12%; width: 170px; opacity: .18; animation: nfDrift 100s linear -30s infinite; }
+.nf-cloud-2 { top: 30%; width: 110px; opacity: .12; animation: nfDrift 140s linear -90s infinite; }
+@keyframes nfDrift { from { transform: translateX(-260px); } to { transform: translateX(110vw); } }
+
+/* ---------- o cartão 404 ---------- */
+.nf-card {
+    position: relative; z-index: 3;
+    width: min(460px, 100%);
+    background: rgba(251, 248, 242, 0.92);
+    border: 1px solid rgba(255, 255, 255, 0.55);
+    border-radius: var(--rr-radius-lg);
+    box-shadow: var(--rr-shadow-lg);
+    padding: 30px 34px;
+    text-align: center;
+    animation: nfIn .7s ease .2s both;
+}
+@keyframes nfIn { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+.nf-code {
+    font-weight: 800; font-size: 4.4rem; line-height: 1;
+    color: var(--rr-navy); letter-spacing: -0.03em;
+}
+.nf-card h1 { font-size: 1.5rem; margin: 6px 0 10px; padding-bottom: 12px; position: relative; }
+.nf-card h1::after {
+    content: ""; position: absolute; left: 50%; bottom: 0; transform: translateX(-50%);
+    width: 56px; height: 4px; border-radius: 2px;
+    background: linear-gradient(90deg, var(--rr-brown), var(--rr-tan));
+}
+.nf-card p { color: var(--rr-muted); margin: 0 0 18px; }
+.nf-btn {
+    display: block; width: 100%;
+    background-color: var(--rr-navy); color: #fff;
+    font-weight: 700; font-size: 1.05rem;
+    border-radius: var(--rr-radius); padding: 12px 0; text-decoration: none;
+    transition: background-color .16s ease, transform .16s ease;
+}
+.nf-btn:hover { background-color: var(--rr-navy-d); transform: translateY(-2px); color: #fff; }
+
+/* ---------- a queda ---------- */
+.nf-crash {
+    position: absolute;
+    left: 9%;
+    bottom: 36px;
+    z-index: 2;
+    width: 130px;
+}
+.nf-peg {
+    animation: nfFall 2.4s cubic-bezier(.5,.05,.8,.6) .4s both;
+    transform-origin: 50% 100%;
+}
+.nf-horse { width: 100%; display: block; }
+.nf-horse .hbody rect { fill: #ffffff; }
+.nf-horse .hmane rect { fill: var(--rr-brown); }
+.nf-horse .heye rect { fill: var(--rr-navy); }
+
+/* patas a esbracejar em pânico durante a queda; param ao esborrachar-se */
+.nf-horse .legA, .nf-horse .legB { animation: nfFlail .09s steps(1, end) 28; }
+.nf-horse .legB { animation-delay: -.045s; }
+@keyframes nfFlail { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
+
+@keyframes nfFall {
+    0%   { transform: translateY(-110vh) rotate(24deg); }
+    35%  { transform: translateY(-60vh) rotate(160deg); }      /* trambolhões */
+    70%  { transform: translateY(-12vh) rotate(330deg); }
+    88%  { transform: translateY(0) rotate(372deg) scale(1.45, .5); }  /* ESMAGA */
+    93%  { transform: translateY(-9px) rotate(366deg) scale(.9, 1.12); } /* ressalta */
+    97%  { transform: translateY(0) rotate(370deg) scale(1.18, .82); }
+    100% { transform: translateY(0) rotate(368deg) scale(1.06, .94); }  /* fica torto */
+}
+
+/* poeira do impacto */
+.nf-dust {
+    position: absolute; bottom: 0; width: 12px; height: 12px;
+    background: #e8e2d3; opacity: 0;
+    animation: nfPuff .8s ease-out 2.45s both;
+}
+.nf-dust-1 { left: -14px; }
+.nf-dust-2 { left: 28px; animation-delay: 2.5s; }
+.nf-dust-3 { left: 92px; animation-delay: 2.48s; }
+.nf-dust-4 { left: 132px; animation-delay: 2.53s; }
+@keyframes nfPuff {
+    0%   { opacity: 0; transform: translate(0, 0) scale(.5); }
+    25%  { opacity: .8; }
+    100% { opacity: 0; transform: translate(-14px, -34px) scale(2.2); }
+}
+.nf-dust-3, .nf-dust-4 { animation-name: nfPuffR; }
+@keyframes nfPuffR {
+    0%   { opacity: 0; transform: translate(0, 0) scale(.5); }
+    25%  { opacity: .8; }
+    100% { opacity: 0; transform: translate(16px, -30px) scale(2.2); }
+}
+
+/* o balão de fala: aparece depois do estampanço */
+.nf-bubble {
+    position: absolute;
+    bottom: 110%;
+    left: 46%;
+    background: #fff;
+    color: var(--rr-ink);
+    border: 2px solid var(--rr-navy);
+    border-radius: 10px;
+    padding: 10px 14px;
+    width: max-content;
+    max-width: 220px;
+    box-shadow: var(--rr-shadow-lg);
+    animation: nfBubble .45s cubic-bezier(.34,1.56,.64,1) 3.1s both;
+}
+.nf-bubble strong { display: block; font-size: 1.05rem; color: var(--rr-alert); }
+.nf-bubble span { font-size: .95rem; color: var(--rr-muted); }
+.nf-bubble::after {
+    content: "";
+    position: absolute;
+    bottom: -9px; left: 22px;
+    width: 14px; height: 14px;
+    background: #fff;
+    border-right: 2px solid var(--rr-navy);
+    border-bottom: 2px solid var(--rr-navy);
+    transform: rotate(45deg);
+}
+@keyframes nfBubble {
+    from { opacity: 0; transform: translateY(10px) scale(.7); }
+    to   { opacity: 1; transform: none; }
+}
+
+@media (max-width: 760px) {
+    .nf-crash { left: 4%; width: 100px; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .nf-peg, .nf-card, .nf-cloud, .nf-dust, .nf-bubble,
+    .nf-horse .legA, .nf-horse .legB {
+        animation: none !important;
+        opacity: 1 !important;
+    }
+    .nf-peg { transform: rotate(368deg) scale(1.06, .94); }
+    .nf-dust { display: none; }
+}

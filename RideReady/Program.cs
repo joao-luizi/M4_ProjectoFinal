@@ -145,6 +145,7 @@ else
 }
 
 app.UseHttpsRedirection();
+app.UseStatusCodePagesWithReExecute("/404");
 
 app.UseStaticFiles();
 app.UseAntiforgery();
