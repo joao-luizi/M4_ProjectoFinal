@@ -1,0 +1,275 @@
+/* Login — foto de ecrã inteiro + cartão de VIDRO.
+   Página SSR: animações 100% CSS. Campos do formulário são componentes
+   Blazor, por isso usa-se ::deep para os estilizar. */
+
+.login {
+    position: relative;
+    display: flex;
+    min-height: 100vh;
+    overflow: hidden;
+}
+
+/* ---------- a foto: ecrã inteiro, com entrada + zoom contínuo ---------- */
+.login-photo {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 28px 36px;
+}
+
+.login-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    will-change: transform;
+    /* entrada (pan suave) e, sem salto, respiração contínua igual à landing */
+    animation: loginPhotoIn 2s cubic-bezier(.16,.84,.44,1) both,
+               loginKen 28s ease-in-out 2s infinite alternate;
+}
+@keyframes loginPhotoIn {
+    from {
+        transform: scale(1.14) translateX(2%);
+    }
+
+    to {
+        transform: scale(1.05) translateX(0);
+    }
+}
+
+@keyframes loginKen {
+    from {
+        transform: scale(1.05) translate(0, 0);
+    }
+
+    to {
+        transform: scale(1.14) translate(-2%, 2%);
+    }
+}
+
+.login-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(115deg, rgba(38, 33, 22, 0.72) 15%, rgba(47, 66, 86, 0.38) 60%, rgba(38, 33, 22, 0.55) 100%);
+}
+
+.login-brand {
+    position: relative;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    animation: loginFadeUp .7s ease .1s both;
+}
+.login-brand img {
+    height: 46px;
+    width: 46px;
+    object-fit: contain;
+    border-radius: 9px;
+}
+.login-brand span {
+    color: #fff;
+    font-weight: 800;
+    font-size: 1.55rem;
+    letter-spacing: -0.01em;
+}
+
+.login-tagline {
+    position: relative;
+    z-index: 2;
+    padding-bottom: 18px;
+    max-width: 50%;
+    animation: loginFadeUp .8s ease .3s both;
+}
+.login-kicker { color: #cfe0ee; font-size: 14px; letter-spacing: 0.18em; }
+.login-tagline h2 {
+    color: #fff;
+    font-weight: 800;
+    font-size: 2.9rem;
+    line-height: 1.06;
+    letter-spacing: -0.02em;
+    margin: 12px 0 0;
+    text-shadow: 0 2px 18px rgba(0, 0, 0, 0.45);
+}
+
+/* ---------- o painel: encostado à direita, sobre a foto ---------- */
+.login-panel {
+    position: relative;
+    z-index: 2;
+    margin-left: auto;
+    width: min(560px, 100%);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 40px 36px 18px;
+}
+
+/* ---------- o cartão de VIDRO ---------- */
+.login-card {
+    width: 100%;
+    max-width: 460px;
+    position: relative;
+    overflow: hidden;
+    background: rgba(251, 248, 242, 0.66);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(255, 255, 255, 0.55);
+    border-radius: var(--rr-radius-lg);
+    box-shadow: var(--rr-shadow-lg);
+    padding: 34px 32px 28px;
+}
+.login-card::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -60%;
+    width: 55%;
+    height: 100%;
+    background: linear-gradient(100deg,
+        rgba(255,255,255,0) 0%,
+        rgba(255,255,255,0.20) 50%,
+        rgba(255,255,255,0) 100%);
+    transform: skewX(-18deg);
+    animation: loginShine 5s ease-in-out 1.5s infinite;
+    pointer-events: none;
+}
+@keyframes loginShine {
+    0%   { left: -60%; }
+    50%  { left: 130%; }
+    100% { left: 130%; }
+}
+
+/* entrada escalonada do conteúdo do cartão */
+@keyframes loginFadeUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: none; }
+}
+.login-card > h1,
+.login-card > .login-sub,
+.login-card > form {
+    opacity: 0;
+    animation: loginFadeUp .65s cubic-bezier(.22,.61,.36,1) forwards;
+}
+.login-card > h1        { animation-delay: .25s; }
+.login-card > .login-sub{ animation-delay: .38s; }
+.login-card > form      { animation-delay: .52s; }
+
+.login-card h1 {
+    font-size: 2.5rem;
+    margin: 0 0 10px;
+    padding-bottom: 12px;
+    position: relative;
+}
+.login-card h1::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 56px;
+    height: 4px;
+    border-radius: 2px;
+    background: linear-gradient(90deg, var(--rr-brown), var(--rr-tan));
+}
+.login-sub {
+    color: var(--rr-muted);
+    font-size: 1.1rem;
+    margin: 0 0 24px;
+}
+
+/* Campos: dentro de componentes Blazor -> ::deep */
+.login-card ::deep .form-control {
+    background-color: rgba(255, 255, 255, 0.72);
+    border: 1px solid var(--rr-border);
+    border-radius: var(--rr-radius);
+    color: var(--rr-ink);
+    font-size: 1.05rem;
+}
+.login-card ::deep .form-control:focus {
+    background-color: rgba(255, 255, 255, 0.9);
+    border-color: var(--rr-blue);
+    box-shadow: 0 0 0 3px rgba(63, 127, 174, 0.18);
+}
+.login-card ::deep .form-label { color: var(--rr-muted); font-size: 1rem; }
+.login-card ::deep .text-danger {
+    color: var(--rr-alert) !important;
+    font-size: 0.95rem;
+}
+.login-card ::deep .form-check-input:checked {
+    background-color: var(--rr-navy);
+    border-color: var(--rr-navy);
+}
+.login-card ::deep .checkbox .form-label { font-size: 1rem; color: var(--rr-ink); }
+.login-card ::deep .alert-danger {
+    background-color: rgba(198, 88, 47, 0.12);
+    border: 1px solid rgba(198, 88, 47, 0.4);
+    color: var(--rr-alert);
+    border-radius: var(--rr-radius);
+}
+
+.login-submit {
+    width: 100%;
+    background-color: var(--rr-navy);
+    color: #fff;
+    font-weight: 700;
+    font-size: 1.15rem;
+    border: none;
+    border-radius: var(--rr-radius);
+    padding: 14px 0;
+    cursor: pointer;
+    transition: background-color .16s ease, transform .16s ease, box-shadow .16s ease;
+}
+.login-submit:hover {
+    background-color: var(--rr-navy-d);
+    transform: translateY(-2px);
+    box-shadow: var(--rr-shadow-lg);
+}
+
+.login-links {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 9px;
+    margin-top: 22px;
+}
+.login-links a {
+    color: var(--rr-brown-d);
+    font-weight: 600;
+    text-decoration: none;
+    font-size: 1rem;
+}
+.login-links a:hover { text-decoration: underline; color: var(--rr-brown); }
+
+.login-foot {
+    position: relative;
+    z-index: 2;
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 0.9rem;
+    padding: 18px 0 6px;
+}
+
+/* ---------- ecrãs pequenos ---------- */
+@media (max-width: 860px) {
+    .login-panel { margin: 0 auto; padding: 24px 18px; }
+    .login-tagline { display: none; }
+    .login-tagline h2 { font-size: 1.6rem; }
+}
+
+/* Acessibilidade: menos movimento */
+@media (prefers-reduced-motion: reduce) {
+    .login-img,
+    .login-brand,
+    .login-tagline,
+    .login-card > h1,
+    .login-card > .login-sub,
+    .login-card > form,
+    .login-card::after {
+        animation: none !important;
+        opacity: 1 !important;
+    }
+}

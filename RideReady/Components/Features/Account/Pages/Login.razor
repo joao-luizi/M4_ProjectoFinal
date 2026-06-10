@@ -1,9 +1,10 @@
-﻿@page "/Account/Login"
+@page "/Account/Login"
 
 @using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Authentication
 @using Microsoft.AspNetCore.Identity
 @using RepositoryLibrary.Features.Users.Entities
+@using RideReady.Components.Layout
 @using RideReady.Data
 
 @inject SignInManager<EMUser> SignInManager
@@ -11,57 +12,74 @@
 @inject NavigationManager NavigationManager
 @inject IdentityRedirectManager RedirectManager
 
-<PageTitle>Log in</PageTitle>
+@layout EmptyLayout
 
-<div class="row d-flex justify-content-center">
-    <div class="col-12">
-        <section>
+<PageTitle>Entrar — RideReady</PageTitle>
 
-            <RadzenCard class="rz-my-12 rz-mx-auto rz-p-4 rz-p-md-12" style="max-width: 600px;">
-                <EditForm Model="Input" method="post" OnValidSubmit="LoginUser" FormName="login">
-                    <DataAnnotationsValidator />
-                    <h1 class="text-primary">Log in</h1>
-                    <hr />
-                    @if (!string.IsNullOrEmpty(errorMessage))
-                    {
-                        <div class="alert alert-danger" role="alert">@errorMessage</div>
-                    }
-                    <div class="form-floating mb-3">
-                        <InputText id="email" @bind-Value="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" autofocus />
-                        <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
-                        <ValidationMessage For="() => Input.Email" class="text-danger" />
-                    </div>
-                    <div class="form-floating mb-3">
-                        <InputText id="password" type="password" @bind-Value="Input.Password" class="form-control" autocomplete="current-password" aria-required="true" placeholder="password" />
-                        <label for="password" class="form-label">Password <span class="text-danger">*</span></label>
-                        <ValidationMessage For="() => Input.Password" class="text-danger" />
-                    </div>
-                    <div class="checkbox mb-3">
-                        <label class="form-label">
-                            <InputCheckbox @bind-Value="Input.RememberMe" class="darker-border-checkbox form-check-input" />
-                            Remember me
-                        </label>
-                    </div>
-                    <div>
-                        <button type="submit" class="w-100 btn btn-lg btn-primary">Log in</button>
-                    </div>
-                    <div class="d-flex flex-column align-items-center mt-3">
-                        <p>
-                            <a href="Account/ForgotPassword">Forgot your password?</a>
-                        </p>
-                        <p>
-                            <a href="@(NavigationManager.GetUriWithQueryParameters("Account/Register", new Dictionary<string, object?> { ["ReturnUrl"] = ReturnUrl }))">Register as a new user</a>
-                        </p>
-                        <p>
-                            <a href="Account/ResendEmailConfirmation">Resend email confirmation</a>
-                        </p>
-                    </div>
-                </EditForm>
-            </RadzenCard>
-        </section>
+<section class="login">
+
+    @* --- Painel da foto (esquerda) --- *@
+    <div class="login-photo">
+        <img class="login-img" src="/Images/Cavalo_2.jpg" alt="" />
+        <div class="login-overlay"></div>
+        <a class="login-brand" href="/">
+            <img src="/favicon.png" alt="" />
+            <span>RideReady</span>
+        </a>
+        <div class="login-tagline">
+            <span class="rr-eyebrow login-kicker">Escola de equitação</span>
+            <h2>Bem-vind@@ de volta<br />ao picadeiro.</h2>
+        </div>
     </div>
 
-</div>
+    @* --- Painel do formulário (direita) --- *@
+    <div class="login-panel">
+        <div class="login-card">
+            <h1>Entrar</h1>
+            <p class="login-sub">Usa a tua conta RideReady.</p>
+
+            <EditForm Model="Input" method="post" OnValidSubmit="LoginUser" FormName="login">
+                <DataAnnotationsValidator />
+
+                @if (!string.IsNullOrEmpty(errorMessage))
+                {
+                    <div class="alert alert-danger" role="alert">@errorMessage</div>
+                }
+
+                <div class="form-floating mb-3">
+                    <InputText id="email" @bind-Value="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="nome@exemplo.com" autofocus />
+                    <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
+                    <ValidationMessage For="() => Input.Email" class="text-danger" />
+                </div>
+
+                <div class="form-floating mb-3">
+                    <InputText id="password" type="password" @bind-Value="Input.Password" class="form-control" autocomplete="current-password" aria-required="true" placeholder="palavra-passe" />
+                    <label for="password" class="form-label">Palavra-passe <span class="text-danger">*</span></label>
+                    <ValidationMessage For="() => Input.Password" class="text-danger" />
+                </div>
+
+                <div class="checkbox mb-3">
+                    <label class="form-label">
+                        <InputCheckbox @bind-Value="Input.RememberMe" class="darker-border-checkbox form-check-input" />
+                        Manter sessão iniciada
+                    </label>
+                </div>
+
+                <div>
+                    <button type="submit" class="login-submit">Entrar</button>
+                </div>
+
+                <div class="login-links">
+                    <a href="Account/ForgotPassword">Esqueceste-te da palavra-passe?</a>
+                    <a href="@(NavigationManager.GetUriWithQueryParameters("Account/Register", new Dictionary<string, object?> { ["ReturnUrl"] = ReturnUrl }))">Criar conta nova</a>
+                    <a href="Account/ResendEmailConfirmation">Reenviar email de confirmação</a>
+                </div>
+            </EditForm>
+        </div>
+        <div class="login-foot">© 2026 RideReady</div>
+    </div>
+
+</section>
 
 @code {
     private string? errorMessage;
@@ -105,25 +123,25 @@
         }
         else if (result.IsNotAllowed)
         {
-            errorMessage = "Your account is not confirmed yet. Please check your email for the confirmation link.";
+            errorMessage = "A tua conta ainda não está confirmada. Verifica o teu email e clica no link de confirmação.";
         }
         else
         {
-            errorMessage = "Invalid email or password. Please try again.";
+            errorMessage = "Email ou palavra-passe inválidos. Tenta novamente.";
         }
     }
 
     private sealed class InputModel
     {
-        [Required(ErrorMessage = "Please enter your email address.")]
-        [EmailAddress(ErrorMessage = "Please enter a valid email address.")]
+        [Required(ErrorMessage = "Indica o teu email.")]
+        [EmailAddress(ErrorMessage = "Indica um email válido.")]
         public string Email { get; set; } = "";
 
-        [Required(ErrorMessage = "Please enter your password.")]
+        [Required(ErrorMessage = "Indica a tua palavra-passe.")]
         [DataType(DataType.Password)]
         public string Password { get; set; } = "";
 
-        [Display(Name = "Remember me?")]
+        [Display(Name = "Manter sessão iniciada")]
         public bool RememberMe { get; set; }
     }
 }
