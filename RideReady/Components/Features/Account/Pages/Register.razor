@@ -1,4 +1,4 @@
-﻿@page "/Account/Register"
+@page "/Account/Register"
 
 @using System.ComponentModel.DataAnnotations
 @using System.Text
@@ -10,6 +10,7 @@
 @using RepositoryLibrary.Features.Schools.Entities
 @using RepositoryLibrary.Features.Schools.Interfaces
 @using RepositoryLibrary.Features.Users.Entities
+@using RideReady.Components.Layout
 @using RideReady.Data
 
 @inject UserManager<EMUser> UserManager
@@ -21,7 +22,9 @@
 @inject IdentityRedirectManager RedirectManager
 @inject ISchoolService _schoolService
 
-<PageTitle>Register</PageTitle>
+@layout EmptyLayout
+
+<PageTitle>Criar conta — RideReady</PageTitle>
 
 @if (Schools is null)
 {
@@ -29,105 +32,149 @@
 }
 else
 {
+    <section class="wizard" data-wizard>
 
-    <div class="row d-flex justify-content-center">
-        <div class="col-12">
-            <StatusMessage Message="@Message" />
-            <RadzenCard class="rz-my-12 rz-mx-auto rz-p-4 rz-p-md-12" style="max-width: 600px;">
-                <EditForm Model="Input" asp-route-returnUrl="@ReturnUrl" method="post" OnValidSubmit="RegisterUser" OnInvalidSubmit="HandleInvalidSubmit" FormName="register">
-                    <DataAnnotationsValidator />
-                    <h1 class="text-primary">Register</h1>
-                    <h2>Create a new account.</h2>
-                    <hr />
-                    <div class="form-floating mb-3">
-                        <InputText id="firstName" @bind-Value="Input.FirstName" class="form-control" autocomplete="given-name" aria-required="true" placeholder="Your first name" autofocus />
-                        <label for="firstName">First Name <span class="text-danger">*</span></label>
-                        <ValidationMessage For="() => Input.FirstName" class="text-danger" />
-                    </div>
-                    <div class="form-floating mb-3">
-                        <InputText id="lastName" @bind-Value="Input.LastName" class="form-control" autocomplete="family-name" aria-required="true" placeholder="Your last name" />
-                        <label for="lastName">Last Name <span class="text-danger">*</span></label>
-                        <ValidationMessage For="() => Input.LastName" class="text-danger" />
-                    </div>
-
-                    <div class="form-floating mb-3">
-                        <InputText id="email" @bind-Value="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
-                        <label for="email">Email <span class="text-danger">*</span></label>
-                        <ValidationMessage For="() => Input.Email" class="text-danger" />
-                    </div>
-
-                    <div class="form-floating mb-3">
-                        <InputText id="password" type="password" @bind-Value="Input.Password" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
-                        <label for="password">Password <span class="text-danger">*</span></label>
-                        <ValidationMessage For="() => Input.Password" class="text-danger" />
-                    </div>
-
-                    <div class="form-floating mb-3">
-                        <InputText id="confirm-password" type="password" @bind-Value="Input.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
-                        <label for="confirm-password">Confirm Password <span class="text-danger">*</span></label>
-                        <ValidationMessage For="() => Input.ConfirmPassword" class="text-danger" />
-                    </div>
-
-                    <div class="form-floating mb-3">
-                        <InputText id="address" @bind-Value="Input.Address" class="form-control" autocomplete="street-address" placeholder="Your current address" />
-                        <label for="address">Address</label>
-                        <ValidationMessage For="() => Input.Address" class="text-danger" />
-                    </div>
-
-                    <div class="form-floating mb-3">
-                        <InputDate id="birthdate" @bind-Value="Input.Birthdate" class="form-control" autocomplete="bday" aria-required="true" placeholder="dd/mm/yyyy" />
-                        <label for="birthdate">Birthdate <span class="text-danger">*</span></label>
-                        @if (birthdateError != null)
-                        {
-                            <div class="text-danger">@birthdateError</div>
-                        }
-                    </div>
-
-                    <div class="form-floating mb-3">
-                        <InputText id="citizenNumber" @bind-Value="Input.CitizenNumber" class="form-control" autocomplete="off" placeholder="Citizen Number" />
-                        <label for="citizenNumber">Citizen Number</label>
-                        <ValidationMessage For="() => Input.CitizenNumber" class="text-danger" />
-                    </div>
-                    <div class="form-floating mb-3">
-                        <InputText id="taxNumber" @bind-Value="Input.TaxIdentificationNumber" class="form-control" autocomplete="off" placeholder="Tax identification Number" />
-                        <label for="taxNumber">Tax Identification Number</label>
-                        <ValidationMessage For="() => Input.TaxIdentificationNumber" class="text-danger" />
-                    </div>
-                    <div class="form-floating mb-3">
-                        <InputText id="healthNumber" @bind-Value="Input.SocialHealthNumber" class="form-control" autocomplete="off" placeholder="Social Health Number" />
-                        <label for="healthNumber">Social Health Number</label>
-                        <ValidationMessage For="() => Input.SocialHealthNumber" class="text-danger" />
-                    </div>
-
-                    <div class="form mb-3">
-                        <InputCheckbox id="informationAuthorized" @bind-Value="Input.InformationAuthorized" class="form-check-input" aria-required="true" />
-                        <label class="form-check-label" for="informationAuthorized">I agree that the school stores my basic personal data (name, email, address) to manage my registration and lessons. <span class="text-danger">*</span></label>
-                        <ValidationMessage For="() => Input.InformationAuthorized" class="text-danger" />
-                    </div>
-
-                    <div class="form mb-3">
-                        <label for="school">Select School <span class="text-danger">*</span></label>
-                        <InputSelect id="school"
-                                     @bind-Value="Input.SchoolId"
-                                     class="form-control"
-                                     autocomplete="off"
-                                     aria-required="true"
-                                     TValue="int">
-                            <option value="0">-- Select your school --</option>
-                            @foreach (var school in Schools)
-                            {
-                                <option value="@school.SchoolId">@school.SchoolName</option>
-                            }
-                        </InputSelect>
-                        <ValidationMessage For="() => Input.SchoolId" class="text-danger" />
-                    </div>
-
-                    <button type="submit" class="w-100 btn btn-lg btn-primary">Register</button>
-                </EditForm>
-            </RadzenCard>
+        @* --- Foto de fundo --- *@
+        <div class="wizard-photo">
+            <img class="wizard-img" src="/Images/Cavalo_3.jpg" alt="" />
+            <div class="wizard-overlay"></div>
+            <a class="wizard-brand" href="/">
+                <img src="/favicon.png" alt="" />
+                <span>RideReady</span>
+            </a>
         </div>
 
-    </div>
+        @* --- Cartão de vidro com o wizard --- *@
+        <div class="wizard-panel">
+            <div class="wiz-stage pos-1" data-wstage>
+
+                @* --- a pista do cavalo: atravessa o palco todo --- *@
+                <div class="wiz-track" aria-hidden="true">
+                <svg class="wiz-horse" viewBox="0 0 112 60" shape-rendering="crispEdges" aria-hidden="true"><g class="hbody"><rect x="72" y="0" width="8" height="4"/><rect x="64" y="4" width="16" height="4"/><rect x="60" y="8" width="24" height="4"/><rect x="60" y="12" width="12" height="4"/><rect x="76" y="12" width="12" height="4"/><rect x="60" y="16" width="32" height="4"/><rect x="60" y="20" width="20" height="4"/><rect x="12" y="24" width="8" height="4"/><rect x="48" y="24" width="28" height="4"/><rect x="16" y="28" width="64" height="4"/><rect x="12" y="32" width="72" height="4"/><rect x="8" y="36" width="80" height="4"/><rect x="8" y="40" width="80" height="4"/><rect x="8" y="44" width="76" height="4"/><rect x="12" y="48" width="68" height="4"/><g class="legA"><rect x="16" y="52" width="8" height="4"/><rect x="72" y="52" width="8" height="4"/><rect x="16" y="56" width="8" height="4"/><rect x="76" y="56" width="8" height="4"/></g><g class="legB"><rect x="36" y="52" width="8" height="4"/><rect x="60" y="52" width="8" height="4"/><rect x="36" y="56" width="8" height="4"/><rect x="60" y="56" width="8" height="4"/></g></g><g class="hmane"><rect x="60" y="0" width="8" height="4"/><rect x="56" y="4" width="8" height="4"/><rect x="4" y="8" width="8" height="4"/><rect x="56" y="8" width="4" height="4"/><rect x="4" y="12" width="12" height="4"/><rect x="56" y="12" width="4" height="4"/><rect x="8" y="16" width="8" height="4"/><rect x="56" y="16" width="4" height="4"/><rect x="12" y="20" width="4" height="4"/><rect x="56" y="20" width="4" height="4"/></g><g class="heye"><rect x="72" y="12" width="4" height="4"/></g></svg>
+                    <svg class="wiz-hurdle wiz-hurdle-1" viewBox="0 0 48 56" shape-rendering="crispEdges" aria-hidden="true">
+                        <g fill="var(--rr-tan)"><rect x="4" y="8" width="6" height="48"/><rect x="38" y="8" width="6" height="48"/></g>
+                        <g fill="#fbf8f2"><rect x="0" y="14" width="48" height="6"/><rect x="0" y="32" width="48" height="6"/></g>
+                    </svg>
+                    <svg class="wiz-hurdle wiz-hurdle-2" viewBox="0 0 48 56" shape-rendering="crispEdges" aria-hidden="true">
+                        <g fill="var(--rr-tan)"><rect x="4" y="8" width="6" height="48"/><rect x="38" y="8" width="6" height="48"/></g>
+                        <g fill="#fbf8f2"><rect x="0" y="14" width="48" height="6"/><rect x="0" y="32" width="48" height="6"/></g>
+                    </svg>
+                    <div class="wiz-rail"></div>
+                </div>
+
+                @* --- etiquetas: alinham com as 3 posições --- *@
+                <div class="wiz-labels">
+                    <span data-wlabel="1" class="on">1 · Quem és</span>
+                    <span data-wlabel="2">2 · A tua conta</span>
+                    <span data-wlabel="3">3 · Detalhes</span>
+                </div>
+
+                @* --- o cartão que viaja: esquerda → centro → direita --- *@
+                <div class="wizard-card">
+                    <h1>Criar conta</h1>
+                    <StatusMessage Message="@Message" />
+
+                <EditForm Model="Input" asp-route-returnUrl="@ReturnUrl" method="post" OnValidSubmit="RegisterUser" OnInvalidSubmit="HandleInvalidSubmit" FormName="register">
+                    <DataAnnotationsValidator />
+
+                    @* ================= PASSO 1 — Quem és ================= *@
+                    <div class="wiz-step" data-wstep="1">
+                        <div class="form-floating mb-3">
+                            <InputText id="firstName" @bind-Value="Input.FirstName" class="form-control" autocomplete="given-name" aria-required="true" placeholder="O teu primeiro nome" autofocus />
+                            <label for="firstName">Nome <span class="text-danger">*</span></label>
+                            <ValidationMessage For="() => Input.FirstName" class="text-danger" />
+                        </div>
+                        <div class="form-floating mb-3">
+                            <InputText id="lastName" @bind-Value="Input.LastName" class="form-control" autocomplete="family-name" aria-required="true" placeholder="O teu apelido" />
+                            <label for="lastName">Apelido <span class="text-danger">*</span></label>
+                            <ValidationMessage For="() => Input.LastName" class="text-danger" />
+                        </div>
+                        <div class="form-floating mb-3">
+                            <InputDate id="birthdate" @bind-Value="Input.Birthdate" class="form-control" autocomplete="bday" aria-required="true" placeholder="dd/mm/aaaa" />
+                            <label for="birthdate">Data de nascimento <span class="text-danger">*</span></label>
+                            @if (birthdateError != null)
+                            {
+                                <div class="text-danger">@birthdateError</div>
+                            }
+                        </div>
+                        <div class="wiz-nav">
+                            <span></span>
+                            <button type="button" class="wiz-btn wiz-next">Seguinte →</button>
+                        </div>
+                    </div>
+
+                    @* ================= PASSO 2 — A tua conta ================= *@
+                    <div class="wiz-step" data-wstep="2">
+                        <div class="form-floating mb-3">
+                            <InputText id="email" @bind-Value="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="nome@exemplo.com" />
+                            <label for="email">Email <span class="text-danger">*</span></label>
+                            <ValidationMessage For="() => Input.Email" class="text-danger" />
+                        </div>
+                        <div class="form-floating mb-3">
+                            <InputText id="password" type="password" @bind-Value="Input.Password" class="form-control" autocomplete="new-password" aria-required="true" placeholder="palavra-passe" />
+                            <label for="password">Palavra-passe <span class="text-danger">*</span></label>
+                            <ValidationMessage For="() => Input.Password" class="text-danger" />
+                        </div>
+                        <div class="form-floating mb-3">
+                            <InputText id="confirm-password" type="password" @bind-Value="Input.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" placeholder="palavra-passe" />
+                            <label for="confirm-password">Confirmar palavra-passe <span class="text-danger">*</span></label>
+                            <ValidationMessage For="() => Input.ConfirmPassword" class="text-danger" />
+                        </div>
+                        <div class="wiz-nav">
+                            <button type="button" class="wiz-btn wiz-ghost wiz-back">← Anterior</button>
+                            <button type="button" class="wiz-btn wiz-next">Seguinte →</button>
+                        </div>
+                    </div>
+
+                    @* ================= PASSO 3 — Detalhes e consentimento ================= *@
+                    <div class="wiz-step" data-wstep="3">
+                        <div class="form-floating mb-3">
+                            <InputText id="address" @bind-Value="Input.Address" class="form-control" autocomplete="street-address" placeholder="A tua morada" />
+                            <label for="address">Morada</label>
+                            <ValidationMessage For="() => Input.Address" class="text-danger" />
+                        </div>
+                        <div class="form-floating mb-3">
+                            <InputText id="taxNumber" @bind-Value="Input.TaxIdentificationNumber" class="form-control" autocomplete="off" placeholder="NIF" />
+                            <label for="taxNumber">NIF</label>
+                            <ValidationMessage For="() => Input.TaxIdentificationNumber" class="text-danger" />
+                        </div>
+
+                        <div class="form mb-3">
+                            <label for="school">Escola <span class="text-danger">*</span></label>
+                            <InputSelect id="school"
+                                         @bind-Value="Input.SchoolId"
+                                         class="form-control"
+                                         autocomplete="off"
+                                         aria-required="true"
+                                         TValue="int">
+                                <option value="0">-- Escolhe a tua escola --</option>
+                                @foreach (var school in Schools)
+                                {
+                                    <option value="@school.SchoolId">@school.SchoolName</option>
+                                }
+                            </InputSelect>
+                            <ValidationMessage For="() => Input.SchoolId" class="text-danger" />
+                        </div>
+
+                        <div class="form mb-3 wiz-consent">
+                            <InputCheckbox id="informationAuthorized" @bind-Value="Input.InformationAuthorized" class="form-check-input" aria-required="true" />
+                            <label class="form-check-label" for="informationAuthorized">Tomei conhecimento de que a escola trata os meus dados pessoais (nome, email, data de nascimento e morada) por serem necessários à gestão da minha inscrição e das minhas aulas, nos termos da Política de Privacidade. <span class="text-danger">*</span></label>
+                            <ValidationMessage For="() => Input.InformationAuthorized" class="text-danger" />
+                        </div>
+
+                        <div class="wiz-nav">
+                            <button type="button" class="wiz-btn wiz-ghost wiz-back">← Anterior</button>
+                            <button type="submit" class="wiz-btn wiz-submit">Criar conta</button>
+                        </div>
+                    </div>
+
+                </EditForm>
+                </div>
+            </div>
+            <div class="wizard-foot">Já tens conta? <a href="/Account/Login">Entrar</a></div>
+        </div>
+
+    </section>
 }
 
 @code {
@@ -141,7 +188,7 @@ else
     [SupplyParameterFromQuery]
     private string? ReturnUrl { get; set; }
 
-    private string? Message => identityErrors is null ? null : $"Error: {string.Join(", ", identityErrors.Select(error => error.Description))}";
+    private string? Message => identityErrors is null ? null : $"Erro: {string.Join(", ", identityErrors.Select(error => error.Description))}";
 
     private List<School> Schools { get; set; } = new List<School>();
 
@@ -152,14 +199,14 @@ else
 
     private void HandleInvalidSubmit()
     {
-        birthdateError = Input.Birthdate == null ? "The Birthdate field is required." : null;
+        birthdateError = Input.Birthdate == null ? "Indica a tua data de nascimento." : null;
     }
 
     public async Task RegisterUser(EditContext editContext)
     {
         if (Input.Birthdate == null)
         {
-            birthdateError = "The Birthdate field is required.";
+            birthdateError = "Indica a tua data de nascimento.";
             return;
         }
         birthdateError = null;
@@ -168,8 +215,8 @@ else
         user.RegisterDate = DateTime.Now;
         user.Birthdate = (DateTime)Input.Birthdate;
         user.Address = Input.Address ?? string.Empty;
-        user.CitizenNumber = string.IsNullOrWhiteSpace(Input.CitizenNumber) ? 0 : Convert.ToInt32(Input.CitizenNumber);
-        user.SocialHealthNumber = string.IsNullOrWhiteSpace(Input.SocialHealthNumber) ? 0 : Convert.ToInt64(Input.SocialHealthNumber);
+        user.CitizenNumber = 0; // preenchido mais tarde, no perfil
+        user.SocialHealthNumber = 0; // preenchido mais tarde, no perfil
         user.TaxIdentificationNumber = string.IsNullOrWhiteSpace(Input.TaxIdentificationNumber) ? 0 : Convert.ToInt32(Input.TaxIdentificationNumber);
         user.FirstName = Input.FirstName;
         user.LastName = Input.LastName;
@@ -237,56 +284,48 @@ else
 
     private sealed class InputModel
     {
-        [Required]
-        [EmailAddress]
+        [Required(ErrorMessage = "Indica o teu email.")]
+        [EmailAddress(ErrorMessage = "Indica um email válido.")]
         [Display(Name = "Email")]
         public string Email { get; set; } = "";
 
-        [Required]
-        [StringLength(100, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 6)]
+        [Required(ErrorMessage = "Indica uma palavra-passe.")]
+        [StringLength(100, ErrorMessage = "A {0} tem de ter entre {2} e {1} caracteres.", MinimumLength = 6)]
         [DataType(DataType.Password)]
-        [Display(Name = "Password")]
+        [Display(Name = "Palavra-passe")]
         public string Password { get; set; } = "";
 
         [DataType(DataType.Password)]
-        [Display(Name = "Confirm password")]
-        [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
+        [Display(Name = "Confirmar palavra-passe")]
+        [Compare("Password", ErrorMessage = "A palavra-passe e a confirmação não coincidem.")]
         public string ConfirmPassword { get; set; } = "";
 
-        [Required]
-        [Display(Name = "First Name")]
+        [Required(ErrorMessage = "Indica o teu nome.")]
+        [Display(Name = "Nome")]
         public string FirstName { get; set; }
 
-        [Required]
-        [Display(Name = "Last Name")]
+        [Required(ErrorMessage = "Indica o teu apelido.")]
+        [Display(Name = "Apelido")]
         public string LastName { get; set; }
 
         [Required]
-        [Display(Name = "Information Authorization")]
-        [Range(typeof(bool), "true", "true", ErrorMessage = "You must agree to allow the school to store your basic personal data.")]
+        [Display(Name = "Tratamento de dados")]
+        [Range(typeof(bool), "true", "true", ErrorMessage = "Tens de confirmar que tomaste conhecimento do tratamento dos teus dados.")]
         public bool InformationAuthorized { get; set; }
 
         [Display(Name = "NIF")]
-        [RegularExpression(@"^\d{9}$", ErrorMessage = "The NIF must be exactly 9 digits long.")]
+        [RegularExpression(@"^\d{9}$", ErrorMessage = "O NIF tem de ter exatamente 9 dígitos.")]
         public string TaxIdentificationNumber { get; set; }
 
-        [Display(Name = "Social Health Number")]
-        [RegularExpression(@"^\d{11}$", ErrorMessage = "The Social Health Number must be exactly 11 digits long.")]
-        public string SocialHealthNumber { get; set; }
-
-        [Display(Name = "Citizen Number")]
-        [RegularExpression(@"^\d{1,8}$", ErrorMessage = "The Citizen Number must be at most 8 digits long.")]
-        public string CitizenNumber { get; set; }
-
-        [Display(Name = "Birthdate")]
+        [Display(Name = "Data de nascimento")]
         public DateTime? Birthdate { get; set; }
 
-        [Display(Name = "Address")]
+        [Display(Name = "Morada")]
         public string Address { get; set; }
 
         [Required]
-        [Range(1, int.MaxValue, ErrorMessage = "You must select a school.")]
-        [Display(Name = "School")]
+        [Range(1, int.MaxValue, ErrorMessage = "Tens de escolher uma escola.")]
+        [Display(Name = "Escola")]
         public int SchoolId { get; set; }
     }
 }

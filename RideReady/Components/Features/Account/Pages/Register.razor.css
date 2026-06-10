@@ -1,0 +1,308 @@
+/* Registo (Register.razor) — wizard de 3 passos com a pista do cavalo.
+   Página SSR: passos geridos por JS simples (rideready-motion.js);
+   animações do cavalo em CSS puro. Campos = componentes -> ::deep. */
+
+.wizard {
+    position: relative;
+    display: flex;
+    min-height: 100vh;
+    overflow: hidden;
+}
+
+/* ---------- foto de fundo ---------- */
+.wizard-photo {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    padding: 28px 36px;
+}
+.wizard-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    will-change: transform;
+    animation: wizKen 30s ease-in-out infinite alternate;
+}
+@keyframes wizKen {
+    from { transform: scale(1.04) translate(0, 0); }
+    to   { transform: scale(1.12) translate(-1.5%, 1%); }
+}
+.wizard-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(115deg, rgba(38, 33, 22, 0.74) 15%, rgba(47, 66, 86, 0.42) 70%);
+}
+.wizard-brand {
+    position: relative;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+}
+.wizard-brand img { height: 46px; width: 46px; object-fit: contain; border-radius: 9px; }
+.wizard-brand span { color: #fff; font-weight: 800; font-size: 1.55rem; letter-spacing: -0.01em; }
+
+/* ---------- painel + cartão de vidro ---------- */
+.wizard-panel {
+    position: relative;
+    z-index: 2;
+    margin: 0 auto;
+    width: min(1180px, 100%);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 80px 24px 18px;
+}
+.wiz-stage { width: 100%; }
+/* as três posições do cartão no palco */
+.wizard-card {
+    width: min(520px, 100%);
+    transition: margin-left .7s cubic-bezier(.45,.05,.25,1);
+    background: rgba(251, 248, 242, 0.78);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(255, 255, 255, 0.55);
+    border-radius: var(--rr-radius-lg);
+    box-shadow: var(--rr-shadow-lg);
+    padding: 30px 32px 26px;
+    animation: wizFadeUp .7s ease .15s both;
+}
+.pos-1 .wizard-card { margin-left: 0; }
+.pos-2 .wizard-card { margin-left: calc(50% - min(520px, 100%) / 2); }
+.pos-3 .wizard-card { margin-left: calc(100% - min(520px, 100%)); }
+@keyframes wizFadeUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: none; }
+}
+.wizard-card h1 {
+    font-size: 2.2rem;
+    margin: 0 0 14px;
+}
+
+/* ---------- a pista do cavalo (palco inteiro) ---------- */
+.wiz-track {
+    position: relative;
+    height: 92px;
+    margin-bottom: 4px;
+}
+.wiz-rail {
+    position: absolute;
+    left: 0; right: 0; bottom: 8px;
+    height: 2px;
+    background: linear-gradient(90deg, var(--rr-border), var(--rr-tan), var(--rr-border));
+    border-radius: 1px;
+}
+
+/* o cavalo pixel: galopa sempre (frames de patas) e VIAJA até à posição do passo */
+.wiz-horse {
+    position: absolute;
+    bottom: 6px;
+    width: 104px;
+    height: 67px;
+    left: calc(min(520px, 100%) / 2 - 52px);     /* passo 1: sobre o cartão à esquerda */
+    transition: left .7s cubic-bezier(.45,.05,.25,1);
+    image-rendering: pixelated;
+}
+.pos-2 .wiz-horse { left: calc(50% - 52px); }
+.pos-3 .wiz-horse { left: calc(100% - min(520px, 100%) / 2 - 52px); }
+
+/* cores do pónei: branco, crina castanha, olho navy */
+.wiz-horse .hbody rect { fill: #ffffff; }
+.wiz-horse .hmane rect { fill: var(--rr-brown); }
+.wiz-horse .heye rect { fill: var(--rr-navy); }
+
+/* as duas barreiras: a meio caminho entre as posições 1↔2 e 2↔3 */
+.wiz-hurdle {
+    position: absolute;
+    bottom: 8px;
+    width: 48px;
+    height: 56px;
+}
+.wiz-hurdle-1 { left: calc(min(520px, 100%) / 4 + 25% - 24px); }
+.wiz-hurdle-2 { left: calc(75% - min(520px, 100%) / 4 - 24px); }
+
+/* o salto B (squash & stretch) durante a viagem entre passos */
+.wiz-jumping .wiz-horse {
+    animation: wizJump .72s cubic-bezier(.45,.05,.25,1) both;
+    transform-origin: 50% 100%;
+}
+/* na travessia, as patas batem freneticamente (corrida atabalhoada) */
+.wiz-jumping .wiz-legA,
+.wiz-jumping .wiz-legB { animation-duration: .11s; }
+
+@keyframes wizJump {
+    0%   { transform: translateY(0) rotate(0) scale(1, 1); }
+    5%   { transform: translateY(0) rotate(3deg) scale(1.03, .97); }    /* arranque aos tropeções */
+    9%   { transform: translateY(-3px) rotate(-4deg) scale(.97, 1.03); }
+    13%  { transform: translateY(0) rotate(2deg) scale(1.16, .76); }    /* agacha antes do salto */
+    38%  { transform: translateY(-58px) rotate(-6deg) scale(.84, 1.2); }
+    50%  { transform: translateY(-64px) rotate(0) scale(1, 1); }
+    70%  { transform: translateY(-20px) rotate(4deg) scale(.92, 1.1); }
+    82%  { transform: translateY(0) rotate(6deg) scale(1.16, .78); }    /* aterragem trapalhona */
+    89%  { transform: translateY(-2px) rotate(-4deg) scale(.96, 1.05); }
+    95%  { transform: translateY(0) rotate(2deg) scale(1.05, .96); }
+    100% { transform: translateY(0) rotate(0) scale(1, 1); }
+}
+
+/* as patas alternam como o dino do Chrome */
+.wiz-legA, .wiz-legB { animation: wizGait .36s steps(1, end) infinite; }
+.wiz-legB { animation-delay: -.18s; }
+@keyframes wizGait {
+    0%, 49% { opacity: 1; }
+    50%, 100% { opacity: 0; }
+}
+/* trote cómico no sítio: saltitos duplos, agachadelas e bamboleio */
+.wiz-horse {
+    animation: wizIdle .62s ease-in-out infinite;
+    transform-origin: 50% 100%;
+}
+@keyframes wizIdle {
+    0%   { transform: translateY(0) rotate(0) scale(1, 1); }
+    15%  { transform: translateY(0) rotate(-2deg) scale(1.06, .94); }   /* agacha */
+    35%  { transform: translateY(-7px) rotate(2deg) scale(.96, 1.05); } /* saltito */
+    50%  { transform: translateY(0) rotate(-1deg) scale(1.05, .95); }
+    65%  { transform: translateY(-5px) rotate(2.5deg) scale(.97, 1.04); } /* re-saltito */
+    85%  { transform: translateY(0) rotate(-2deg) scale(1.04, .96); }
+    100% { transform: translateY(0) rotate(0) scale(1, 1); }
+}
+
+/* etiquetas dos passos */
+.wiz-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 18px;
+    font-size: 0.92rem;
+    font-weight: 700;
+}
+.wiz-labels span {
+    background: rgba(251, 248, 242, 0.55);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.45);
+    border-radius: 999px;
+    padding: 7px 16px;
+    color: var(--rr-navy);
+    opacity: 0.75;
+    transition: opacity .2s ease, background .2s ease;
+}
+.wiz-labels span.on {
+    opacity: 1;
+    font-weight: 800;
+    background: rgba(251, 248, 242, 0.88);
+}
+
+/* ---------- os passos: secções que entram/saem ---------- */
+.wiz-step { animation: wizFadeUp .4s ease both; }
+.wiz-in-r { animation: wizInR .38s cubic-bezier(.22,.61,.36,1) both; }
+.wiz-in-l { animation: wizInL .38s cubic-bezier(.22,.61,.36,1) both; }
+@keyframes wizInR {
+    from { opacity: 0; transform: translateX(46px); }
+    to   { opacity: 1; transform: none; }
+}
+@keyframes wizInL {
+    from { opacity: 0; transform: translateX(-46px); }
+    to   { opacity: 1; transform: none; }
+}
+
+.wiz-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 18px;
+}
+.wiz-btn {
+    border: none;
+    border-radius: var(--rr-radius);
+    font-weight: 700;
+    font-size: 1.05rem;
+    padding: 12px 26px;
+    cursor: pointer;
+    transition: background-color .16s ease, transform .16s ease, box-shadow .16s ease;
+}
+.wiz-next, .wiz-submit {
+    background-color: var(--rr-navy);
+    color: #fff;
+}
+.wiz-next:hover, .wiz-submit:hover {
+    background-color: var(--rr-navy-d);
+    transform: translateY(-2px);
+    box-shadow: var(--rr-shadow-lg);
+}
+.wiz-submit { background-color: var(--rr-blue); }
+.wiz-submit:hover { background-color: #356d96; }
+.wiz-ghost {
+    background: transparent;
+    color: var(--rr-navy);
+    border: 1px solid var(--rr-border);
+}
+.wiz-ghost:hover { background: rgba(255, 255, 255, 0.5); }
+
+/* abanão quando falta um campo obrigatório */
+.wiz-shake { animation: wizShake .4s ease; border-color: var(--rr-alert) !important; }
+@keyframes wizShake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-6px); }
+    75% { transform: translateX(6px); }
+}
+
+/* ---------- campos (componentes -> ::deep) ---------- */
+.wizard-card ::deep .form-control {
+    background-color: rgba(255, 255, 255, 0.72);
+    border: 1px solid var(--rr-border);
+    border-radius: var(--rr-radius);
+    color: var(--rr-ink);
+    font-size: 1.02rem;
+}
+.wizard-card ::deep .form-control:focus {
+    background-color: rgba(255, 255, 255, 0.92);
+    border-color: var(--rr-blue);
+    box-shadow: 0 0 0 3px rgba(63, 127, 174, 0.18);
+}
+.wizard-card ::deep .form-label,
+.wizard-card ::deep label { color: var(--rr-muted); }
+.wizard-card ::deep .text-danger {
+    color: var(--rr-alert) !important;
+    font-size: 0.92rem;
+}
+.wizard-card ::deep .form-check-input:checked {
+    background-color: var(--rr-navy);
+    border-color: var(--rr-navy);
+}
+.wiz-consent { display: flex; gap: 12px; align-items: flex-start; }
+.wiz-consent ::deep .form-check-input {
+    width: 24px;
+    height: 24px;
+    flex: 0 0 24px;
+    margin-top: 2px;
+    cursor: pointer;
+}
+.wiz-consent ::deep label { color: var(--rr-ink); font-size: 0.98rem; line-height: 1.5; }
+
+.wizard-foot {
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 0.95rem;
+    padding: 16px 0 6px;
+}
+.wizard-foot a { color: #fff; font-weight: 700; }
+
+/* ---------- ecrãs pequenos ---------- */
+@media (max-width: 700px) {
+    .wizard-panel { padding-top: 90px; }
+    .wizard-card { padding: 22px 18px; }
+    .pos-1 .wizard-card, .pos-2 .wizard-card, .pos-3 .wizard-card { margin-left: auto; margin-right: auto; }
+    .wiz-horse, .pos-2 .wiz-horse, .pos-3 .wiz-horse { left: calc(50% - 52px); }
+    .wiz-hurdle { display: none; }
+}
+
+/* Acessibilidade: menos movimento */
+@media (prefers-reduced-motion: reduce) {
+    .wizard-img, .wizard-card, .wiz-step, .wiz-horse,
+    .wiz-legA, .wiz-legB, .wiz-in-r, .wiz-in-l {
+        animation: none !important;
+        opacity: 1 !important;
+    }
+}
