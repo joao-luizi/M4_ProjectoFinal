@@ -1,6 +1,7 @@
-﻿@page "/lessons"
+@page "/lessons"
 @rendermode InteractiveServer
 
+@using System.Globalization
 @using Radzen
 @using RepositoryLibrary.Features.Lessons.DTOs
 @using RepositoryLibrary.Features.Lessons.Interfaces
@@ -10,24 +11,26 @@
 @inject ILessonScheduleService LessonScheduleService
 @inject ISchoolService SchoolService
 
-<RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" class="rz-p-3">
+<RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" class="rz-p-3 rr-cal-filters">
 
     <RadzenStack Orientation="Orientation.Vertical" Gap="0.2rem">
-        <RadzenLabel Text="Year" />
+        <RadzenLabel Text="Ano" />
         <RadzenNumeric @bind-Value="year" Change="@((int _) => OnScopeChanged())" />
     </RadzenStack>
 
     <RadzenStack Orientation="Orientation.Vertical" Gap="0.2rem">
-        <RadzenLabel Text="Month" />
+        <RadzenLabel Text="Mês" />
         <RadzenDropDown @bind-Value="month"
                         Data="@months"
+                        TextProperty="Name"
+                        ValueProperty="Number"
                         Change="@OnScopeChanged" />
 
-        
+
     </RadzenStack>
 
     <RadzenStack Orientation="Orientation.Vertical" Gap="0.2rem">
-        <RadzenLabel Text="School" />
+        <RadzenLabel Text="Escola" />
         <RadzenDropDown Data="@schools"
                         TextProperty="SchoolName"
                         ValueProperty="SchoolId"
@@ -49,28 +52,31 @@
     }
     else
     {
-        <div class="calendar-grid">
+        <div class="rr-cal-grid">
 
             @foreach (var day in calendarDays)
             {
-                <RadzenCard class="day-card"
-                            Style="cursor:pointer"
+                <RadzenCard class="@DayCardClass(day)"
                             @onclick="() => SelectDay(day)">
 
-                    <div class="day-header">
-                        <b>@day.Date.Day</b>
-                        <span class="weekday">
-                            @day.Date.DayOfWeek
-                        </span>
+                    <div class="rr-cal-head">
+                        <span class="rr-cal-num">@day.Date.Day</span>
+                        <span class="rr-cal-weekday">@WeekdayLabel(day.Date)</span>
                     </div>
 
-                    <div>
-                        Lessons: @day.Lessons.Count
-                    </div>
-
-                    <div>
-                        Free slots: @CalculateFreeSlots(day)
-                    </div>
+                    @if (day.Lessons.Any())
+                    {
+                        <div class="rr-cal-lessons">
+                            @day.Lessons.Count @(day.Lessons.Count == 1 ? "aula" : "aulas")
+                        </div>
+                        <div class="rr-cal-slots @(CalculateFreeSlots(day) == 0 ? "rr-cal-slots-full" : "")">
+                            @(CalculateFreeSlots(day) == 0 ? "Lotado" : $"{CalculateFreeSlots(day)} vagas")
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="rr-cal-empty">Sem aulas</div>
+                    }
 
                 </RadzenCard>
             }
@@ -87,7 +93,14 @@
     int year = 2026;
     int month = 6;
 
-    List<int> months = Enumerable.Range(1, 12).ToList();
+    private sealed record MonthOption(int Number, string Name);
+    List<MonthOption> months = Enumerable.Range(1, 12)
+        .Select(i =>
+        {
+            var name = new CultureInfo("pt-PT").DateTimeFormat.GetMonthName(i);
+            return new MonthOption(i, char.ToUpper(name[0]) + name[1..]);
+        })
+        .ToList();
 
     MonthScheduleDto? schedule;
     List<DayScheduleDto>? calendarDays;
@@ -100,22 +113,32 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadCalendar();
+        // FIX: escolher a escola ANTES de carregar o calendário.
+        // (Antes, o primeiro load corria com selectedSchoolId = null
+        // e pedia as aulas da "escola 0" — calendário vazio até se
+        // mexer no dropdown.)
+        schools = await SchoolService.GetSchoolsListAsync();
         selectedSchoolId = schools.FirstOrDefault()?.SchoolId;
+        await LoadCalendar();
     }
 
     private async Task ReloadAfterLessonChange()
     {
+        // FIX: guardar a data ANTES do reload (o LoadCalendar limpa o
+        // selectedDay, por isso a restauração antiga nunca encontrava nada
+        // e o painel do dia fechava-se após criar/editar uma aula).
+        var date = selectedDay?.Date;
+
         await LoadCalendar();
 
         selectedDay = calendarDays?
-            .FirstOrDefault(x => x.Date == selectedDay?.Date);
+            .FirstOrDefault(x => x.Date == date);
     }
 
     async Task LoadCalendar()
     {
         schools = await SchoolService.GetSchoolsListAsync();
-       
+
         schedule = await LessonScheduleService
             .GetMonthlyScheduleAsync(year, month, selectedSchoolId ?? 0);
 
@@ -159,5 +182,22 @@
         int totalBooked = day.Lessons.Sum(l => l.BookedSpots);
 
         return totalMax - totalBooked;
+    }
+
+    /// <summary>Dia da semana abreviado em PT (Seg, Ter, ...).</summary>
+    string WeekdayLabel(DateOnly date)
+    {
+        var pt = new CultureInfo("pt-PT");
+        var label = date.ToString("ddd", pt).TrimEnd('.');
+        return char.ToUpper(label[0]) + label[1..];
+    }
+
+    /// <summary>Classes do cartão do dia: com aulas / vazio / hoje.</summary>
+    string DayCardClass(DayScheduleDto day)
+    {
+        var cls = "rr-cal-day";
+        if (day.Lessons.Any()) cls += " rr-cal-day-busy";
+        if (day.Date == DateOnly.FromDateTime(DateTime.Today)) cls += " rr-cal-day-today";
+        return cls;
     }
 }

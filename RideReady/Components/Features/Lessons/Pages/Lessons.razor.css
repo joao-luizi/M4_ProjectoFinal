@@ -1,25 +1,88 @@
-﻿.calendar-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
+/* Lessons — calendário mensal com a roupa da casa. */
+
+.rr-cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 10px;
+    padding: 0 1rem 1.5rem;
 }
 
-.day-card {
-    width: 160px;
-    height: 120px;
+::deep .rr-cal-day {
+    cursor: pointer;
+    border: 1px solid var(--rr-border);
+    border-radius: var(--rr-radius);
+    box-shadow: none;
+    background: var(--rr-paper-2);
+    transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+}
+::deep .rr-cal-day:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--rr-shadow-lg);
+    border-color: var(--rr-blue);
+}
+
+/* dia COM aulas: cartão claro com barra azul — salta à vista */
+::deep .rr-cal-day-busy {
+    background: var(--rr-card);
+    border-left: 4px solid var(--rr-blue);
+    box-shadow: var(--rr-shadow);
+}
+
+/* hoje: contorno navy */
+::deep .rr-cal-day-today {
+    outline: 2px solid var(--rr-navy);
+    outline-offset: 1px;
+}
+::deep .rr-cal-day-today .rr-cal-num {
+    background: var(--rr-navy);
+    color: #fff;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.rr-cal-head {
     display: flex;
-    flex-direction: column;
     justify-content: space-between;
-    padding: 10px;
+    align-items: center;
+    margin-bottom: 6px;
+}
+.rr-cal-num {
+    font-weight: 800;
+    font-size: 1.05rem;
+    color: var(--rr-ink);
+}
+.rr-cal-weekday {
+    font-size: 0.74rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--rr-hint);
 }
 
-.day-header {
-    font-size: 16px;
-    display: flex;
-    justify-content: space-between;
+.rr-cal-lessons {
+    font-weight: 800;
+    color: var(--rr-navy);
+}
+.rr-cal-slots {
+    font-size: 0.86rem;
+    color: var(--rr-muted);
+}
+.rr-cal-slots-full {
+    color: var(--rr-alert);
+    font-weight: 700;
+}
+.rr-cal-empty {
+    font-size: 0.86rem;
+    color: var(--rr-hint);
 }
 
-.weekday {
-    font-size: 12px;
-    opacity: 0.7;
+@media (max-width: 900px) {
+    .rr-cal-grid { grid-template-columns: repeat(4, 1fr); }
+}
+@media (max-width: 600px) {
+    .rr-cal-grid { grid-template-columns: repeat(2, 1fr); }
 }
