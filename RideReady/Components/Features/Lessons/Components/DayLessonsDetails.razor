@@ -1,4 +1,5 @@
-﻿@using Radzen
+@using System.Globalization
+@using Radzen
 @using RepositoryLibrary.Features.Email.DTOs
 @using RepositoryLibrary.Features.Lessons.DTOs
 @using RepositoryLibrary.Features.Lessons.Interfaces
@@ -12,59 +13,60 @@
 @if (Day is null)
 {
     <RadzenCard>
-        <p>Select a day to see details</p>
+        <p>Seleciona um dia para ver o detalhe</p>
     </RadzenCard>
 }
 else
 {
-    <RadzenCard class="rz-p-3">
+    <RadzenCard class="rz-p-3 day-panel">
 
         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween">
 
-            <h4>
-                @Day.Date.DayOfWeek - @Day.Date.ToString("yyyy-MM-dd")
-            </h4>
+            <h4 class="day-title">@DayLabel</h4>
 
-            <RadzenButton Text="Close"
+            <RadzenButton Text="Fechar"
                           ButtonStyle="ButtonStyle.Secondary"
                           Click="@OnClose" />
         </RadzenStack>
-        <RadzenButton Text="Create Lesson"
+        <RadzenButton Text="Criar aula"
                       Icon="add_circle"
+                      class="day-create"
                       Click="CreateLesson" />
-       
+
 
         @foreach (var lesson in Day.Lessons)
         {
-            <RadzenCard class="rz-mb-2">
+            <RadzenCard class="rz-mb-2 day-lesson">
 
                 <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween">
 
                     <div>
-                        <b>@lesson.LessonType</b><br />
+                        <b class="day-lesson-type">@lesson.LessonType</b><br />
                         @lesson.Begin.ToString("HH:mm") - @lesson.End.ToString("HH:mm")<br />
-                        @lesson.SchoolName
+                        <span class="day-lesson-school">@lesson.SchoolName</span>
                     </div>
 
-                    <div>
-                        @lesson.BookedSpots / @lesson.MaxSpots
+                    <div class="day-occ">
+                        <span class="day-occ-label">Inscritos</span>
+                        <span class="day-occ-value">@lesson.BookedSpots / @lesson.MaxSpots</span>
                     </div>
 
-                    <div>
-                        Free: @lesson.FreeSpots
+                    <div class="day-occ">
+                        <span class="day-occ-label">Livres</span>
+                        <span class="day-occ-value @(lesson.FreeSpots == 0 ? "day-occ-full" : "")">@lesson.FreeSpots</span>
                     </div>
 
                 </RadzenStack>
 
                 <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" class="rz-mt-2">
 
-                    <RadzenButton Text="Edit"
+                    <RadzenButton Text="Editar"
                                   ButtonStyle="ButtonStyle.Primary"
                                   Click="@(() => EditLesson(lesson))" />
-                    <RadzenButton Text="Attendance"
+                    <RadzenButton Text="Presenças"
                                   ButtonStyle="ButtonStyle.Warning"
                                   Click="@(() => OpenAttendance(lesson))" />
-                    <RadzenButton Text="Delete"
+                    <RadzenButton Text="Eliminar"
                                   ButtonStyle="ButtonStyle.Danger"
                                   Click="@(() => DeleteLesson(lesson))" />
 
@@ -94,6 +96,17 @@ else
     [Parameter]
     public EventCallback OnLessonChanged { get; set; }
 
+    /// <summary>Data do dia por extenso, em PT (ex.: "Segunda-feira, 1 de junho").</summary>
+    private string DayLabel
+    {
+        get
+        {
+            var pt = new CultureInfo("pt-PT");
+            var label = Day!.Date.ToString("dddd, d 'de' MMMM", pt);
+            return char.ToUpper(label[0]) + label[1..];
+        }
+    }
+
     private async Task CallDialog(ModalFormMode mode, string title, int lessonId)
     {
         var result = await DialogService.OpenAsync<LessonForm>(
@@ -118,12 +131,12 @@ else
         {
             string message = "";
             if (mode == ModalFormMode.Create)
-                message = "Lesson created successfully";
+                message = "Aula criada com sucesso";
             if (mode == ModalFormMode.Edit)
-                message = "Lesson updated successfully";
+                message = "Aula atualizada com sucesso";
             NotificationService.Notify(
                NotificationSeverity.Success,
-               "Success",
+               "Sucesso",
                message);
             await OnLessonChanged.InvokeAsync();
         }
@@ -131,27 +144,27 @@ else
 
     private async Task CreateLesson()
     {
-        await CallDialog(ModalFormMode.Create, "Create Lesson", 0);
+        await CallDialog(ModalFormMode.Create, "Criar aula", 0);
     }
 
     private async Task EditLesson(LessonCalendarDto lesson)
     {
-        await CallDialog(ModalFormMode.Edit, "Edit Lesson", lesson.LessonId);
+        await CallDialog(ModalFormMode.Edit, "Editar aula", lesson.LessonId);
     }
 
     private async Task ViewLesson(LessonCalendarDto lesson)
     {
-        await CallDialog(ModalFormMode.View, "View Lesson", lesson.LessonId);
+        await CallDialog(ModalFormMode.View, "Ver aula", lesson.LessonId);
     }
     private async Task DeleteLesson(LessonCalendarDto lesson)
     {
         bool? confirm = await DialogService.Confirm(
-            "Delete this lesson?",
-            "Confirm",
+            "Eliminar esta aula?",
+            "Confirmar",
             new ConfirmOptions
             {
-                OkButtonText = "Yes",
-                CancelButtonText = "No"
+                OkButtonText = "Sim",
+                CancelButtonText = "Não"
             });
 
         if (confirm != true)
@@ -164,16 +177,16 @@ else
             var emailDto = new EmailSenderDto
             {
                 UserIds = userIdsForEmails,
-                Subject = "Lesson cancelled",
-                Body = $"The lesson on {lesson.Begin:dd/MM HH:mm} has been cancelled."
+                Subject = "Aula cancelada",
+                Body = $"A aula de {lesson.Begin:dd/MM HH:mm} foi cancelada."
             };
 
             //await EmailService.SendAsync(emailDto);
 
             NotificationService.Notify(
                 NotificationSeverity.Success,
-                "Deleted",
-                $"Lesson deleted and users notified  Count: {userIdsForEmails.Count}");
+                "Eliminada",
+                $"Aula eliminada. Alunos a notificar: {userIdsForEmails.Count}");
 
             await OnLessonChanged.InvokeAsync();
         }
@@ -181,7 +194,7 @@ else
         {
             NotificationService.Notify(
                 NotificationSeverity.Error,
-                "Error",
+                "Erro",
                 ex.Message);
         }
     }
@@ -189,7 +202,7 @@ else
     private async Task OpenAttendance(LessonCalendarDto lesson)
     {
         var result = await DialogService.OpenAsync<AttendanceForm>(
-            "Lesson Attendance",
+            "Presenças da aula",
             new Dictionary<string, object>
             {
                 ["LessonId"] = lesson.LessonId
@@ -206,12 +219,12 @@ else
         {
             NotificationService.Notify(
                 NotificationSeverity.Success,
-                "Saved",
-                "Attendance updated successfully");
+                "Guardado",
+                "Presenças atualizadas com sucesso");
 
             await OnLessonChanged.InvokeAsync();
         }
     }
-   
+
 
 }

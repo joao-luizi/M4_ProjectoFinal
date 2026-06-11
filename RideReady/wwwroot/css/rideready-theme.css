@@ -328,3 +328,70 @@ main, article.content {
         animation: none !important;
     }
 }
+
+/* ============================================================
+   Paleta Radzen — trocar as variáveis do tema pelo azul/castanho
+   da casa. Os botões, hovers, focos e realces bebem todos daqui.
+   (Mesmo truque do tamanho de letra: :root:has + !important
+   para ganhar ao CSS do tema, que carrega depois do nosso.)
+   ============================================================ */
+:root:has(.rz-layout) {
+    /* Primary (botões principais, realces): azul da casa */
+    --rz-primary: #3f7fae !important;
+    --rz-primary-light: #6fa8d0 !important;
+    --rz-primary-lighter: rgba(63, 127, 174, 0.16) !important;
+    --rz-primary-dark: #356d96 !important;
+    --rz-primary-darker: #2c5b7e !important;
+    --rz-on-primary: #ffffff !important;
+    /* Secondary (botões neutros, ex.: Fechar): creme + navy */
+    --rz-secondary: #ece6da !important;
+    --rz-secondary-light: #f3efe8 !important;
+    --rz-secondary-lighter: rgba(236, 230, 218, 0.5) !important;
+    --rz-secondary-dark: #ddd2bd !important;
+    --rz-secondary-darker: #cfc2a8 !important;
+    --rz-on-secondary: #2f4256 !important;
+    /* Info: navy */
+    --rz-info: #2f4256 !important;
+    --rz-info-light: #51677e !important;
+    --rz-info-lighter: rgba(47, 66, 86, 0.16) !important;
+    --rz-info-dark: #243443 !important;
+    --rz-info-darker: #1b2834 !important;
+    --rz-on-info: #ffffff !important;
+    /* Success: o verde "ok" da casa */
+    --rz-success: #3a8a52 !important;
+    --rz-success-light: #5fa874 !important;
+    --rz-success-lighter: rgba(58, 138, 82, 0.16) !important;
+    --rz-success-dark: #2f7343 !important;
+    --rz-success-darker: #265c36 !important;
+    --rz-on-success: #ffffff !important;
+    /* Warning: âmbar (texto escuro por contraste) */
+    --rz-warning: #d9a531 !important;
+    --rz-warning-light: #e3bc63 !important;
+    --rz-warning-lighter: rgba(217, 165, 49, 0.18) !important;
+    --rz-warning-dark: #b78a26 !important;
+    --rz-warning-darker: #94701f !important;
+    --rz-on-warning: #262019 !important;
+    /* Danger: o coral de alerta (Eliminar e afins) */
+    --rz-danger: #c6582f !important;
+    --rz-danger-light: #d77a52 !important;
+    --rz-danger-lighter: rgba(198, 88, 47, 0.16) !important;
+    --rz-danger-dark: #a84a26 !important;
+    --rz-danger-darker: #883c1f !important;
+    --rz-on-danger: #ffffff !important;
+}
+
+/* Diálogos: cabeçalho da casa */
+.rz-dialog-titlebar {
+    background-color: var(--rr-card) !important;
+    border-bottom: 1px solid var(--rr-border) !important;
+}
+
+    .rz-dialog-titlebar .rz-dialog-title {
+        font-weight: 800 !important;
+        color: var(--rr-ink) !important;
+    }
+
+.rz-dialog {
+    border-radius: var(--rr-radius-lg) !important;
+    box-shadow: var(--rr-shadow-lg) !important;
+}
