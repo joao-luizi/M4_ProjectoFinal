@@ -11,11 +11,42 @@
     border-left: 4px solid var(--rr-blue);
     border-radius: var(--rr-radius);
     box-shadow: var(--rr-shadow);
-    transition: transform .15s ease, box-shadow .15s ease;
+    background: linear-gradient(180deg, #fffdf8, var(--rr-card));
+    opacity: 0;
+    animation: dayIn .45s cubic-bezier(.22, .61, .36, 1) both;
+    transition: transform .18s ease, box-shadow .18s ease;
 }
 .day-panel ::deep .day-lesson:hover {
-    transform: translateY(-2px);
+    transform: translateY(-3px);
+    box-shadow: 0 12px 26px -12px rgba(63, 127, 174, 0.5);
+}
+@keyframes dayIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .day-panel ::deep .day-lesson { animation: none; opacity: 1; }
+}
+
+/* painel do dia: moldura editorial */
+::deep .day-panel {
+    border: 1px solid var(--rr-border);
+    border-radius: var(--rr-radius-lg);
     box-shadow: var(--rr-shadow-lg);
+}
+.day-title {
+    position: relative;
+    padding-bottom: 6px;
+}
+.day-title::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 56px;
+    height: 3px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--rr-brown), var(--rr-tan));
 }
 .day-lesson-type {
     color: var(--rr-ink);
@@ -39,9 +70,13 @@
 }
 .day-occ-value {
     font-weight: 800;
-    font-size: 1.15rem;
-    color: var(--rr-ink);
+    font-size: 1rem;
+    color: var(--rr-navy);
+    background: rgba(63, 127, 174, 0.12);
+    border-radius: 999px;
+    padding: 3px 14px;
 }
 .day-occ-full {
-    color: var(--rr-alert);
+    color: #fff;
+    background: var(--rr-alert);
 }

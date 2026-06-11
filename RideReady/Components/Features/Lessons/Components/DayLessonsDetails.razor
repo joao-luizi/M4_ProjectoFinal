@@ -5,6 +5,7 @@
 @using RepositoryLibrary.Features.Lessons.Interfaces
 @using RepositoryLibrary.Shared.Enums
 @using RideReady.Components.Features.Lessons.Modals
+@using RideReady.Components.Shared
 @rendermode InteractiveServer
 @inject DialogService DialogService
 @inject NotificationService NotificationService
@@ -34,9 +35,15 @@ else
                       Click="CreateLesson" />
 
 
-        @foreach (var lesson in Day.Lessons)
+        @if (!Day.Lessons.Any())
         {
-            <RadzenCard class="rz-mb-2 day-lesson">
+            <EmptyState Title="Dia sem aulas"
+                        Text="Cria a primeira aula deste dia com o botão acima." />
+        }
+
+        @foreach (var (lesson, idx) in Day.Lessons.Select((l, i) => (l, i)))
+        {
+            <RadzenCard class="rz-mb-2 day-lesson" Style="@($"animation-delay: {idx * 60}ms")">
 
                 <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween">
 
