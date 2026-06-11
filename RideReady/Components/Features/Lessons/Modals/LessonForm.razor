@@ -1,4 +1,4 @@
-﻿@using RepositoryLibrary.Features.Horses.DTOs
+@using RepositoryLibrary.Features.Horses.DTOs
 @using RepositoryLibrary.Features.Horses.Interfaces
 @using RepositoryLibrary.Features.Lessons.DTOs
 
@@ -16,25 +16,24 @@
 @inject ILessonService LessonService
 @inject ISchoolService ShoolService
 @inject IUserService UserService
-@inject IHorseService HorseService 
+@inject IHorseService HorseService
 @inject IProductService ProductService
 @rendermode InteractiveServer
 
 <RadzenTemplateForm Data="@Model" TItem="LessonEditDto" Submit="@Save">
 
-    <RadzenStack Gap="1rem">
+    <RadzenStack Gap="1rem" class="lesson-form">
 
-        <RadzenText TextStyle="TextStyle.H5">
-            @Title
-        </RadzenText>
+        @* O título vive no cabeçalho do diálogo (posto por quem o abre) —
+           o H5 que aqui estava duplicava-o. *@
 
         <RadzenRow>
 
 
-            
+
 
             <RadzenColumn Size="6">
-                <RadzenLabel Text="Lesson Type" />
+                <RadzenLabel Text="Tipo de aula" />
                 <RadzenDropDown Data="@lessonTypes"
                                 TextProperty="Name"
                                 ValueProperty="Id"
@@ -47,7 +46,7 @@
         <RadzenRow>
 
             <RadzenColumn Size="6">
-                <RadzenLabel Text="Begin" />
+                <RadzenLabel Text="Início" />
                 <RadzenDatePicker @bind-Value="Model.BeginOfLesson"
                                   ShowTime="true"
                                   DateFormat="dd/MM/yyyy HH:mm"
@@ -55,7 +54,7 @@
             </RadzenColumn>
 
             <RadzenColumn Size="6">
-                <RadzenLabel Text="End" />
+                <RadzenLabel Text="Fim" />
                 <RadzenDatePicker @bind-Value="Model.EndOfLesson"
                                   ShowTime="true"
                                   DateFormat="dd/MM/yyyy HH:mm"
@@ -67,7 +66,7 @@
         <RadzenRow>
 
             <RadzenColumn Size="6">
-                <RadzenLabel Text="Capacity" />
+                <RadzenLabel Text="Capacidade" />
                 <RadzenNumeric @bind-Value="Model.MaxSpots"
                                Min="1"
                                Disabled="@IsReadOnly" />
@@ -78,7 +77,7 @@
         <RadzenRow>
 
             <RadzenColumn Size="6">
-                <RadzenLabel Text="Teachers" />
+                <RadzenLabel Text="Professores" />
                 <RadzenDropDown Style="width:100%;" Data="@teachers"
                                 TextProperty="Name"
                                 ValueProperty="Id"
@@ -86,12 +85,12 @@
                                 MaxSelectedLabels="1"
                                 AllowFiltering="true"
                                 FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
-                                Placeholder="Select teachers..."
+                                Placeholder="Seleciona professores..."
                                 @bind-Value="Model.TeacherIds" />
             </RadzenColumn>
 
             <RadzenColumn Size="6">
-                <RadzenLabel Text="Horses" />
+                <RadzenLabel Text="Cavalos" />
                 <RadzenDropDown Style="width:100%;"  Data="@horses"
                                 TextProperty="Name"
                                 ValueProperty="Id"
@@ -99,7 +98,7 @@
                                 MaxSelectedLabels="1"
                                 AllowFiltering="true"
                                 FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
-                                Placeholder="Select horses..."
+                                Placeholder="Seleciona cavalos..."
                                 @bind-Value="Model.HorseIds" />
             </RadzenColumn>
 
@@ -109,13 +108,13 @@
                      JustifyContent="JustifyContent.End"
                      Gap="1rem">
 
-            <RadzenButton Text="Close"
+            <RadzenButton Text="Fechar"
                           ButtonStyle="ButtonStyle.Light"
                           Click="Close" />
 
             @if (Mode != ModalFormMode.View)
             {
-                <RadzenButton Text="Save"
+                <RadzenButton Text="Guardar"
                               Icon="save"
                               ButtonStyle="ButtonStyle.Primary"
                               ButtonType="ButtonType.Submit" />
@@ -151,15 +150,6 @@
 
     private bool IsReadOnly =>
         Mode == ModalFormMode.View;
-
-    private string Title =>
-        Mode switch
-        {
-            ModalFormMode.Create => "Create Lesson",
-            ModalFormMode.Edit => "Edit Lesson",
-            ModalFormMode.View => "Lesson Details",
-            _ => "Lesson"
-        };
 
 
     protected override async Task OnInitializedAsync()

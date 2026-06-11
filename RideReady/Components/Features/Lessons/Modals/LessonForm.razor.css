@@ -1,0 +1,25 @@
+/* LessonForm — formulário do diálogo com a roupa da casa. */
+.lesson-form ::deep .rz-label {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--rr-muted);
+    margin-bottom: 4px;
+}
+.lesson-form ::deep .rz-dropdown,
+.lesson-form ::deep .rz-datepicker,
+.lesson-form ::deep .rz-numeric {
+    width: 100%;
+}
+.lesson-form {
+    animation: formIn .35s ease both;
+}
+@keyframes formIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .lesson-form { animation: none; }
+}

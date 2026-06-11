@@ -1,41 +1,49 @@
-﻿@using System.Security.Claims
+@using System.Security.Claims
 @using RepositoryLibrary.Features.Lessons.DTOs
 @using RepositoryLibrary.Features.Lessons.Interfaces
 @using RepositoryLibrary.Features.Users.Entities
+@using RideReady.Components.Shared
 @inject ILessonService LessonService
 @inject AuthenticationStateProvider AuthStateProvider
 @inject DialogService DialogService
 
-<RadzenStack Gap="1rem">
+<RadzenStack Gap="1rem" class="att-panel">
 
-    <RadzenText TextStyle="TextStyle.H5">
-        Lesson Participation
-    </RadzenText>
+    @* O título vive no cabeçalho do diálogo ("Presenças da aula") —
+       o H5 que aqui estava duplicava-o. *@
 
-    <RadzenDivider />
-
-    @foreach (var row in Model.Students)
+    @if (!Model.Students.Any())
     {
-        <RadzenCard class="rz-p-2">
+        <EmptyState Title="Ainda sem inscritos"
+                    Text="Quando os alunos marcarem esta aula, aparecem nesta lista." />
+    }
+
+    @foreach (var (row, idx) in Model.Students.Select((r, i) => (r, i)))
+    {
+        <RadzenCard class="rz-p-2 att-row" Style="@($"animation-delay: {idx * 50}ms")">
 
             <RadzenStack Orientation="Orientation.Horizontal"
                          JustifyContent="JustifyContent.SpaceBetween"
                          AlignItems="AlignItems.Center">
 
                 <!-- NAME -->
-                <div>
+                <div class="att-name">
+                    <UserAvatar Name="@row.Name" Size="32" />
                     <b>@row.Name</b>
                 </div>
 
                 <!-- TEACHER / ADMIN -->
                 @if (CanEditAttendance)
                 {
-                    <RadzenCheckBox TValue="bool"
-                                    @bind-Value="row.WasPresent" />
+                    <div class="att-check">
+                        <RadzenCheckBox TValue="bool"
+                                        @bind-Value="row.WasPresent" />
+                        <span>Presente</span>
+                    </div>
                 }
 
                 <!-- STUDENT ACTION -->
-                
+
 
             </RadzenStack>
 
@@ -44,30 +52,43 @@
 
     @if (IsStudent)
     {
-        <RadzenCard class="rz-p-3">
+        <RadzenCard class="rz-p-3 att-self">
 
-            <b>You</b>
+            <RadzenStack Orientation="Orientation.Horizontal"
+                         JustifyContent="JustifyContent.SpaceBetween"
+                         AlignItems="AlignItems.Center">
 
-            @if (MyRow?.IsBooked == true)
-            {
-                <RadzenBadge BadgeStyle="BadgeStyle.Success">
-                    You are enrolled
-                </RadzenBadge>
+                <div class="att-self-info">
+                    <b>A tua inscrição</b>
 
-                <RadzenButton Text="Cancel"
-                              ButtonStyle="ButtonStyle.Danger"
-                              Click="@Cancel" />
-            }
-            else
-            {
-                <RadzenBadge BadgeStyle="BadgeStyle.Light">
-                    Not enrolled
-                </RadzenBadge>
+                    @if (MyRow?.IsBooked == true)
+                    {
+                        <RadzenBadge BadgeStyle="BadgeStyle.Success">
+                            Inscrição confirmada
+                        </RadzenBadge>
+                    }
+                    else
+                    {
+                        <RadzenBadge BadgeStyle="BadgeStyle.Light">
+                            Sem inscrição
+                        </RadzenBadge>
+                    }
+                </div>
 
-                <RadzenButton Text="Join lesson"
-                              ButtonStyle="ButtonStyle.Primary"
-                              Click="@Join" />
-            }
+                @if (MyRow?.IsBooked == true)
+                {
+                    <RadzenButton Text="Cancelar inscrição"
+                                  ButtonStyle="ButtonStyle.Danger"
+                                  Click="@Cancel" />
+                }
+                else
+                {
+                    <RadzenButton Text="Inscrever-me"
+                                  ButtonStyle="ButtonStyle.Primary"
+                                  Click="@Join" />
+                }
+
+            </RadzenStack>
 
         </RadzenCard>
     }
@@ -76,13 +97,13 @@
                  JustifyContent="JustifyContent.End"
                  Gap="1rem">
 
-        <RadzenButton Text="Close"
+        <RadzenButton Text="Fechar"
                       ButtonStyle="ButtonStyle.Light"
                       Click="@Close" />
 
         @if (CanEditAttendance)
         {
-            <RadzenButton Text="Save"
+            <RadzenButton Text="Guardar"
                           Icon="save"
                           ButtonStyle="ButtonStyle.Primary"
                           Click="@Save" />
@@ -91,18 +112,6 @@
     </RadzenStack>
 
 </RadzenStack>
-
-<style>
-    .attendance-row {
-        border-radius: 10px;
-        transition: all 0.15s ease-in-out;
-    }
-
-    .attendance-row:hover {
-        transform: scale(1.01);
-        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    }
-</style>
 
 
 @code {

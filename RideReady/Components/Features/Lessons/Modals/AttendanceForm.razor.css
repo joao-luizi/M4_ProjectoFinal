@@ -1,0 +1,50 @@
+/* AttendanceForm — presenças com avatares e a roupa da casa. */
+.att-panel ::deep .att-row {
+    border: 1px solid var(--rr-border);
+    border-left: 4px solid var(--rr-blue);
+    border-radius: var(--rr-radius);
+    background: linear-gradient(180deg, #fffdf8, var(--rr-card));
+    box-shadow: var(--rr-shadow);
+    opacity: 0;
+    animation: attIn .4s cubic-bezier(.22, .61, .36, 1) both;
+    transition: transform .16s ease, box-shadow .16s ease;
+}
+.att-panel ::deep .att-row:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 22px -12px rgba(63, 127, 174, 0.5);
+}
+@keyframes attIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .att-panel ::deep .att-row { animation: none; opacity: 1; }
+}
+
+.att-name {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--rr-ink);
+}
+.att-check {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--rr-muted);
+}
+
+/* o cartão do próprio aluno: destaque tan */
+.att-panel ::deep .att-self {
+    border: 1px solid var(--rr-border);
+    border-left: 4px solid var(--rr-tan);
+    border-radius: var(--rr-radius);
+    box-shadow: var(--rr-shadow);
+}
+.att-self-info {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+}
