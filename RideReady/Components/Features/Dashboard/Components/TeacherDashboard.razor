@@ -217,14 +217,35 @@ else
         new("Rui Tavares", new DateTime(2026, 6, 2), 6, 10),
     };
 
-    private static string Greeting =>
-        DateTime.Now.Hour switch
+    private static string Greeting 
+    {
+        get
         {
-            < 6 => "Boa noite",
-            < 13 => "Bom dia",
-            < 20 => "Boa tarde",
-            _ => "Boa noite",
-        };
+            string greeting;
+
+            switch (DateTime.Now.Hour)
+            {
+                case < 6:
+                    greeting = "Boa noite";
+                    break;
+
+                case < 13:
+                    greeting = "Bom dia";
+                    break;
+
+                case < 20:
+                    greeting = "Boa tarde";
+                    break;
+
+                default:
+                    greeting = "Boa noite";
+                    break;
+            }
+            return greeting;
+        }
+       
+    
+    }
 
     private static string TodayLabel
     {

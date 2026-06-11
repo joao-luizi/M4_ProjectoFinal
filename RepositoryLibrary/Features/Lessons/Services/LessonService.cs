@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using RepositoryLibrary.Data.Context;
 using RepositoryLibrary.Features.Bookings.Entities;
 using RepositoryLibrary.Features.Bookings.Interfaces;
+using RepositoryLibrary.Features.Entitlements.Interfaces;
 using RepositoryLibrary.Features.Lessons.DTOs;
 using RepositoryLibrary.Features.Lessons.Entities;
 using RepositoryLibrary.Features.Lessons.Interfaces;
@@ -17,13 +18,20 @@ namespace RepositoryLibrary.Features.Lessons.Services
         private readonly ILessonRepository _lessonRepo;
         private readonly IBookingRepository _bookRepo;
         private readonly IUserService _userService;
+        private readonly IEntitlementRepository _entitlementRepo;
         private readonly ILogger<LessonService> _logger;
 
-        public LessonService(RideReadyDbContext context, ILessonRepository lessonRepo, IUserService userService, IBookingRepository bookRepo, ILogger<LessonService> logger)
+        public LessonService(RideReadyDbContext context, 
+            ILessonRepository lessonRepo, 
+            IUserService userService, 
+            IBookingRepository bookRepo,
+            IEntitlementRepository entitlementRepo,
+            ILogger<LessonService> logger)
         {
             _lessonRepo = lessonRepo;
             _bookRepo = bookRepo;
             _userService = userService;
+            _entitlementRepo = entitlementRepo;
             _logger = logger;
         }
 
@@ -145,7 +153,16 @@ namespace RepositoryLibrary.Features.Lessons.Services
             if (existing != null)
                 return; // já está inscrito
 
+            //verificar o tipo de lição 
+            var lesson = await _lessonRepo.GetByIdWithDetailsAsync(lessonId);
 
+            if (lesson is null) return;
+            //throw error
+
+            var lessonType = lesson.LessonTypeId;
+
+            //verificar se o user tem subscrição
+            var UserSubscriptions = await 
 
 
             await _bookRepo.addAsync(new Booking
