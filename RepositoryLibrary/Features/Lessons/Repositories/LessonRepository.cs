@@ -88,7 +88,18 @@ namespace RepositoryLibrary.Features.Lessons.Repositories
         //V2 Implemented
         public async Task DeleteAsync(Lesson lesson)
         {
+            var lessonHorses = await _emContext.LessonHorses
+                .Where(x => x.LessonId == lesson.LessonId)
+                .ToListAsync();
+
+            var lessonProfs = await _emContext.LessonProfs
+            .Where(x => x.LessonId == lesson.LessonId)
+            .ToListAsync();
+
+            _emContext.LessonHorses.RemoveRange(lessonHorses);
+            _emContext.LessonProfs.RemoveRange(lessonProfs);
             _emContext.Lessons.Remove(lesson);
+
             await _emContext.SaveChangesAsync();
         }
 

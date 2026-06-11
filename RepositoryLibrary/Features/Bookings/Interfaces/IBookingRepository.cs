@@ -13,6 +13,8 @@ namespace RepositoryLibrary.Features.Bookings.Interfaces
         Task<List<Booking>> GetBookingsByUserIdAsync(string userId);
         //V2 Implemented
         Task Delete(Booking booking);
+
+        void DeleteNoSave(Booking booking);
         //V2 Implemented
         Task SaveChanges();
         //V2 Implemented

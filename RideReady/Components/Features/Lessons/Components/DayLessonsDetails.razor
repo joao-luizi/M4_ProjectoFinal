@@ -195,7 +195,7 @@ else
             NotificationService.Notify(
                 NotificationSeverity.Success,
                 "Eliminada",
-                $"Aula eliminada. Alunos a notificar: {userIdsForEmails.Count}");
+                $"Aula eliminada. Utilizadores a notificar: {userIdsForEmails.Count}");
 
             await OnLessonChanged.InvokeAsync();
         }

@@ -140,14 +140,19 @@ namespace RepositoryLibrary.Features.Lessons.Services
                 .FirstOrDefault(b => b.UserId == userId);
 
             if (booking is null)
-                return; // ou throw se quiseres ser estrito
-                        // Recomendação para equipa futura
+                return;
 
-                        // Prioridade alta:
-
-                        //Implementar tracking de consumo de crédito no Booking
-                        //Garantir rollback automático no cancelamento
-                        //Tornar operação atómica(transaction)
+            // 💰 Se o booking consumiu crédito -> devolver crédito
+            if (booking.FundingType == BookingFundingType.Credit)
+            {
+                await _entitlementRepo.AddAsync(new UserCreditLedgerEntry
+                {
+                    UserId = userId,
+                    LessonTypeId = lesson.LessonTypeId,
+                    CreditsDelta = +1,
+                    Reason = "Booking cancelled due to lesson deletion"
+                });
+            }
 
             await _bookRepo.Delete(booking);
         }
@@ -330,6 +335,23 @@ namespace RepositoryLibrary.Features.Lessons.Services
             return lesson.LessonId;
         }
         //V2 implemented
+
+        public async Task CancelBookingAsync(Booking booking, Lesson lesson)
+        {
+            if (booking.FundingType == BookingFundingType.Credit)
+            {
+                await _entitlementRepo.AddAsync(new UserCreditLedgerEntry
+                {
+                    UserId = booking.UserId,
+                    LessonTypeId = lesson.LessonTypeId,
+                    CreditsDelta = +1,
+                    Reason = "Lesson cancelled"
+                });
+            }
+
+            _bookRepo.DeleteNoSave(booking);
+        }
+
         public async Task UpdateAsync(LessonEditDto dto)
         {
             var lesson = await _lessonRepo.GetByIdWithDetailsAsync(dto.LessonId);
@@ -413,9 +435,15 @@ namespace RepositoryLibrary.Features.Lessons.Services
                     lesson.Bookings
                         .Select(x => x.UserId)
                 );
+                foreach (var booking in lesson.Bookings)
+                {
+                    await CancelBookingAsync(booking, lesson);
+                }
+
             }
 
             userIds = userIds.Distinct().ToList();
+
 
             await _lessonRepo.DeleteAsync(lesson);
 

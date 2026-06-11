@@ -48,6 +48,12 @@ namespace RepositoryLibrary.Features.Bookings.Repositories
             _emContext.Bookings.Remove(booking);
             await _emContext.SaveChangesAsync();
         }
+
+        public void DeleteNoSave(Booking booking)
+        {
+            _emContext.Bookings.Remove(booking);
+        }
+
         //V2 Implemented
         public async Task SaveChanges()
         {
