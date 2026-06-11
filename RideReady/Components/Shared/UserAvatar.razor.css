@@ -1,0 +1,17 @@
+/* UserAvatar — círculo de foto ou iniciais coloridas. */
+.uav {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(255, 255, 255, 0.7);
+    box-shadow: 0 2px 8px -4px rgba(38, 32, 25, 0.4);
+    flex: 0 0 auto;
+    vertical-align: middle;
+}
+.uav-initials {
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    user-select: none;
+}

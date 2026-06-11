@@ -222,7 +222,13 @@
 }
 .dash-roster-row:last-child { border-bottom: none; }
 .dash-roster-row:hover { background: rgba(63, 127, 174, 0.05); }
-.dash-roster-name { font-weight: 800; color: var(--rr-ink); }
+.dash-roster-name {
+    font-weight: 800;
+    color: var(--rr-ink);
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
 .dash-roster-last { color: var(--rr-hint); font-size: 0.9rem; }
 .dash-roster-progress { display: flex; align-items: center; gap: 12px; }
 .dash-roster-bartrack {

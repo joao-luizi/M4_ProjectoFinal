@@ -164,7 +164,13 @@
 }
 .dash-badge-alert { background: rgba(198, 88, 47, 0.13); color: var(--rr-alert); }
 .dash-badge-amber { background: rgba(217, 165, 49, 0.16); color: #8a6a1d; }
-.dash-attention-name { font-weight: 800; color: var(--rr-ink); }
+.dash-attention-name {
+    font-weight: 800;
+    color: var(--rr-ink);
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
 .dash-attention-detail { color: var(--rr-muted); font-size: 0.93rem; }
 .dash-attention-action {
     font-weight: 700;

@@ -143,7 +143,7 @@ else
             @foreach (var s in _roster)
             {
                 <div class="dash-roster-row">
-                    <span class="dash-roster-name">@s.Name</span>
+                    <span class="dash-roster-name"><UserAvatar Name="@s.Name" Size="34" /> @s.Name</span>
                     <span class="dash-roster-last">
                         Última aula: @(s.LastClass?.ToString("dd/MM/yyyy") ?? "—")
                     </span>
