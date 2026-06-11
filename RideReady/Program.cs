@@ -38,6 +38,7 @@ using RepositoryLibrary.Features.Users.Services;
 using RideReady.Components;
 using RideReady.Components.Account;
 using RideReady.Data;
+using RideReady.Services;
 using Serilog;
 
 Log.Logger = new LoggerConfiguration()
@@ -87,9 +88,15 @@ builder.Services.AddIdentityCore<EMUser>(options =>
 .AddSignInManager()
 .AddDefaultTokenProviders();
 
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.AccessDeniedPath = "/403";
+});
+
 builder.Services.AddScoped<IUserClaimsPrincipalFactory<EMUser>, CustomUserClaimsPrincipalFactory>();
 
-builder.Services.AddSingleton<IEmailSender<EMUser>, IdentityNoOpEmailSender>();
+builder.Services.AddSingleton<IEmailSender<EMUser>, SmtpEmailSender>();
+builder.Services.AddScoped<IToastService, ToastService>();
 
 builder.Services.AddScoped<IBookingService, BookingService>();
 builder.Services.AddScoped<IBookingRepository, BookingRepository>();
@@ -143,6 +150,7 @@ else
 }
 
 app.UseHttpsRedirection();
+app.UseStatusCodePagesWithReExecute("/{0}");
 
 app.UseStaticFiles();
 app.UseAntiforgery();

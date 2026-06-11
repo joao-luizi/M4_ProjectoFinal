@@ -1,6 +1,7 @@
-﻿@using System.Security.Claims
+@using System.Security.Claims
 @using Microsoft.AspNetCore.Identity
 @using RepositoryLibrary.Features.Users.Entities
+@using RideReady.Components.Shared
 
 @inherits LayoutComponentBase
 @inject NavigationManager NavigationManager
@@ -32,7 +33,7 @@
                     <Authorized>
                         <RadzenProfileMenu class="me-3">
                             <Template>
-                                <RadzenImage Path="User_default_image/user.png" Style="width: 2.5rem;" AlternateText="community" />
+                                <UserAvatar FirstName="@FirstName" LastName="@LastName" Size="38" />
                                 <RadzenLabel Text="@(string.IsNullOrEmpty(UserName) ? "John Doe" : UserName)" Style="font-size: 1.2rem;" class="mx-2" />
                             </Template>
                             <ChildContent>
@@ -78,6 +79,8 @@
 @code {
     bool sidebarExpanded = false;
     private string UserName { get; set; } = "";
+    private string FirstName { get; set; } = "";
+    private string LastName { get; set; } = "";
     private ClaimsPrincipal user { get; set; }
 
     protected override async Task OnInitializedAsync()
@@ -89,5 +92,7 @@
         var lastName = user.FindFirst("LastName")?.Value;
 
         UserName = $"{firstName} {lastName}".Trim();
+        FirstName = firstName ?? "";
+        LastName = lastName ?? "";
     }
 }

@@ -1,85 +1,294 @@
-﻿@using RepositoryLibrary.Features.DashBoard.DTOs
+@using System.Globalization
+@using RepositoryLibrary.Features.DashBoard.DTOs
 @using RepositoryLibrary.Features.DashBoard.Interfaces
+@using RideReady.Components.Shared
 @inject IAdminDashboardService DashboardService
+@inject IJSRuntime JS
 
-@if (_dashboard is null)
+@if (_loading)
 {
-    <p>A carregar...</p>
+    @* ---------- skeletons de carregamento ---------- *@
+    <div class="dash-hero dash-skel"></div>
+    <div class="dash-stats">
+        <div class="dash-skel dash-skel-stat"></div>
+        <div class="dash-skel dash-skel-stat"></div>
+        <div class="dash-skel dash-skel-stat"></div>
+        <div class="dash-skel dash-skel-stat"></div>
+    </div>
+    <div class="dash-skel dash-skel-block"></div>
 }
 else
 {
-    <p class="text-muted mb-6">Gerencie alunos, aulas e pagamentos.</p>
+    @* ---------- faixa-manchete: foto + saudação + data, com vidro ---------- *@
+    <div class="dash-hero">
+        <img class="dash-hero-img" src="/Images/Cavalo_4.jpg" alt="" />
+        <div class="dash-hero-overlay"></div>
+        <div class="dash-hero-glass">
+            <span class="dash-eyebrow">Painel de administração · Demonstração</span>
+            <h2>@Greeting, Administração.</h2>
+            <p>@TodayLabel · A tua escola num relance.</p>
+        </div>
+    </div>
 
-    <RadzenRow class="rz-mb-4">
-        <RadzenColumn Width="50%">
-            <RadzenCard Style="border-radius: 8px; width: 100%; height: 100%;">
-                <RadzenStack Gap="0.5rem" class="rz-p-4">
-                    <RadzenText Text="Total de Alunos" TextStyle="TextStyle.H6" />
-                    <RadzenText Text="@_dashboard.TotalStudents.ToString()"
-                                TextStyle="TextStyle.H4"
-                                Style="font-weight: bold;" />
-                    <RadzenText Text="Alunos registados na escola"
-                                TextStyle="TextStyle.Caption"
-                                class="text-muted" />
-                </RadzenStack>
-            </RadzenCard>
-        </RadzenColumn>
+    @* ---------- faixa de demonstração (honestidade visível) ---------- *@
+    <div class="dash-demo-banner">
+        <RadzenIcon Icon="science" />
+        <div>
+            <strong>Modo de demonstração</strong> — os números e gráficos neste painel
+            são dados fictícios que ilustram as estatísticas que a aplicação
+            consegue produzir a partir dos seus serviços e dados reais.
+        </div>
+    </div>
 
-        ...
-    </RadzenRow>
+    @* ---------- StatCards (cor com significado) ---------- *@
+    <div class="dash-stats">
+        <StatCard Label="Total de Alunos" Value="@_totalStudents.ToString()"
+                  Caption="Alunos registados na escola" Icon="groups" Accent="blue"
+                  CountUp="true" />
+        <StatCard Label="Aulas Agendadas" Value="@_scheduledClasses.ToString()"
+                  Caption="Próximas aulas no calendário" Icon="event" Accent="navy"
+                  CountUp="true" />
+        <StatCard Label="Cavalos" Value="@_totalHorses.ToString()"
+                  Caption="Cavalos ativos na escola" Icon="pets" Accent="tan"
+                  CountUp="true" />
+        <StatCard Label="Pagamentos em Falta" Value="@_missingPayments.ToString()"
+                  Caption="Mensalidades por regularizar" Icon="warning"
+                  Accent="@(_missingPayments == 0 ? "ok" : "alert")" 
+                  CountUp="true" />
+    </div>
 
-    <h3 class="text-xl font-semibold mt-8 mb-4">Lista de Alunos</h3>
-
-    <RadzenDataGrid Data="@_dashboard.Students"
-                    TItem="StudentDashboardItemDto">
-
-        <Columns>
-            <RadzenDataGridColumn TItem="StudentDashboardItemDto"
-                                  Property="Name"
-                                  Title="Nome" />
-
-            <RadzenDataGridColumn TItem="StudentDashboardItemDto"
-                                  Property="PaymentStatus"
-                                  Title="Status de Pagamento">
-
-                <Template Context="student">
-                    @if (student.PaymentStatus == "paid")
-                    {
-                        <span class="text-success">Pago</span>
-                    }
-                    else
-                    {
-                        <span class="text-danger">Não Pago</span>
-                    }
-                </Template>
-
-            </RadzenDataGridColumn>
-
-            <RadzenDataGridColumn TItem="StudentDashboardItemDto"
-                                  Property="ClassesRemaining"
-                                  Title="Aulas Restantes" />
-
-            <RadzenDataGridColumn TItem="StudentDashboardItemDto"
-                                  Property="LastClass"
-                                  Title="Última Aula">
-
-                <Template Context="student">
-                    @(student.LastClass?.ToString("dd/MM/yyyy HH:mm") ?? "-")
-                </Template>
-
-            </RadzenDataGridColumn>
-        </Columns>
-    </RadzenDataGrid>
-}
-@code
-{
-    private AdminStudentDashboardDto? _dashboard;
-
-    protected override async Task OnInitializedAsync()
+    @* ---------- precisa de atenção (acionável) ---------- *@
+    <h3 class="dash-h3">Precisa de atenção</h3>
+    @if (_attention.Any())
     {
-        _dashboard = await DashboardService.GetAdminDashboardAsync();
+        <div class="dash-attention">
+            @foreach (var item in _attention)
+            {
+                <div class="dash-attention-row">
+                    <span class="dash-badge @(item.Kind == "Pagamento em atraso" ? "dash-badge-alert" : "dash-badge-amber")">@item.Kind</span>
+                    <span class="dash-attention-name"><UserAvatar Name="@item.Name" Size="34" /> @item.Name</span>
+                    <span class="dash-attention-detail">@item.Detail</span>
+                    <a class="dash-attention-action" href="/admin/users">Ver</a>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <EmptyState Title="Tudo em ordem"
+                    Text="Nenhum aluno precisa de atenção neste momento." />
     }
 
-    private string GetPaymentStyle()
-        => $"font-weight: bold; color: {(_dashboard?.MissingPayments == 0 ? "green" : "red")};";
+    @* ---------- estatísticas ---------- *@
+    <h3 class="dash-h3">Estatísticas da escola</h3>
+    <p class="dash-demo-note">Dados de demonstração</p>
+
+    <RadzenRow class="rz-mb-4" Gap="1rem">
+        <RadzenColumn Width="50%">
+            <div class="dash-card">
+                <RadzenText Text="Alunos por estado de pagamento" class="dash-card-title" />
+                <RadzenChart Style="height: 260px;">
+                    <RadzenDonutSeries Data="@_paymentStatus" CategoryProperty="Status"
+                                       ValueProperty="Count"
+                                       Fills="@(new[] { "#3f7fae", "#d9a531", "#c6582f" })" />
+                    <RadzenLegend Position="LegendPosition.Right" />
+                </RadzenChart>
+            </div>
+        </RadzenColumn>
+
+        <RadzenColumn Width="50%">
+            <div class="dash-card">
+                <RadzenText Text="Aulas por semana" class="dash-card-title" />
+                <RadzenChart Style="height: 260px;">
+                    <RadzenColumnSeries Data="@_weeklyLessons" CategoryProperty="Label"
+                                        ValueProperty="Criadas" Title="Criadas" Fill="#3f7fae" />
+                    <RadzenColumnSeries Data="@_weeklyLessons" CategoryProperty="Label"
+                                        ValueProperty="Realizadas" Title="Realizadas" Fill="#2f4256" />
+                    <RadzenColumnOptions Radius="8" />
+                    <RadzenValueAxis>
+                        <RadzenGridLines Visible="true" />
+                    </RadzenValueAxis>
+                    <RadzenLegend Position="LegendPosition.Bottom" />
+                </RadzenChart>
+            </div>
+        </RadzenColumn>
+    </RadzenRow>
+
+    <RadzenRow class="rz-mb-4" Gap="1rem">
+        <RadzenColumn Width="50%">
+            <div class="dash-card">
+                <RadzenText Text="Ocupação dos cavalos (esta semana)" class="dash-card-title" />
+                <RadzenChart Style="height: 260px;">
+                    <RadzenColumnSeries Data="@_horseWorkload" CategoryProperty="Horse"
+                                        ValueProperty="Lessons" Title="Aulas" Fill="#d9a531" />
+                    <RadzenColumnOptions Radius="8" />
+                    <RadzenValueAxis Max="12">
+                        <RadzenGridLines Visible="true" />
+                    </RadzenValueAxis>
+                    <RadzenLegend Visible="false" />
+                </RadzenChart>
+                <RadzenText TextStyle="TextStyle.Caption" class="text-muted rz-p-2"
+                            Text="Limite: máx. 2 aulas/dia por cavalo, com 2 dias de descanso semanais" />
+            </div>
+        </RadzenColumn>
+
+        <RadzenColumn Width="50%">
+            <div class="dash-card">
+                <RadzenText Text="Faltas por mês" class="dash-card-title" />
+                <RadzenChart Style="height: 260px;">
+                    <RadzenAreaSeries Data="@_absences" CategoryProperty="Month"
+                                      ValueProperty="Count" Title="Faltas"
+                                      Stroke="#c6582f" StrokeWidth="3" Smooth="true"
+                                      Fill="rgba(198, 88, 47, 0.16)">
+                        <RadzenMarkers MarkerType="MarkerType.Circle" Fill="#c6582f" />
+                    </RadzenAreaSeries>
+                    <RadzenValueAxis>
+                        <RadzenGridLines Visible="true" />
+                    </RadzenValueAxis>
+                    <RadzenLegend Visible="false" />
+                </RadzenChart>
+            </div>
+        </RadzenColumn>
+    </RadzenRow>
+
+    @* ---------- lista de alunos ---------- *@
+    <h3 class="dash-h3">Lista de Alunos</h3>
+    @if (_students.Any())
+    {
+        <RadzenDataGrid Data="@_students" TItem="MockStudentRow">
+            <Columns>
+                <RadzenDataGridColumn TItem="MockStudentRow" Property="Name" Title="Nome" />
+                <RadzenDataGridColumn TItem="MockStudentRow" Property="PaymentStatus" Title="Status de Pagamento">
+                    <Template Context="student">
+                        @if (student.PaymentStatus == "paid")
+                        {
+                            <span class="text-success">Pago</span>
+                        }
+                        else
+                        {
+                            <span class="text-danger">Não Pago</span>
+                        }
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="MockStudentRow" Property="ClassesRemaining" Title="Aulas Restantes" />
+                <RadzenDataGridColumn TItem="MockStudentRow" Property="LastClass" Title="Última Aula">
+                    <Template Context="student">
+                        @(student.LastClass?.ToString("dd/MM/yyyy HH:mm") ?? "-")
+                    </Template>
+                </RadzenDataGridColumn>
+            </Columns>
+        </RadzenDataGrid>
+    }
+    else
+    {
+        <EmptyState Title="Ainda sem alunos"
+                    Text="Os alunos registados na escola aparecem nesta lista." />
+    }
+}
+
+@code
+{
+    private bool _loading = true;
+
+    // ================================================================
+    // DADOS DE DEMONSTRAÇÃO (entregáveis sem popular a base de dados).
+    // Espelham 1:1 o que os serviços de dashboard fornecem
+    // (IAdminDashboardService: totais, pagamentos, lista de alunos).
+    // Para religar aos dados reais: descomentar a chamada ao serviço
+    // em OnInitializedAsync e mapear o DTO para estas coleções.
+    // ================================================================
+
+    private int _totalStudents = 38;
+    private int _scheduledClasses = 12;
+    private int _totalHorses = 9;
+    private int _missingPayments = 3;
+
+    private sealed record AttentionItem(string Kind, string Name, string Detail);
+    private readonly List<AttentionItem> _attention = new()
+    {
+        new("Pagamento em atraso", "Marta Carvalho", "Mensalidade de maio por regularizar"),
+        new("Pagamento em atraso", "Rui Tavares", "Mensalidade de junho por regularizar"),
+        new("Poucas aulas restantes", "Inês Lopes", "Restam 2 aulas no pack de 10"),
+        new("Poucas aulas restantes", "Tiago Nunes", "Resta 1 aula no pack de 5"),
+    };
+
+    private sealed record PaymentStatusItem(string Status, double Count);
+    private readonly List<PaymentStatusItem> _paymentStatus = new()
+    {
+        new("Em dia", 31), new("Pendente", 4), new("Em atraso", 3),
+    };
+
+    private sealed record WeeklyLessonsItem(string Label, double Criadas, double Realizadas);
+    private readonly List<WeeklyLessonsItem> _weeklyLessons = new()
+    {
+        new("Sem 1", 18, 16), new("Sem 2", 20, 17), new("Sem 3", 17, 15),
+        new("Sem 4", 22, 20), new("Sem 5", 19, 18), new("Sem 6", 24, 21),
+        new("Sem 7", 21, 19), new("Sem 8", 23, 22),
+    };
+
+    private sealed record HorseWorkloadItem(string Horse, double Lessons);
+    private readonly List<HorseWorkloadItem> _horseWorkload = new()
+    {
+        new("Trovão", 10), new("Luna", 9), new("Relâmpago", 8),
+        new("Estrela", 7), new("Canela", 5), new("Pipoca", 4),
+    };
+
+    private sealed record AbsenceItem(string Month, double Count);
+    private readonly List<AbsenceItem> _absences = new()
+    {
+        new("Jan", 9), new("Fev", 7), new("Mar", 11),
+        new("Abr", 6), new("Mai", 8), new("Jun", 4),
+    };
+
+    public sealed record MockStudentRow(string Name, string PaymentStatus, int ClassesRemaining, DateTime? LastClass);
+    private readonly List<MockStudentRow> _students = new()
+    {
+        new("Ana Ribeiro", "paid", 7, new DateTime(2026, 6, 8, 10, 0, 0)),
+        new("Marta Carvalho", "unpaid", 4, new DateTime(2026, 6, 5, 16, 0, 0)),
+        new("Inês Lopes", "paid", 2, new DateTime(2026, 6, 9, 9, 0, 0)),
+        new("Rui Tavares", "unpaid", 6, new DateTime(2026, 6, 2, 17, 0, 0)),
+        new("Tiago Nunes", "paid", 1, new DateTime(2026, 6, 7, 11, 0, 0)),
+        new("Sofia Martins", "paid", 9, null),
+    };
+
+    private static string Greeting =>
+        DateTime.Now.Hour switch
+        {
+            < 6 => "Boa noite",
+            < 13 => "Bom dia",
+            < 20 => "Boa tarde",
+            _ => "Boa noite",
+        };
+
+    private static string TodayLabel
+    {
+        get
+        {
+            var pt = new CultureInfo("pt-PT");
+            var label = DateTime.Now.ToString("dddd, d 'de' MMMM", pt);
+            return char.ToUpper(label[0]) + label[1..];
+        }
+    }
+
+    protected override Task OnInitializedAsync()
+    {
+        // Versão de demonstração: dados mock acima, sem tocar na base de dados.
+        // Para religar: var dto = await DashboardService.GetAdminDashboardAsync();
+        //               e mapear dto.TotalStudents, dto.MissingPayments, dto.Students.
+        _loading = false;
+        return Task.CompletedTask;
+    }
+
+    private bool _counted = false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // Dispara o count-up dos StatCards depois de o conteúdo existir no DOM.
+        if (!_loading && !_counted)
+        {
+            _counted = true;
+            try { await JS.InvokeVoidAsync("rrMotion.countAll"); }
+            catch { /* JS ainda não disponível: os números ficam estáticos, sem partir nada */ }
+        }
+    }
 }

@@ -1,0 +1,82 @@
+@* Avatar reutilizável: foto se existir; senão, iniciais num círculo
+   com cor determinística derivada do nome (mesmo nome = mesma cor, sempre). *@
+
+@if (!string.IsNullOrWhiteSpace(PhotoPath))
+{
+    <img class="uav" style="@SizeStyle" src="@PhotoPath" alt="@FullName" title="@FullName" />
+}
+else
+{
+    <span class="uav uav-initials" style="@InitialsStyle" title="@FullName">@Initials</span>
+}
+
+@code {
+    [Parameter] public string FirstName { get; set; } = "";
+    [Parameter] public string LastName { get; set; } = "";
+
+    /// <summary>Alternativa: nome completo numa só string (ex. vindo de listas).
+    /// Se preenchido, o primeiro e o último termo fazem as iniciais.</summary>
+    [Parameter] public string? Name { get; set; }
+
+    [Parameter] public string? PhotoPath { get; set; }
+
+    /// <summary>Diâmetro do círculo, em píxeis.</summary>
+    [Parameter] public int Size { get; set; } = 40;
+
+    private string First =>
+        !string.IsNullOrWhiteSpace(FirstName) ? FirstName.Trim()
+        : (Name?.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries) is { Length: > 0 } p ? p[0] : "");
+
+    private string Last =>
+        !string.IsNullOrWhiteSpace(LastName) ? LastName.Trim()
+        : (Name?.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries) is { Length: > 1 } p ? p[^1] : "");
+
+    private string FullName => $"{First} {Last}".Trim();
+
+    private string Initials
+    {
+        get
+        {
+            var ini = (First.Length > 0 ? char.ToUpper(First[0]).ToString() : "")
+                    + (Last.Length > 0 ? char.ToUpper(Last[0]).ToString() : "");
+            return ini.Length == 0 ? "?" : ini;
+        }
+    }
+
+    // Paleta da casa, ordenada para máxima distinção percetual entre
+    // vizinhos de hash (verde = o tom "ok" já sancionado; o coral fica
+    // de fora — está reservado para estados de alerta).
+    private static readonly (string Bg, string Fg)[] Palette =
+    {
+        ("#2f4256", "#ffffff"), // 0 navy
+        ("#3f7fae", "#ffffff"), // 1 azul
+        ("#3a8a52", "#ffffff"), // 2 verde
+        ("#b98a52", "#262019"), // 3 tan
+        ("#8a5a2b", "#ffffff"), // 4 castanho
+        ("#6fa8d0", "#262019"), // 5 azul claro
+        ("#5e3c1c", "#ffffff"), // 6 castanho escuro
+        ("#d9a531", "#262019"), // 7 âmbar
+    };
+
+    private (string Bg, string Fg) Color
+    {
+        get
+        {
+            // FNV-1a: hash determinístico com bom espalhamento, mesmo para
+            // nomes parecidos ("Demo X"). Não usar string.GetHashCode():
+            // é aleatorizado por execução no .NET moderno.
+            uint hash = 2166136261;
+            foreach (var c in FullName.ToLowerInvariant())
+            {
+                hash ^= c;
+                hash *= 16777619;
+            }
+            return Palette[(int)(hash % (uint)Palette.Length)];
+        }
+    }
+
+    private string SizeStyle => $"width:{Size}px;height:{Size}px;";
+
+    private string InitialsStyle =>
+        $"{SizeStyle}background-color:{Color.Bg};color:{Color.Fg};font-size:{(int)(Size * 0.4)}px;";
+}

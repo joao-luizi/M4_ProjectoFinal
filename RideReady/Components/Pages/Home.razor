@@ -1,92 +1,70 @@
-﻿@page "/"
+@page "/"
 @page "/home"
 @using RideReady.Components.Layout
 @layout EmptyLayout
-@rendermode InteractiveServer
 
-<nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
-    <div class="container-fluid">
-        <a class="navbar-brand d-flex align-items-center" href="/">
-            <img src="/Images/Logo.png"
-                 alt="RideReady logo"
-                 class="img-fluid rounded"
-                 style="max-width: 50px; height: auto;" />
-            <span class="ms-2">RideReady</span>
+<section class="landing">
+
+    @* --- Foto de fundo (animacao em CSS puro, sempre visivel) --- *@
+    <div class="landing-photo">
+        <img class="landing-img" src="/Images/Cavalo_1.jpg" alt="Cavalo a saltar numa escola de equitacao" />
+        <div class="landing-overlay"></div>
+    </div>
+
+    @* --- Barra de topo --- *@
+    <nav class="landing-nav">
+        <a class="landing-brand" href="/">
+            <img src="/favicon.png" alt="RideReady" />
+            <span class="landing-brand-name">RideReady</span>
         </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
-                data-bs-target="#navbarNav" aria-controls="navbarNav"
-                aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto align-items-lg-center">
-                <li class="nav-item px-2">
-                    <NavLink class="nav-link" href="/dashboard">Home</NavLink>
-                </li>
-                <li class="nav-item px-2">
-                    <NavLink class="nav-link" href="/features">Features</NavLink>
-                </li>
-                <li class="nav-item px-2">
-                    <NavLink class="nav-link" href="/pricing">Pricing</NavLink>
-                </li>
-                <li class="nav-item px-2">
-                    <NavLink class="btn btn-primary text-white" href="/home">Get Started</NavLink>
-                </li>
-            </ul>
+        <div class="landing-nav-actions">
+            <a class="landing-link" href="/Account/Login">Entrar</a>
+            <a class="landing-cta" href="/Account/Register">Criar conta</a>
         </div>
-    </div>
-</nav>
+    </nav>
 
-<div class="hero d-flex flex-column flex-md-row align-items-center min-vh-100 bg-rz-light">
-    <div class="container-fluid px-3 px-md-5">
-        <div class="row gx-4 gy-5 align-items-center">
-            <!-- Text -->
-            <div class="col-12 col-md-6 text-center text-md-start">
-                <h1 class="display-4 fw-bold">Streamline Your Equestrian Classes</h1>
-                <p class="lead mb-4">
-                    RideReady helps riding schools manage schedules, instructors, and students
-                    all in one place. Spend less time organizing and more time riding.
-                </p>
-                <NavLink href="/dashboard" class="btn btn-lg btn-primary">Start Organizing</NavLink>
+    @* --- Conteudo do heroi --- *@
+    <div class="landing-content">
+        <span class="rr-eyebrow landing-kicker">Escola de equitação</span>
+        <h1 class="landing-title">Do estábulo à sela,<br />sem papelada.</h1>
+        <p class="landing-sub">
+            Marcação de aulas, gestão de alunos e cavalos, pagamentos:
+            tudo num só sítio, pensado para a tua escola.
+        </p>
+        <div class="landing-buttons">
+            <a class="landing-cta landing-cta-lg" href="/Account/Register">Criar conta →</a>
+            <a class="landing-ghost" href="/Account/Login">Entrar</a>
+        </div>
+
+        @* --- Para quem e: tres perfis --- *@
+        <div class="landing-roles rr-glass-dark">
+            <div class="landing-role">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 3l7 3v5c0 4-3 7-7 8-4-1-7-4-7-8V6l7-3z" />
+                </svg>
+                <span>Administradores</span>
             </div>
-
-            <!-- Carousel -->
-            <div class="col-12 col-md-6 d-flex justify-content-center">
-                <RadzenCarousel @ref="carousel"
-                                AllowNavigation="false"
-                                Auto="true"
-                                Interval="3500"
-                                class="w-100"
-                                Style="max-height: 400px;">
-                    <Items>
-                        @foreach (var img in new[] {
-                        "/images/Cavalo.jpg",
-                        "/images/Cavalo_1.jpg",
-                        "/images/Cavalo_2.jpg",
-                        "/images/Cavalo_3.jpg",
-                        "/images/Cavalo_4.jpg" })
-                        {
-                            <RadzenCarouselItem>
-                                <RadzenImage Path="@img"
-                                             class="w-100 h-auto rounded shadow-sm" />
-                            </RadzenCarouselItem>
-                        }
-                    </Items>
-                </RadzenCarousel>
+            <div class="landing-role-div"></div>
+            <div class="landing-role">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="8" r="3.5" />
+                    <path d="M5 20c0-3.5 3-5.5 7-5.5s7 2 7 5.5" />
+                </svg>
+                <span>Professores</span>
+            </div>
+            <div class="landing-role-div"></div>
+            <div class="landing-role">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M2 9l10-4 10 4-10 4L2 9z" />
+                    <path d="M6 11v4c0 1.5 2.7 2.5 6 2.5s6-1 6-2.5v-4" />
+                </svg>
+                <span>Alunos</span>
             </div>
         </div>
     </div>
-</div>
 
-<footer class="py-4 bg-light">
-    <div class="container text-center">
-        <small class="text-muted">© 2025 RideReady. All rights reserved.</small>
-    </div>
-</footer>
+    <footer class="landing-foot">© 2026 RideReady</footer>
+</section>
 
 @code {
-    RadzenCarousel carousel;
-
-    string prevIcon = "arrow_circle_left";
-    string nextIcon = "arrow_circle_right";
-                }
+}

@@ -1,4 +1,4 @@
-﻿@page "/dashboard"
+@page "/dashboard"
 @rendermode InteractiveServer
 @attribute [Authorize]
 
@@ -6,8 +6,11 @@
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
 @using RideReady.Components.Features.Dashboard.Components
+@using RideReady.Services
 
 @inject AuthenticationStateProvider AuthStateProvider
+@inject IToastService Toast
+@inject NavigationManager Nav
 
 @if (_loading)
 {
@@ -37,7 +40,12 @@ else
 
 @code {
     private string? _userRole;
+    private string _firstName = "";
     private bool _loading = true;
+
+    /// <summary>Vem de /dashboard?welcome=1 (posto pelo Login após sucesso).</summary>
+    [SupplyParameterFromQuery(Name = "welcome")]
+    public string? Welcome { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -45,6 +53,24 @@ else
         var user = authState.User;
 
         _userRole = user.FindFirst(ClaimTypes.Role)?.Value;
+        _firstName = user.FindFirst("FirstName")?.Value ?? "";
         _loading = false;
+    }
+
+    protected override Task OnAfterRenderAsync(bool firstRender)
+    {
+        // Toast de boas-vindas: só na chegada vinda do login (welcome=1),
+        // disparado depois do render (o NotificationService precisa do
+        // circuito interativo vivo). Limpamos o query param a seguir,
+        // para um F5 não repetir o toast.
+        if (firstRender && Welcome == "1")
+        {
+            var greeting = string.IsNullOrEmpty(_firstName)
+                ? "Sessão iniciada. Bem-vind@ de volta!"
+                : $"Sessão iniciada. Bem-vind@ de volta, {_firstName}!";
+            Toast.ShowSuccess(greeting);
+            Nav.NavigateTo("/dashboard", replace: true);
+        }
+        return Task.CompletedTask;
     }
 }

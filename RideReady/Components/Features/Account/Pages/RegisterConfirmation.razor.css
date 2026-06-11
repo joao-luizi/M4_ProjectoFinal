@@ -1,0 +1,158 @@
+/* Confirmação de registo — o pónei-pégasus levanta voo (uma vez).
+   Página SSR: tudo em CSS puro. */
+
+.rc {
+    position: relative;
+    min-height: 100vh;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    /* céu ao entardecer: do azul profundo lá em cima ao horizonte quente */
+    background: linear-gradient(180deg,
+        #141f2b 0%,
+        #1d2f42 22%,
+        #2f4f6e 46%,
+        #4a6b8a 66%,
+        #8aa0ae 84%,
+        #c9b28a 96%,
+        #41566b 100%);
+}
+
+.rc-brand {
+    position: absolute;
+    top: 28px;
+    left: 36px;
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    z-index: 3;
+}
+.rc-brand img { height: 46px; width: 46px; object-fit: contain; border-radius: 9px; }
+.rc-brand span { color: #fff; font-weight: 800; font-size: 1.55rem; }
+
+.rc-ground {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    height: 34px;
+    background: #26331f;
+    border-top: 2px solid var(--rr-tan);
+}
+
+/* ---------- o cartão ---------- */
+.rc-card {
+    position: relative;
+    z-index: 2;
+    width: min(520px, 100%);
+    background: rgba(251, 248, 242, 0.92);
+    border: 1px solid rgba(255, 255, 255, 0.55);
+    border-radius: var(--rr-radius-lg);
+    box-shadow: var(--rr-shadow-lg);
+    padding: 34px 36px 30px;
+    text-align: center;
+    animation: rcIn .7s ease .2s both;
+}
+@keyframes rcIn {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: none; }
+}
+.rc-card h1 {
+    font-size: 2rem;
+    margin: 0 0 18px;
+    padding-bottom: 12px;
+    position: relative;
+}
+.rc-card h1::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: 0;
+    transform: translateX(-50%);
+    width: 56px;
+    height: 4px;
+    border-radius: 2px;
+    background: linear-gradient(90deg, var(--rr-brown), var(--rr-tan));
+}
+.rc-card p { color: var(--rr-muted); font-size: 1.02rem; }
+.rc-card ::deep .alert-success {
+    background-color: rgba(58, 138, 82, 0.12);
+    border: 1px solid rgba(58, 138, 82, 0.4);
+    color: #2c6b40;
+    border-radius: var(--rr-radius);
+    font-weight: 600;
+}
+
+.rc-btn {
+    display: block;
+    width: 100%;
+    background-color: var(--rr-navy);
+    color: #fff;
+    font-weight: 700;
+    font-size: 1.1rem;
+    border-radius: var(--rr-radius);
+    padding: 13px 0;
+    text-decoration: none;
+    transition: background-color .16s ease, transform .16s ease;
+}
+.rc-btn:hover { background-color: var(--rr-navy-d); transform: translateY(-2px); color: #fff; }
+
+/* ---------- nuvens pixel a derivar ---------- */
+.rc-cloud {
+    position: absolute;
+    z-index: 1;
+    pointer-events: none;
+}
+.rc-cloud svg { width: 100%; display: block; }
+.rc-cloud g rect { fill: #f3efe8; }
+.rc-cloud-1 { top: 10%; width: 170px; opacity: .20; animation: rcDrift 90s linear -20s infinite; }
+.rc-cloud-2 { top: 21%; width: 110px; opacity: .14; animation: rcDrift 130s linear -75s infinite; }
+.rc-cloud-3 { top: 34%; width: 220px; opacity: .10; animation: rcDrift 160s linear -40s infinite; }
+.rc-cloud-4 { top: 58%; width: 90px;  opacity: .12; animation: rcDrift 110s linear -100s infinite; }
+@keyframes rcDrift {
+    from { transform: translateX(-260px); }
+    to   { transform: translateX(110vw); }
+}
+
+/* ---------- o pónei-pégasus ---------- */
+.rc-peg {
+    position: absolute;
+    left: 6%;
+    bottom: 36px;
+    width: 116px;
+    z-index: 1;
+    animation: rcFly 5s ease-in-out 1s both;
+    transform-origin: 25% 100%;
+}
+.rc-horse { width: 100%; display: block; }
+.rc-horse .hbody rect { fill: #ffffff; }
+.rc-horse .hmane rect { fill: var(--rr-brown); }
+.rc-horse .heye rect { fill: var(--rr-navy); }
+.rc-horse .hwingU rect, .rc-horse .hwingD rect { fill: #efe6d2; }
+
+/* bater de asas frenético (porque é gorducho) */
+.rc-horse .hwingU { animation: rcFlapU .12s steps(1, end) infinite; }
+.rc-horse .hwingD { animation: rcFlapD .12s steps(1, end) infinite; }
+@keyframes rcFlapU { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
+@keyframes rcFlapD { 0%, 49% { opacity: 0; } 50%, 100% { opacity: 1; } }
+
+/* a descolagem: empina, sobe aos solavancos, sai do ecrã — UMA vez */
+@keyframes rcFly {
+    0%, 14% { transform: translate(0, 0) rotate(0); }
+    24%     { transform: translate(0, 0) rotate(-26deg); }        /* empina! */
+    34%     { transform: translate(30px, -40px) rotate(-10deg); }
+    44%     { transform: translate(90px, -60px) rotate(-16deg); } /* solavanco */
+    54%     { transform: translate(190px, -160px) rotate(-6deg); }
+    64%     { transform: translate(280px, -180px) rotate(-18deg); } /* solavanco */
+    78%     { transform: translate(55vw, -55vh) rotate(-8deg); }
+    100%    { transform: translate(115vw, -95vh) rotate(-10deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .rc-peg, .rc-card, .rc-horse .hwingU, .rc-horse .hwingD, .rc-cloud {
+        animation: none !important;
+        opacity: 1 !important;
+    }
+    .rc-peg { display: none; }
+}

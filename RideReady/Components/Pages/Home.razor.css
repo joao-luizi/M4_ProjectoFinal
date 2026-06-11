@@ -1,0 +1,260 @@
+/* Landing (Home.razor) — heroi de foto inteira, azul + castanho.
+   Animacoes 100% CSS (nao dependem de JS), por isso o conteudo
+   esta SEMPRE visivel; a animacao e so o "tempero". */
+
+.landing {
+    position: relative;
+    min-height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Camada da foto (por tras de tudo) */
+.landing-photo {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+}
+
+.landing-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    /* Dica ao browser para usar a GPU -> movimento mais fluido */
+    will-change: transform;
+    backface-visibility: hidden;
+    /* Entrada suave e depois zoom lento continuo */
+    animation: landingPhotoIn 2.2s cubic-bezier(.16,.84,.44,1) both,
+               landingKen 28s ease-in-out 2.2s infinite alternate;
+}
+
+@keyframes landingPhotoIn {
+    from { transform: scale(1.18) translateX(-4%); }
+    to   { transform: scale(1.05) translateX(0); }
+}
+@keyframes landingKen {
+    from { transform: scale(1.05) translate(0, 0); }
+    to   { transform: scale(1.18) translate(-3%, -2%); }
+}
+
+/* Gradacao castanho -> azul por cima da foto */
+.landing-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(110deg, rgba(38, 33, 22, 0.86) 20%, rgba(47, 66, 86, 0.35) 85%);
+}
+
+/* Barra de topo */
+.landing-nav {
+    position: relative;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 40px;
+}
+
+.landing-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+}
+.landing-brand img {
+    height: 44px;
+    width: 44px;
+    object-fit: contain;
+    border-radius: 8px;
+    display: block;
+}
+.landing-brand-name {
+    color: #fff;
+    font-weight: 800;
+    font-size: 1.5rem;
+    letter-spacing: -0.01em;
+}
+
+.landing-nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.landing-link {
+    color: #fff;
+    font-weight: 600;
+    text-decoration: none;
+    padding: 10px 14px;
+}
+.landing-link:hover { text-decoration: underline; }
+
+/* Botao "Criar conta" (azul) */
+.landing-cta {
+    background-color: var(--rr-blue);
+    color: #fff;
+    font-weight: 700;
+    text-decoration: none;
+    padding: 11px 20px;
+    border-radius: var(--rr-radius);
+    transition: transform .16s ease, background-color .16s ease;
+}
+.landing-cta:hover {
+    background-color: #356d96;
+    transform: translateY(-2px);
+    color: #fff;
+}
+.landing-cta-lg { padding: 14px 26px; font-size: 1.05rem; }
+
+/* Conteudo do heroi (fade-up suave em CSS) */
+.landing-content {
+    position: relative;
+    z-index: 2;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 20px 40px 60px;
+    max-width: 720px;
+}
+
+/* Entrada escalonada: cada elemento aparece em sequencia */
+@keyframes landingFadeUp {
+    from { opacity: 0; transform: translateY(22px); }
+    to   { opacity: 1; transform: none; }
+}
+.landing-content > * {
+    opacity: 0;
+    animation: landingFadeUp .7s cubic-bezier(.22,.61,.36,1) forwards;
+}
+.landing-kicker   { animation-delay: .15s; }
+.landing-title    { animation-delay: .30s; }
+.landing-sub      { animation-delay: .48s; }
+.landing-buttons  { animation-delay: .64s; }
+.landing-roles    { animation-delay: .80s; }
+
+.landing-kicker {
+    color: #cfe0ee;
+    margin-bottom: 16px;
+    font-size: 14px;          /* maior que o eyebrow base (11px) */
+    letter-spacing: 0.18em;
+}
+
+.landing-title {
+    color: #fff;
+    font-weight: 800;
+    font-size: 4.2rem;
+    line-height: 1.02;
+    letter-spacing: -0.03em;
+    margin: 0 0 18px;
+    text-shadow: 0 2px 18px rgba(0, 0, 0, 0.4);
+}
+
+.landing-sub {
+    color: rgba(255, 255, 255, 0.92);
+    font-size: 1.3rem;
+    line-height: 1.6;
+    margin: 0 0 30px;
+    max-width: 480px;
+}
+
+.landing-buttons {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-bottom: 36px;
+}
+
+.landing-ghost {
+    color: #fff;
+    font-weight: 700;
+    text-decoration: none;
+    padding: 14px 26px;
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    border-radius: var(--rr-radius);
+    transition: background-color .16s ease;
+}
+.landing-ghost:hover { background-color: rgba(255, 255, 255, 0.12); color: #fff; }
+
+/* Cartao de vidro com os tres perfis */
+.landing-roles {
+    display: inline-flex;
+    align-items: center;
+    gap: 22px;
+    padding: 16px 26px;
+    transition: transform .2s ease, box-shadow .2s ease;
+}
+.landing-roles:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--rr-shadow-lg);
+}
+/* Brilho continuo a percorrer o cartao */
+.landing-roles {
+    position: relative;
+    overflow: hidden;
+}
+.landing-roles::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -60%;
+    width: 60%;
+    height: 100%;
+    background: linear-gradient(100deg,
+        rgba(255,255,255,0) 0%,
+        rgba(255,255,255,0.18) 50%,
+        rgba(255,255,255,0) 100%);
+    transform: skewX(-18deg);
+    animation: landingShine 4.5s ease-in-out infinite;
+    pointer-events: none;
+}
+@keyframes landingShine {
+    0%   { left: -60%; }
+    55%  { left: 130%; }
+    100% { left: 130%; }
+}
+.landing-role {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #fff;
+    font-weight: 700;
+    font-size: 1rem;
+}
+.landing-role svg {
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
+}
+.landing-role-div { width: 1px; align-self: stretch; min-height: 26px; background: rgba(255, 255, 255, 0.25); }
+
+.landing-foot {
+    position: relative;
+    z-index: 2;
+    padding: 16px 40px;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.85rem;
+}
+
+@media (max-width: 640px) {
+    .landing-nav, .landing-content, .landing-foot {
+        padding-left: 22px;
+        padding-right: 22px;
+    }
+    .landing-title { font-size: 2.9rem; }
+    .landing-roles { gap: 14px; padding: 12px 16px; }
+    .landing-role { font-size: 0.9rem; }
+}
+
+/* Acessibilidade: se o utilizador pede menos movimento, mostra tudo sem animar */
+@media (prefers-reduced-motion: reduce) {
+    .landing-content > *,
+    .landing-img,
+    .landing-roles::after {
+        animation: none !important;
+        opacity: 1 !important;
+    }
+}

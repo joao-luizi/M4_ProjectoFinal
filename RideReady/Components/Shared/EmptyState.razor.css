@@ -1,0 +1,15 @@
+/* EmptyState — o pónei da casa a fazer companhia ao vazio. */
+.empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 34px 16px;
+    text-align: center;
+}
+.empty ::deep svg, .empty svg { width: 84px; opacity: .85; }
+.empty .hbody rect { fill: var(--rr-tan); }
+.empty .hmane rect { fill: var(--rr-brown); }
+.empty .heye rect { fill: var(--rr-navy); }
+.empty-title { font-weight: 800; color: var(--rr-ink); margin: 10px 0 0; }
+.empty-text { color: var(--rr-hint); font-size: 0.92rem; margin: 0; }
