@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using RepositoryLibrary.Data.Context;
@@ -86,7 +87,49 @@ namespace RepositoryLibrary.Features.Entitlements.Repositories
             await _emContext.UserCreditLedgerEntries.AddRangeAsync(credsList);
             await _emContext.SaveChangesAsync();
         }
+        //V2 Implemented
+        public async Task<List<BookingValidationError>> GetSubscriptionErrorsAsync(
+    string userId,
+    int lessonTypeId)
+        {
+            var errors = new List<BookingValidationError>();
 
+            var subscription = await _emContext.UserSubscriptionEntitlements
+                .Where(x =>
+                    x.LessonTypeId == lessonTypeId &&
+                    x.UserSubscription.UserId == userId &&
+                    x.UserSubscription.Status == SubscriptionStatus.Active)
+                .Select(x => x.UserSubscription)
+                .FirstOrDefaultAsync();
+
+            if (subscription == null)
+            {
+                errors.Add(BookingValidationError.NoActiveSubscription);
+                return errors;
+            }
+
+            var today = DateOnly.FromDateTime(DateTime.UtcNow);
+
+            if (subscription.PeriodStart > today ||
+                subscription.PeriodEnd < today)
+            {
+                errors.Add(BookingValidationError.SubscriptionExpired);
+            }
+
+            return errors;
+        }
+
+        public async Task<int> GetCreditBalanceAsync(string userId, int lessonTypeId)
+        {
+            var now = DateTime.UtcNow;
+
+            return await _emContext.UserCreditLedgerEntries
+                .Where(x =>
+                    x.UserId == userId &&
+                    x.LessonTypeId == lessonTypeId &&
+                    (x.ExpiresAtUtc == null || x.ExpiresAtUtc >= now))
+                .SumAsync(x => x.CreditsDelta);
+        }
 
     }
 }

@@ -1,4 +1,5 @@
 ﻿using RepositoryLibrary.Features.Entitlements.Entities;
+using RepositoryLibrary.Features.Entitlements.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,7 +21,13 @@ namespace RepositoryLibrary.Features.Entitlements.Interfaces
         Task AddAsync(UserCreditLedgerEntry creditLedgerEntry);
         //V2 Implemented
         Task AddAsync(List<UserCreditLedgerEntry> credsList);
-        
+
+        //V2 implemented
+        Task<List<BookingValidationError>> GetSubscriptionErrorsAsync(string userId, int lessonTypeId);
+
+        //V2 implemented
+        Task<int> GetCreditBalanceAsync(string userId, int lessonTypeId);
+
 
 
     }

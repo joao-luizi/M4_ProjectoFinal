@@ -217,6 +217,7 @@ else
         new("Rui Tavares", new DateTime(2026, 6, 2), 6, 10),
     };
 
+<<<<<<< Updated upstream
     private static string Greeting 
     {
         get
@@ -245,6 +246,29 @@ else
         }
        
     
+=======
+    private static string Greeting
+    {
+        get
+        {
+            var hour = DateTime.Now.Hour;
+
+            switch (hour)
+            {
+                case int h when h < 6:
+                    return "Boa noite";
+
+                case int h when h < 13:
+                    return "Bom dia";
+
+                case int h when h < 20:
+                    return "Boa tarde";
+
+                default:
+                    return "Boa noite";
+            }
+        }
+>>>>>>> Stashed changes
     }
 
     private static string TodayLabel

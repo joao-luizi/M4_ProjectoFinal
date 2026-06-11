@@ -3,6 +3,8 @@ using Microsoft.Extensions.Logging;
 using RepositoryLibrary.Data.Context;
 using RepositoryLibrary.Features.Bookings.Entities;
 using RepositoryLibrary.Features.Bookings.Interfaces;
+using RepositoryLibrary.Features.Entitlements.DTOs;
+using RepositoryLibrary.Features.Entitlements.Enums;
 using RepositoryLibrary.Features.Entitlements.Interfaces;
 using RepositoryLibrary.Features.Lessons.DTOs;
 using RepositoryLibrary.Features.Lessons.Entities;
@@ -26,7 +28,9 @@ namespace RepositoryLibrary.Features.Lessons.Services
             IUserService userService, 
             IBookingRepository bookRepo,
             IEntitlementRepository entitlementRepo,
+
             ILogger<LessonService> logger)
+
         {
             _lessonRepo = lessonRepo;
             _bookRepo = bookRepo;
@@ -146,24 +150,75 @@ namespace RepositoryLibrary.Features.Lessons.Services
             await _bookRepo.Delete(booking);
         }
 
-        public async Task BookLessonAsync(int lessonId, string userId)
+        public async Task<BookingResult> BookLessonAsync(
+    int lessonId,
+    string userId)
         {
-            var existing = await _bookRepo.GetByLessonandUserIdsAsync(lessonId, userId);
+            var existing = await _bookRepo.GetByLessonandUserIdsAsync(
+                lessonId,
+                userId);
 
             if (existing != null)
-                return; // já está inscrito
+            {
+                return new BookingResult
+                {
+                    Success = false,
+                    Errors =
+            {
+                BookingValidationError.AlreadyBooked
+            }
+                };
+            }
+
 
             //verificar o tipo de lição 
             var lesson = await _lessonRepo.GetByIdWithDetailsAsync(lessonId);
 
-            if (lesson is null) return;
-            //throw error
 
-            var lessonType = lesson.LessonTypeId;
 
             //verificar se o user tem subscrição
-            var UserSubscriptions = await 
 
+            if (lesson == null)
+            {
+                return new BookingResult
+                {
+                    Success = false,
+                    Errors =
+            {
+                BookingValidationError.LessonNotFound
+            }
+                };
+            }
+            var lessonType = lesson.LessonTypeId;
+
+            var errors = await _entitlementRepo.GetSubscriptionErrorsAsync(
+                userId,
+                lesson.LessonTypeId);
+
+            var creditBalance = await _entitlementRepo.GetCreditBalanceAsync(
+                userId,
+                lesson.LessonTypeId);
+
+            if (creditBalance <= 0)
+            {
+                errors.Add(BookingValidationError.NoCreditsAvailable);
+            }
+
+            // Só falha se NÃO tiver subscrição E NÃO tiver créditos
+            var hasSubscriptionErrors = errors.Any(x =>
+                x == BookingValidationError.NoActiveSubscription ||
+                x == BookingValidationError.SubscriptionExpired);
+
+            var hasCredits = creditBalance > 0;
+
+            if (hasSubscriptionErrors && !hasCredits)
+            {
+                return new BookingResult
+                {
+                    Success = false,
+                    Errors = errors
+                };
+            }
 
             await _bookRepo.addAsync(new Booking
             {
@@ -173,7 +228,11 @@ namespace RepositoryLibrary.Features.Lessons.Services
             });
 
             await _bookRepo.SaveChanges();
-           
+
+            return new BookingResult
+            {
+                Success = true
+            };
         }
 
         private async Task ValidateHorseAvailabilityAsync(

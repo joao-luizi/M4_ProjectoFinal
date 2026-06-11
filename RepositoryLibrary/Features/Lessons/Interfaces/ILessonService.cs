@@ -1,5 +1,6 @@
 ﻿
 
+using RepositoryLibrary.Features.Entitlements.DTOs;
 using RepositoryLibrary.Features.Lessons.DTOs;
 using RepositoryLibrary.Features.Lessons.Entities;
 
@@ -29,7 +30,7 @@ namespace RepositoryLibrary.Features.Lessons.Interfaces
 
         Task CancelBookingAsync(int lessonId, string userId);
         //V2 implemented
-        Task BookLessonAsync(int lessonId, string userId);
+        Task<BookingResult> BookLessonAsync(int lessonId, string userId);
     }
 
 }

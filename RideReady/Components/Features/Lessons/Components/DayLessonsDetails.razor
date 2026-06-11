@@ -1,5 +1,7 @@
 ﻿@using Radzen
 @using RepositoryLibrary.Features.Email.DTOs
+@using RepositoryLibrary.Features.Entitlements.DTOs
+@using RepositoryLibrary.Features.Entitlements.Enums
 @using RepositoryLibrary.Features.Lessons.DTOs
 @using RepositoryLibrary.Features.Lessons.Interfaces
 @using RepositoryLibrary.Shared.Enums
@@ -185,7 +187,31 @@ else
                 ex.Message);
         }
     }
+    private static string BuildErrorMessage(
+    IEnumerable<BookingValidationError> errors)
+    {
+        return string.Join(
+            Environment.NewLine,
+            errors.Select(error => error switch
+            {
+                BookingValidationError.AlreadyBooked =>
+                    "You are already enrolled in this lesson.",
 
+                BookingValidationError.NoActiveSubscription =>
+                    "You do not have an active subscription for this lesson type.",
+
+                BookingValidationError.SubscriptionExpired =>
+                    "Your subscription is not currently valid.",
+
+                BookingValidationError.NoCreditsAvailable =>
+                    "You do not have enough credits for this lesson type.",
+
+                BookingValidationError.LessonNotFound =>
+                    "The lesson could not be found.",
+
+                _ => "An unknown error occurred."
+            }));
+    }
     private async Task OpenAttendance(LessonCalendarDto lesson)
     {
         var result = await DialogService.OpenAsync<AttendanceForm>(
@@ -202,14 +228,22 @@ else
                 Draggable = true
             });
 
-        if (result is bool success && success)
+        if (result is BookingResult bookingResult)
         {
-            NotificationService.Notify(
-                NotificationSeverity.Success,
-                "Saved",
-                "Attendance updated successfully");
-
-            await OnLessonChanged.InvokeAsync();
+            if (bookingResult.Success)
+            {
+                NotificationService.Notify(
+                    NotificationSeverity.Success,
+                    "Success",
+                    "You have been enrolled in the lesson.");
+            }
+            else
+            {
+                NotificationService.Notify(
+                    NotificationSeverity.Error,
+                    "Unable to enroll",
+                    BuildErrorMessage(bookingResult.Errors));
+            }
         }
     }
    
