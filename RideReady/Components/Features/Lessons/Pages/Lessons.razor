@@ -52,11 +52,21 @@
     }
     else
     {
+        <div class="rr-cal-weekhead">
+            <span>Seg</span><span>Ter</span><span>Qua</span><span>Qui</span><span>Sex</span><span>Sáb</span><span>Dom</span>
+        </div>
+
         <div class="rr-cal-grid">
 
-            @foreach (var day in calendarDays)
+            @for (int s = 0; s < LeadingBlanks; s++)
+            {
+                <div class="rr-cal-blank"></div>
+            }
+
+            @foreach (var (day, idx) in calendarDays.Select((d, i) => (d, i)))
             {
                 <RadzenCard class="@DayCardClass(day)"
+                            Style="@($"animation-delay: {idx * 18}ms")"
                             @onclick="() => SelectDay(day)">
 
                     <div class="rr-cal-head">
@@ -183,6 +193,10 @@
 
         return totalMax - totalBooked;
     }
+
+    /// <summary>Cartões vazios antes do dia 1, para alinhar com a coluna do dia da semana (semana a começar à segunda).</summary>
+    int LeadingBlanks =>
+        ((int)new DateOnly(year, month, 1).DayOfWeek + 6) % 7;
 
     /// <summary>Dia da semana abreviado em PT (Seg, Ter, ...).</summary>
     string WeekdayLabel(DateOnly date)

@@ -1,5 +1,33 @@
 /* Lessons — calendário mensal com a roupa da casa. */
 
+/* filtros num tabuleiro de vidro */
+::deep .rr-cal-filters {
+    background: rgba(251, 248, 242, 0.6);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid var(--rr-border);
+    border-radius: var(--rr-radius-lg);
+    margin: 0 1rem 14px;
+    box-shadow: var(--rr-shadow);
+}
+
+/* cabeçalho dos dias da semana */
+.rr-cal-weekhead {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 10px;
+    padding: 0 1rem 6px;
+}
+.rr-cal-weekhead span {
+    font-size: 0.74rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--rr-muted);
+    text-align: center;
+}
+.rr-cal-blank { visibility: hidden; }
+
 .rr-cal-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
@@ -13,17 +41,27 @@
     border-radius: var(--rr-radius);
     box-shadow: none;
     background: var(--rr-paper-2);
-    transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+    opacity: 0;
+    animation: rrCalIn .45s cubic-bezier(.22, .61, .36, 1) both;
+    transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, background-color .18s ease;
 }
 ::deep .rr-cal-day:hover {
-    transform: translateY(-3px);
-    box-shadow: var(--rr-shadow-lg);
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 12px 26px -12px rgba(63, 127, 174, 0.5);
     border-color: var(--rr-blue);
+    background: var(--rr-card);
+}
+@keyframes rrCalIn {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+    ::deep .rr-cal-day { animation: none; opacity: 1; }
 }
 
 /* dia COM aulas: cartão claro com barra azul — salta à vista */
 ::deep .rr-cal-day-busy {
-    background: var(--rr-card);
+    background: linear-gradient(180deg, #fffdf8, var(--rr-card));
     border-left: 4px solid var(--rr-blue);
     box-shadow: var(--rr-shadow);
 }
@@ -68,12 +106,18 @@
     color: var(--rr-navy);
 }
 .rr-cal-slots {
-    font-size: 0.86rem;
-    color: var(--rr-muted);
+    display: inline-block;
+    margin-top: 4px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--rr-navy);
+    background: rgba(63, 127, 174, 0.12);
+    border-radius: 999px;
+    padding: 2px 10px;
 }
 .rr-cal-slots-full {
-    color: var(--rr-alert);
-    font-weight: 700;
+    color: #fff;
+    background: var(--rr-alert);
 }
 .rr-cal-empty {
     font-size: 0.86rem;
@@ -81,8 +125,64 @@
 }
 
 @media (max-width: 900px) {
-    .rr-cal-grid { grid-template-columns: repeat(4, 1fr); }
+    /* filtros num tabuleiro de vidro */
+::deep .rr-cal-filters {
+    background: rgba(251, 248, 242, 0.6);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid var(--rr-border);
+    border-radius: var(--rr-radius-lg);
+    margin: 0 1rem 14px;
+    box-shadow: var(--rr-shadow);
+}
+
+/* cabeçalho dos dias da semana */
+.rr-cal-weekhead {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 10px;
+    padding: 0 1rem 6px;
+}
+.rr-cal-weekhead span {
+    font-size: 0.74rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--rr-muted);
+    text-align: center;
+}
+.rr-cal-blank { visibility: hidden; }
+
+.rr-cal-grid { grid-template-columns: repeat(4, 1fr); }
 }
 @media (max-width: 600px) {
-    .rr-cal-grid { grid-template-columns: repeat(2, 1fr); }
+    /* filtros num tabuleiro de vidro */
+::deep .rr-cal-filters {
+    background: rgba(251, 248, 242, 0.6);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid var(--rr-border);
+    border-radius: var(--rr-radius-lg);
+    margin: 0 1rem 14px;
+    box-shadow: var(--rr-shadow);
+}
+
+/* cabeçalho dos dias da semana */
+.rr-cal-weekhead {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 10px;
+    padding: 0 1rem 6px;
+}
+.rr-cal-weekhead span {
+    font-size: 0.74rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--rr-muted);
+    text-align: center;
+}
+.rr-cal-blank { visibility: hidden; }
+
+.rr-cal-grid { grid-template-columns: repeat(2, 1fr); }
 }
