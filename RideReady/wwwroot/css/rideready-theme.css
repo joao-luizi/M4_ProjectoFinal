@@ -395,3 +395,53 @@ main, article.content {
     border-radius: var(--rr-radius-lg) !important;
     box-shadow: var(--rr-shadow-lg) !important;
 }
+
+/* ---------- olhinho de mostrar/ocultar palavra-passe ---------- */
+.form-floating {
+    position: relative;
+}
+
+    .form-floating:has(.rr-eye) > .form-control {
+        padding-right: 48px;
+    }
+
+.rr-eye {
+    position: absolute;
+    top: 1.75rem; /* centro do input do form-floating */
+    right: 10px;
+    transform: translateY(-50%);
+    width: 36px;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background: transparent;
+    border-radius: 50%;
+    color: var(--rr-hint);
+    cursor: pointer;
+    z-index: 5;
+    transition: color .15s ease, background-color .15s ease;
+}
+
+    .rr-eye:hover {
+        color: var(--rr-navy);
+        background: rgba(47, 66, 86, 0.08);
+    }
+
+    .rr-eye svg {
+        width: 22px;
+        height: 22px;
+    }
+
+    .rr-eye .rr-eye-closed {
+        display: none;
+    }
+
+    .rr-eye.rr-eye-on .rr-eye-open {
+        display: none;
+    }
+
+    .rr-eye.rr-eye-on .rr-eye-closed {
+        display: block;
+    }

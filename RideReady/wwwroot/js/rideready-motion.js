@@ -33,7 +33,25 @@ window.rrMotion = (function () {
         }
         requestAnimationFrame(tick);
     }
+    /* Olhinho de mostrar/ocultar palavra-passe (paginas SSR do Identity).
+       Delegado no documento: funciona em qualquer pagina, sem registo por campo. */
+    document.addEventListener("click", function (e) {
+        var btn = e.target.closest("[data-rr-eye]");
+        if (!btn) return;
+        var wrap = btn.closest(".form-floating");
+        var input = wrap && wrap.querySelector("input");
+        if (!input) return;
+        var show = input.type === "password";
+        input.type = show ? "text" : "password";
+        btn.classList.toggle("rr-eye-on", show);
+        btn.setAttribute("aria-label", show ? "Ocultar palavra-passe" : "Mostrar palavra-passe");
+    });
+
     function countAll() {
+        /* gatilho das animações dos gráficos: o CSS só anima
+           debaixo de .rr-charts-in, acrescentada neste instante —
+           em sincronia com o count-up dos números */
+        document.body.classList.add("rr-charts-in");
         document.querySelectorAll("[data-rr-count]").forEach(countUp);
     }
 
