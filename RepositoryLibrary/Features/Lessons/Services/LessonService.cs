@@ -2,7 +2,12 @@
 using Microsoft.Extensions.Logging;
 using RepositoryLibrary.Data.Context;
 using RepositoryLibrary.Features.Bookings.Entities;
+using RepositoryLibrary.Features.Bookings.Enums;
 using RepositoryLibrary.Features.Bookings.Interfaces;
+using RepositoryLibrary.Features.Entitlements.DTOs;
+using RepositoryLibrary.Features.Entitlements.Entities;
+using RepositoryLibrary.Features.Entitlements.Enums;
+using RepositoryLibrary.Features.Entitlements.Interfaces;
 using RepositoryLibrary.Features.Lessons.DTOs;
 using RepositoryLibrary.Features.Lessons.Entities;
 using RepositoryLibrary.Features.Lessons.Interfaces;
@@ -17,13 +22,22 @@ namespace RepositoryLibrary.Features.Lessons.Services
         private readonly ILessonRepository _lessonRepo;
         private readonly IBookingRepository _bookRepo;
         private readonly IUserService _userService;
+        private readonly IEntitlementRepository _entitlementRepo;
         private readonly ILogger<LessonService> _logger;
 
-        public LessonService(RideReadyDbContext context, ILessonRepository lessonRepo, IUserService userService, IBookingRepository bookRepo, ILogger<LessonService> logger)
+        public LessonService(RideReadyDbContext context, 
+            ILessonRepository lessonRepo, 
+            IUserService userService, 
+            IBookingRepository bookRepo,
+            IEntitlementRepository entitlementRepo,
+
+            ILogger<LessonService> logger)
+
         {
             _lessonRepo = lessonRepo;
             _bookRepo = bookRepo;
             _userService = userService;
+            _entitlementRepo = entitlementRepo;
             _logger = logger;
         }
 
@@ -138,25 +152,121 @@ namespace RepositoryLibrary.Features.Lessons.Services
             await _bookRepo.Delete(booking);
         }
 
-        public async Task BookLessonAsync(int lessonId, string userId)
+        public async Task<BookingResult> BookLessonAsync(int lessonId, string userId)
         {
             var existing = await _bookRepo.GetByLessonandUserIdsAsync(lessonId, userId);
 
             if (existing != null)
-                return; // já está inscrito
+            {
+                return new BookingResult
+                {
+                    Success = false,
+                    Errors = { BookingValidationError.AlreadyBooked }
+                };
+            }
 
+            var lesson = await _lessonRepo.GetByIdWithDetailsAsync(lessonId);
 
+            if (lesson == null)
+            {
+                return new BookingResult
+                {
+                    Success = false,
+                    Errors = { BookingValidationError.LessonNotFound }
+                };
+            }
 
+            var errors = await _entitlementRepo.GetSubscriptionErrorsAsync(
+                userId,
+                lesson.LessonTypeId);
+
+            var creditBalance = await _entitlementRepo.GetCreditBalanceAsync(
+                userId,
+                lesson.LessonTypeId);
+
+            if (creditBalance <= 0)
+            {
+                errors.Add(BookingValidationError.NoCreditsAvailable);
+            }
+
+            var hasSubscriptionErrors = errors.Any(x =>
+                x == BookingValidationError.NoActiveSubscription ||
+                x == BookingValidationError.SubscriptionExpired);
+
+            var hasCredits = creditBalance > 0;
+
+            // 📊 Weekly usage
+            int weeklyBookings = await _bookRepo.GetWeeklyBooking(userId, lesson.LessonTypeId);
+            int weeklyLimit = await _entitlementRepo.GetWeeklyLimit(userId, lesson.LessonTypeId);
+
+            bool weeklyLimitExceeded = weeklyBookings >= weeklyLimit;
+
+            var willUseCredit = false;
+
+            // ❌ Sem subscrição válida e sem créditos
+            if (hasSubscriptionErrors && !hasCredits)
+            {
+                return new BookingResult
+                {
+                    Success = false,
+                    Errors = errors
+                };
+            }
+
+            // ⚠️ Excedeu limite semanal
+            if (weeklyLimitExceeded)
+            {
+                if (hasCredits)
+                {
+                    willUseCredit = true;
+                }
+                else
+                {
+                    errors.Add(BookingValidationError.WeeklyLimitExceeded);
+
+                    return new BookingResult
+                    {
+                        Success = false,
+                        Errors = errors
+                    };
+                }
+            }
 
             await _bookRepo.addAsync(new Booking
             {
                 LessonId = lessonId,
                 UserId = userId,
-                WasPresent = false
+                WasPresent = false,
+                FundingType = willUseCredit
+                    ? BookingFundingType.Credit
+                    : BookingFundingType.Subscription
             });
 
             await _bookRepo.SaveChanges();
-           
+
+            // 💰 Ledger se usar crédito
+            if (willUseCredit)
+            {
+                await _entitlementRepo.AddAsync(new UserCreditLedgerEntry
+                {
+                    UserId = userId,
+                    LessonTypeId = lesson.LessonTypeId,
+                    CreditsDelta = -1,
+                    Reason = "Booking fallback from subscription weekly limit"
+                });
+            }
+
+            return new BookingResult
+            {
+                Success = true,
+                UsedCredit = willUseCredit,
+                Warnings = willUseCredit
+                    ? new List<BookingValidationError>
+                    {
+                BookingValidationError.SubscriptionLimitExceededUsingCredit
+                    }
+                    : new List<BookingValidationError>()
+            };
         }
 
         private async Task ValidateHorseAvailabilityAsync(

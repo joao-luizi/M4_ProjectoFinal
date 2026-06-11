@@ -65,6 +65,26 @@ namespace RepositoryLibrary.Features.Bookings.Repositories
 
         }
 
+        public async Task<int> GetWeeklyBooking(string userId, int lessonTypeId)
+        {
+            var now = DateTime.UtcNow;
+
+            // calcular início da semana (segunda-feira)
+            var diff = (7 + (now.DayOfWeek - DayOfWeek.Monday)) % 7;
+            var startOfWeek = now.Date.AddDays(-diff);
+
+            // fim da semana (domingo 23:59:59)
+            var endOfWeek = startOfWeek.AddDays(7);
+
+            return await _emContext.Bookings
+                .Where(x =>
+                    x.UserId == userId &&
+                    x.Lesson.LessonTypeId == lessonTypeId &&
+                    x.Lesson.BeginOfLesson >= startOfWeek &&
+                    x.Lesson.BeginOfLesson < endOfWeek)
+                .CountAsync();
+        }
+
 
 
 

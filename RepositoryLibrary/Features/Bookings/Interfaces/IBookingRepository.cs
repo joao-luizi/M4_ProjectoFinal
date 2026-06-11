@@ -21,7 +21,8 @@ namespace RepositoryLibrary.Features.Bookings.Interfaces
         //V2 Implemented
         Task addAsync(Booking booking);
 
-
+        //V2 Implemented
+        Task<int> GetWeeklyBooking(string userId, int lessonTypeId);
 
         //public Task<Booking> GetBookingAsync(string userId, int lessonId);
         //public Task<List<Booking>> GetAllBookedLessonsAsync();

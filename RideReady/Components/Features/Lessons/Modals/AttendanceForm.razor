@@ -41,10 +41,7 @@
                         <span>Presente</span>
                     </div>
                 }
-
-                <!-- STUDENT ACTION -->
-
-
+               
             </RadzenStack>
 
         </RadzenCard>
@@ -160,15 +157,19 @@
     // STUDENT JOIN
     private async Task Join()
     {
-        await LessonService.BookLessonAsync(LessonId, _userId!);
-        await Load();
+        var result = await LessonService.BookLessonAsync(
+            LessonId,
+            _userId!);
+
+        DialogService.Close(result);
     }
 
     // STUDENT CANCEL
     private async Task Cancel()
     {
         await LessonService.CancelBookingAsync(LessonId, _userId!);
-        await Load();
+
+        DialogService.Close();
     }
 
     private void Close()
