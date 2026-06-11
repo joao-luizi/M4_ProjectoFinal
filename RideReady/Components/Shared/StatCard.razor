@@ -1,0 +1,31 @@
+@* Cartão de estatística reutilizável: número grande, rótulo, ícone e cor com significado. *@
+<div class="stat @AccentClass">
+    <div class="stat-head">
+        <span class="stat-label">@Label</span>
+        <RadzenIcon Icon="@Icon" class="stat-icon" />
+    </div>
+    @if (CountUp)
+    {
+        <span class="stat-value" data-rr-count="@Value">0</span>
+    }
+    else
+    {
+        <span class="stat-value">@Value</span>
+    }
+    <span class="stat-caption">@Caption</span>
+</div>
+
+@code {
+    [Parameter] public string Label { get; set; } = "";
+    [Parameter] public string Value { get; set; } = "";
+    [Parameter] public string Caption { get; set; } = "";
+    [Parameter] public string Icon { get; set; } = "insights";
+
+    /// <summary>Cor com significado: "blue" | "navy" | "amber" | "tan" | "ok" | "alert"</summary>
+    [Parameter] public string Accent { get; set; } = "navy";
+
+    /// <summary>Se verdadeiro, o número conta de 0 até ao valor (requer rrMotion.countAll após render).</summary>
+    [Parameter] public bool CountUp { get; set; } = false;
+
+    private string AccentClass => $"stat-{Accent}";
+}

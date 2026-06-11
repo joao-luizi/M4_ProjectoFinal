@@ -1,0 +1,223 @@
+/* AdminDashboard — a montra: herói com foto, cartões da casa, gráficos limpos.
+   Componente InteractiveServer; Radzen lá dentro -> ::deep onde preciso. */
+
+/* ---------- herói ---------- */
+.dash-hero {
+    position: relative;
+    height: 240px;
+    border-radius: var(--rr-radius-lg);
+    overflow: hidden;
+    margin-bottom: 22px;
+    box-shadow: var(--rr-shadow-lg);
+}
+.dash-hero-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    animation: dashKen 30s ease-in-out infinite alternate;
+}
+@keyframes dashKen {
+    from { transform: scale(1.03); }
+    to   { transform: scale(1.1) translate(-1.5%, 1%); }
+}
+.dash-hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(100deg, rgba(38, 33, 22, 0.72) 18%, rgba(47, 66, 86, 0.35) 75%);
+}
+.dash-hero-glass {
+    position: absolute;
+    left: 22px;
+    bottom: 20px;
+    z-index: 2;
+    background: rgba(251, 248, 242, 0.18);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: var(--rr-radius);
+    padding: 14px 20px;
+    animation: dashFadeUp .7s ease .1s both;
+}
+.dash-eyebrow {
+    color: #cfe0ee;
+    font-size: 12.5px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+}
+.dash-hero-glass h2 {
+    color: #fff;
+    font-weight: 800;
+    font-size: 1.9rem;
+    letter-spacing: -0.02em;
+    margin: 8px 0 4px;
+    text-shadow: 0 2px 14px rgba(0, 0, 0, 0.4);
+}
+.dash-hero-glass p {
+    color: rgba(255, 255, 255, 0.85);
+    margin: 0;
+}
+@keyframes dashFadeUp {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: none; }
+}
+
+/* ---------- cartões de estatística ---------- */
+.dash-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+    margin-bottom: 26px;
+}
+
+/* ---------- títulos de secção ---------- */
+.dash-h3 {
+    font-size: 1.25rem;
+    font-weight: 800;
+    margin: 30px 0 6px;
+    padding-bottom: 10px;
+    position: relative;
+}
+.dash-h3::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 44px;
+    height: 4px;
+    border-radius: 2px;
+    background: linear-gradient(90deg, var(--rr-brown), var(--rr-tan));
+}
+.dash-demo-note {
+    color: var(--rr-hint);
+    font-size: 0.85rem;
+    margin: 0 0 14px;
+}
+
+/* ---------- cartões dos gráficos ---------- */
+.dash-card {
+    background: var(--rr-card);
+    border: 1px solid var(--rr-border);
+    border-radius: var(--rr-radius);
+    box-shadow: var(--rr-shadow);
+    padding: 16px 16px 8px;
+    height: 100%;
+    transition: transform .16s ease, box-shadow .16s ease;
+}
+.dash-card:hover { transform: translateY(-3px); box-shadow: var(--rr-shadow-lg); }
+.dash-card ::deep .dash-card-title {
+    font-weight: 800 !important;
+    font-size: 1rem !important;
+    margin-bottom: 6px;
+    display: block;
+}
+
+/* gráficos do Radzen: tipografia e cores da casa */
+.dash-card ::deep .rz-chart text {
+    fill: var(--rr-muted);
+    font-family: 'Manrope', sans-serif;
+    font-size: 11.5px;
+}
+.dash-card ::deep .rz-grid-line {
+    stroke: var(--rr-border);
+    stroke-dasharray: 3 4;
+}
+
+@media (max-width: 700px) {
+    .dash-hero { height: 180px; }
+    .dash-hero-glass h2 { font-size: 1.4rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .dash-hero-img, .dash-hero-glass { animation: none !important; opacity: 1 !important; }
+}
+
+/* ---------- precisa de atenção ---------- */
+.dash-attention {
+    background: var(--rr-card);
+    border: 1px solid var(--rr-border);
+    border-radius: var(--rr-radius);
+    box-shadow: var(--rr-shadow);
+    overflow: hidden;
+    margin-bottom: 10px;
+}
+.dash-attention-row {
+    display: grid;
+    grid-template-columns: 190px 170px 1fr auto;
+    gap: 14px;
+    align-items: center;
+    padding: 13px 18px;
+    border-bottom: 1px solid var(--rr-border);
+}
+.dash-attention-row:last-child { border-bottom: none; }
+.dash-attention-row:hover { background: rgba(63, 127, 174, 0.05); }
+.dash-badge {
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 5px 10px;
+    border-radius: 999px;
+    text-align: center;
+    white-space: nowrap;
+}
+.dash-badge-alert { background: rgba(198, 88, 47, 0.13); color: var(--rr-alert); }
+.dash-badge-amber { background: rgba(217, 165, 49, 0.16); color: #8a6a1d; }
+.dash-attention-name { font-weight: 800; color: var(--rr-ink); }
+.dash-attention-detail { color: var(--rr-muted); font-size: 0.93rem; }
+.dash-attention-action {
+    font-weight: 700;
+    color: var(--rr-blue);
+    text-decoration: none;
+    border: 1px solid var(--rr-border);
+    border-radius: var(--rr-radius);
+    padding: 6px 16px;
+    transition: background-color .16s ease;
+}
+.dash-attention-action:hover { background: var(--rr-navy); border-color: var(--rr-navy); color: #fff; }
+
+@media (max-width: 760px) {
+    .dash-attention-row { grid-template-columns: 1fr auto; }
+    .dash-attention-detail { grid-column: 1 / -1; }
+}
+
+/* ---------- skeletons de carregamento ---------- */
+.dash-skel {
+    border-radius: var(--rr-radius);
+    background: linear-gradient(90deg, var(--rr-border) 25%, #efe9dd 45%, var(--rr-border) 65%);
+    background-size: 220% 100%;
+    animation: dashShimmer 1.3s linear infinite;
+}
+.dash-skel-stat { height: 120px; }
+.dash-skel-block { height: 300px; margin-top: 24px; }
+.dash-hero.dash-skel { box-shadow: none; }
+@keyframes dashShimmer {
+    from { background-position: 120% 0; }
+    to   { background-position: -100% 0; }
+}
+
+/* ---------- faixa de demonstração ---------- */
+.dash-demo-banner {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: rgba(217, 165, 49, 0.13);
+    border: 1px solid rgba(217, 165, 49, 0.45);
+    border-left: 5px solid var(--rr-amber);
+    border-radius: var(--rr-radius);
+    padding: 14px 18px;
+    margin-bottom: 22px;
+    color: var(--rr-ink);
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+    .dash-demo-banner strong {
+        font-weight: 800;
+    }
+
+    .dash-demo-banner ::deep .rzi, .dash-demo-banner .rzi {
+        color: var(--rr-amber);
+        font-size: 26px;
+    }
