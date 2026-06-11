@@ -1,115 +1,252 @@
-﻿
-@using Microsoft.AspNetCore.Authorization
+@using System.Globalization
 @using RepositoryLibrary.Features.DashBoard.DTOs
 @using RepositoryLibrary.Features.DashBoard.Interfaces
+@using RideReady.Components.Shared
 @inject IStudentDashboardService DashboardService
 @inject AuthenticationStateProvider AuthStateProvider
+@inject IJSRuntime JS
 
 @if (_loading)
 {
-    <p>Carregando...</p>
-}
-else if (_dashboard is null)
-{
-    <p>Sem dados disponíveis.</p>
+    @* ---------- skeletons de carregamento ---------- *@
+    <div class="dash-hero dash-skel"></div>
+    <div class="dash-skel dash-skel-banner"></div>
+    <div class="dash-stats">
+        <div class="dash-skel dash-skel-stat"></div>
+        <div class="dash-skel dash-skel-stat"></div>
+        <div class="dash-skel dash-skel-stat"></div>
+        <div class="dash-skel dash-skel-stat"></div>
+    </div>
+    <div class="dash-skel dash-skel-block"></div>
 }
 else
 {
-    <p class="text-muted mb-6">
-        Aqui está o resumo das suas aulas e atividades.
-    </p>
+    @* ---------- faixa-manchete: foto + saudação + data, com vidro ---------- *@
+    <div class="dash-hero">
+        <img class="dash-hero-img" src="/Images/Cavalo_4.jpg" alt="" />
+        <div class="dash-hero-overlay"></div>
+        <div class="dash-hero-glass">
+            <span class="dash-eyebrow">A minha área · Demonstração</span>
+            <h2>@Greeting, Cavaleir@@.</h2>
+            <p>@TodayLabel · As tuas aulas e a tua conta.</p>
+        </div>
+    </div>
 
-    <RadzenRow class="rz-mb-4">
+    @* ---------- faixa de demonstração ---------- *@
+    <div class="dash-demo-banner">
+        <RadzenIcon Icon="science" />
+        <div>
+            <strong>Modo de demonstração</strong> — os números e gráficos neste painel
+            são dados fictícios que ilustram as estatísticas que a aplicação
+            consegue produzir a partir dos seus serviços e dados reais.
+        </div>
+    </div>
 
-        <!-- AULAS AGENDADAS -->
+    @* ---------- manchete: a tua próxima aula ---------- *@
+    @if (_nextLesson is not null)
+    {
+        <div class="dash-next">
+            <div class="dash-next-when">
+                <span class="dash-next-label">Próxima aula</span>
+                <span class="dash-next-date">@_nextLesson.Date.ToString("dd/MM")</span>
+                <span class="dash-next-time">@_nextLesson.Date.ToString("HH:mm")</span>
+            </div>
+            <div class="dash-next-info">
+                <span class="dash-next-type">@_nextLesson.Type</span>
+                <div class="dash-next-chips">
+                    <span class="dash-chip">@_nextLesson.Teacher</span>
+                    <span class="dash-chip dash-chip-tan">@_nextLesson.Horse</span>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <EmptyState Title="Sem aulas marcadas"
+                    Text="Quando marcares uma aula, ela aparece aqui em destaque." />
+    }
+
+    @* ---------- cartão de dívida (só aparece se houver valor em falta) ---------- *@
+    @if (_outstandingAmount > 0)
+    {
+        <div class="dash-debt">
+            <RadzenIcon Icon="error" />
+            <div class="dash-debt-text">
+                <strong>Pagamento pendente: @_outstandingAmount.ToString("C", new CultureInfo("pt-PT"))</strong>
+                <span>Regulariza até @_nextDueDate.ToString("dd/MM/yyyy") para continuares a marcar aulas.</span>
+            </div>
+        </div>
+    }
+
+    @* ---------- StatCards ---------- *@
+    <div class="dash-stats">
+        <StatCard Label="Aulas Agendadas" Value="@_scheduledClasses.ToString()"
+                  Caption="@NextClassCaption" Icon="event" Accent="blue"
+                  CountUp="true" />
+        <StatCard Label="Créditos" Value="@_totalCredits.ToString()"
+                  Caption="Saldo atual de aulas" Icon="confirmation_number" Accent="amber"
+                  CountUp="true" />
+        <StatCard Label="Subscrições Ativas" Value="@_activeSubscriptions.ToString()"
+                  Caption="Plano atual" Icon="autorenew" Accent="navy"
+                  CountUp="true" />
+        <StatCard Label="Horário Escolar" Value="8:00–19:00"
+                  Caption="Segunda a Sábado" Icon="schedule" Accent="tan" />
+    </div>
+
+    @* ---------- estatísticas ---------- *@
+    <h3 class="dash-h3">As tuas estatísticas</h3>
+    <p class="dash-demo-note">Dados de demonstração</p>
+
+    <RadzenRow class="rz-mb-4" Gap="1rem">
         <RadzenColumn Width="50%">
-            <RadzenCard>
-                <RadzenStack Gap="0.5rem" class="rz-p-4">
-                    <RadzenText Text="Aulas Agendadas" TextStyle="TextStyle.H6" />
-                    <RadzenText Text="@_dashboard.Summary.ScheduledClassesCount.ToString()"
-                                TextStyle="TextStyle.H4"
-                                Style="font-weight:bold;" />
-
-                    <RadzenText TextStyle="TextStyle.Caption" class="rz-text-secondary">
-                        @if (_dashboard.Summary.NextClassDate.HasValue)
-                        {
-                            <text>
-                                Próxima: @_dashboard.Summary.NextClassDate.Value.ToString("dd/MM/yyyy")
-                            </text>
-                        }
-                        else
-                        {
-                            <text>Nenhuma aula agendada</text>
-                        }
-                    </RadzenText>
-                </RadzenStack>
-            </RadzenCard>
+            <div class="dash-card">
+                <RadzenText Text="Créditos por produto" class="dash-card-title" />
+                <RadzenChart Style="height: 260px;">
+                    <RadzenDonutSeries Data="@_creditsByProduct" CategoryProperty="Product"
+                                       ValueProperty="Credits"
+                                       Fills="@(new[] { "#3f7fae", "#d9a531", "#b98a52" })" />
+                    <RadzenLegend Position="LegendPosition.Right" />
+                </RadzenChart>
+            </div>
         </RadzenColumn>
 
-        <!-- CRÉDITOS -->
         <RadzenColumn Width="50%">
-            <RadzenCard>
-                <RadzenStack Gap="0.5rem" class="rz-p-4">
-                    <RadzenText Text="Créditos" TextStyle="TextStyle.H6" />
-                    <RadzenText Text="@_dashboard.Summary.Credits.TotalCredits.ToString()"
-                                TextStyle="TextStyle.H4"
-                                Style="font-weight:bold;" />
-
-                    <RadzenText Text="Saldo atual" TextStyle="TextStyle.Caption" class="text-muted" />
-                </RadzenStack>
-            </RadzenCard>
+            <div class="dash-card">
+                <RadzenText Text="As tuas aulas por mês" class="dash-card-title" />
+                <RadzenChart Style="height: 260px;">
+                    <RadzenColumnSeries Data="@_monthlyLessons" CategoryProperty="Month"
+                                        ValueProperty="Lessons" Title="Aulas" Fill="#3f7fae" />
+                    <RadzenColumnOptions Radius="8" />
+                    <RadzenValueAxis>
+                        <RadzenGridLines Visible="true" />
+                    </RadzenValueAxis>
+                    <RadzenLegend Visible="false" />
+                </RadzenChart>
+            </div>
         </RadzenColumn>
-
-        <!-- SUBSCRIÇÕES -->
-        <RadzenColumn Width="50%">
-            <RadzenCard>
-                <RadzenStack Gap="0.5rem" class="rz-p-4">
-                    <RadzenText Text="Subscrições Ativas" TextStyle="TextStyle.H6" />
-                    <RadzenText Text="@_dashboard.Summary.Subscription.ActiveSubscriptionsCount.ToString()"
-                                TextStyle="TextStyle.H4"
-                                Style="font-weight:bold;" />
-
-                    <RadzenText Text="Plano atual" TextStyle="TextStyle.Caption" class="text-muted" />
-                </RadzenStack>
-            </RadzenCard>
-        </RadzenColumn>
-
-        <!-- PLACEHOLDER / HORÁRIO (mantido fixo porque não existe no DTO) -->
-        <RadzenColumn Width="50%">
-            <RadzenCard>
-                <RadzenStack Gap="0.5rem" class="rz-p-4">
-                    <RadzenText Text="Horário Escolar" TextStyle="TextStyle.H6" />
-                    <RadzenText Text="8:00 - 19:00"
-                                TextStyle="TextStyle.H4"
-                                Style="font-weight:bold;" />
-                    <RadzenText Text="Segunda a Sábado" TextStyle="TextStyle.Caption" class="text-muted" />
-                </RadzenStack>
-            </RadzenCard>
-        </RadzenColumn>
-
     </RadzenRow>
+
+    @* ---------- timeline de próximas aulas ---------- *@
+    <h3 class="dash-h3">Próximas aulas</h3>
+    @if (_upcoming.Any())
+    {
+        <div class="dash-timeline">
+            @foreach (var lesson in _upcoming)
+            {
+                <div class="dash-tl-row">
+                    <div class="dash-tl-marker">
+                        <span class="dash-tl-dot"></span>
+                        <span class="dash-tl-line"></span>
+                    </div>
+                    <div class="dash-tl-when">
+                        <span class="dash-tl-date">@lesson.Date.ToString("dd/MM")</span>
+                        <span class="dash-tl-time">@lesson.Date.ToString("HH:mm")</span>
+                    </div>
+                    <div class="dash-tl-info">
+                        <span class="dash-tl-type">@lesson.Type</span>
+                        <span class="dash-tl-detail">@lesson.Teacher · @lesson.Horse</span>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <EmptyState Title="Sem aulas no horizonte"
+                    Text="As tuas próximas aulas marcadas aparecem nesta linha do tempo." />
+    }
 }
 
 @code {
     private bool _loading = true;
-    private StudentDashboardDto? _dashboard;
 
-    protected override async Task OnInitializedAsync()
+    // ================================================================
+    // DADOS DE DEMONSTRAÇÃO (entregáveis sem popular a base de dados).
+    // Espelham 1:1 o que o IStudentDashboardService fornece
+    // (Summary.ScheduledClassesCount/NextClassDate, Credits, Payment,
+    // Subscription, UpcomingClasses).
+    // Para religar: obter o studentId do AuthStateProvider e chamar
+    // DashboardService.GetStudentDashboardAsync(studentId), como na
+    // versão original (lógica preservada em comentário abaixo).
+    // ================================================================
+
+    private int _scheduledClasses = 3;
+    private int _totalCredits = 12;
+    private int _activeSubscriptions = 1;
+
+    // Cartão de dívida: com 0, o cartão desaparece (testa as duas versões na demo!)
+    private decimal _outstandingAmount = 45.00m;
+    private readonly DateTime _nextDueDate = new(2026, 6, 15);
+
+    private sealed record NextLessonMock(DateTime Date, string Type, string Teacher, string Horse);
+    private readonly NextLessonMock? _nextLesson = new(
+        DateTime.Today.AddDays(2).AddHours(16),
+        "Aula de iniciação", "Prof. João", "Luna");
+
+    private sealed record CreditProductItem(string Product, double Credits);
+    private readonly List<CreditProductItem> _creditsByProduct = new()
     {
-        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
-        var user = authState.User;
+        new("Pack 10 aulas", 7), new("Pack 5 aulas", 3), new("Aulas avulsas", 2),
+    };
 
-        var studentId = user?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+    private sealed record MonthlyLessonItem(string Month, double Lessons);
+    private readonly List<MonthlyLessonItem> _monthlyLessons = new()
+    {
+        new("Jan", 4), new("Fev", 3), new("Mar", 5),
+        new("Abr", 4), new("Mai", 6), new("Jun", 2),
+    };
 
-        if (string.IsNullOrEmpty(studentId))
+    private sealed record UpcomingLesson(DateTime Date, string Type, string Teacher, string Horse);
+    private readonly List<UpcomingLesson> _upcoming = new()
+    {
+        new(DateTime.Today.AddDays(2).AddHours(16), "Aula de iniciação", "Prof. João", "Luna"),
+        new(DateTime.Today.AddDays(5).AddHours(10), "Aula de dressage", "Prof. Marta", "Estrela"),
+        new(DateTime.Today.AddDays(9).AddHours(17), "Passeio", "Prof. João", "Canela"),
+    };
+
+    private string NextClassCaption =>
+        _nextLesson is null ? "Nenhuma aula agendada" : $"Próxima: {_nextLesson.Date:dd/MM/yyyy}";
+
+    private static string Greeting =>
+        DateTime.Now.Hour switch
         {
-            _loading = false;
-            return;
+            < 6 => "Boa noite",
+            < 13 => "Bom dia",
+            < 20 => "Boa tarde",
+            _ => "Boa noite",
+        };
+
+    private static string TodayLabel
+    {
+        get
+        {
+            var pt = new CultureInfo("pt-PT");
+            var label = DateTime.Now.ToString("dddd, d 'de' MMMM", pt);
+            return char.ToUpper(label[0]) + label[1..];
         }
+    }
 
-        _dashboard = await DashboardService.GetStudentDashboardAsync(studentId);
-
+    protected override Task OnInitializedAsync()
+    {
+        // Versão de demonstração: dados mock acima, sem tocar na base de dados.
+        // Para religar aos dados reais (lógica original preservada):
+        //   var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        //   var studentId = authState.User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        //   if (!string.IsNullOrEmpty(studentId))
+        //       _dashboard = await DashboardService.GetStudentDashboardAsync(studentId);
         _loading = false;
+        return Task.CompletedTask;
+    }
+
+    private bool _counted = false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!_loading && !_counted)
+        {
+            _counted = true;
+            try { await JS.InvokeVoidAsync("rrMotion.countAll"); }
+            catch { /* sem JS, os números ficam estáticos */ }
+        }
     }
 }
-
