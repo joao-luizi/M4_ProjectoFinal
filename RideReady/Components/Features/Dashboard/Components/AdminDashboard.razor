@@ -259,21 +259,17 @@ else
 
             switch (hour)
             {
-                case int h when h < 6:
+                case < 6:
                     return "Boa noite";
-
-                case int h when h < 13:
+                case < 13:
                     return "Bom dia";
-
-                case int h when h < 20:
+                case < 20:
                     return "Boa tarde";
-
                 default:
                     return "Boa noite";
             }
         }
     }
-
 
     private static string TodayLabel
     {
@@ -307,5 +303,3 @@ else
         }
     }
 }
-
-    

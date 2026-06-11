@@ -211,32 +211,21 @@ else
     {
         get
         {
-<<<<<<< Updated upstream
-             6 => "Boa noite",
-             13 => "Bom dia",
-             20 => "Boa tarde",
-            _ => "Boa noite",
-        };
-=======
             var hour = DateTime.Now.Hour;
 
             switch (hour)
             {
-                case int h when h < 6:
+                case < 6:
                     return "Boa noite";
-
-                case int h when h < 13:
+                case < 13:
                     return "Bom dia";
-
-                case int h when h < 20:
+                case < 20:
                     return "Boa tarde";
-
                 default:
                     return "Boa noite";
             }
         }
     }
->>>>>>> Stashed changes
 
     private static string TodayLabel
     {

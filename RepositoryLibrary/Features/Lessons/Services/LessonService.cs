@@ -150,9 +150,7 @@ namespace RepositoryLibrary.Features.Lessons.Services
             await _bookRepo.Delete(booking);
         }
 
-        public async Task<BookingResult> BookLessonAsync(
-    int lessonId,
-    string userId)
+        public async Task<BookingResult> BookLessonAsync(int lessonId, string userId)
         {
             var existing = await _bookRepo.GetByLessonandUserIdsAsync(
                 lessonId,
@@ -224,7 +222,8 @@ namespace RepositoryLibrary.Features.Lessons.Services
             {
                 LessonId = lessonId,
                 UserId = userId,
-                WasPresent = false
+                WasPresent = false,
+              
             });
 
             await _bookRepo.SaveChanges();
