@@ -1,9 +1,12 @@
 ﻿using DocumentFormat.OpenXml.Spreadsheet;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using RepositoryLibrary.Data.Context;
 using RepositoryLibrary.Features.Bookings.Entities;
 using RepositoryLibrary.Features.Bookings.Enums;
 using RepositoryLibrary.Features.Bookings.Interfaces;
+using RepositoryLibrary.Features.Email.DTOs;
+using RepositoryLibrary.Features.Email.Services;
 using RepositoryLibrary.Features.Entitlements.DTOs;
 using RepositoryLibrary.Features.Entitlements.Entities;
 using RepositoryLibrary.Features.Entitlements.Enums;
@@ -23,14 +26,15 @@ namespace RepositoryLibrary.Features.Lessons.Services
         private readonly IBookingRepository _bookRepo;
         private readonly IUserService _userService;
         private readonly IEntitlementRepository _entitlementRepo;
+        private readonly AppEmailSender _EmailSender;
         private readonly ILogger<LessonService> _logger;
 
         public LessonService(RideReadyDbContext context, 
             ILessonRepository lessonRepo, 
             IUserService userService, 
             IBookingRepository bookRepo,
+            AppEmailSender EmailSender,
             IEntitlementRepository entitlementRepo,
-
             ILogger<LessonService> logger)
 
         {
@@ -38,6 +42,7 @@ namespace RepositoryLibrary.Features.Lessons.Services
             _bookRepo = bookRepo;
             _userService = userService;
             _entitlementRepo = entitlementRepo;
+            _EmailSender = EmailSender;
             _logger = logger;
         }
 
@@ -142,7 +147,7 @@ namespace RepositoryLibrary.Features.Lessons.Services
             if (booking is null)
                 return;
 
-            // 💰 Se o booking consumiu crédito -> devolver crédito
+            //Se o booking consumiu crédito -> devolver crédito
             if (booking.FundingType == BookingFundingType.Credit)
             {
                 await _entitlementRepo.AddAsync(new UserCreditLedgerEntry
@@ -200,7 +205,7 @@ namespace RepositoryLibrary.Features.Lessons.Services
 
             var hasCredits = creditBalance > 0;
 
-            // 📊 Weekly usage
+            // Weekly usage
             int weeklyBookings = await _bookRepo.GetWeeklyBooking(userId, lesson.LessonTypeId);
             int weeklyLimit = await _entitlementRepo.GetWeeklyLimit(userId, lesson.LessonTypeId);
 
@@ -208,7 +213,7 @@ namespace RepositoryLibrary.Features.Lessons.Services
 
             var willUseCredit = false;
 
-            // ❌ Sem subscrição válida e sem créditos
+            // Sem subscrição válida e sem créditos
             if (hasSubscriptionErrors && !hasCredits)
             {
                 return new BookingResult
@@ -218,7 +223,7 @@ namespace RepositoryLibrary.Features.Lessons.Services
                 };
             }
 
-            // ⚠️ Excedeu limite semanal
+            // Excedeu limite semanal
             if (weeklyLimitExceeded)
             {
                 if (hasCredits)
@@ -249,7 +254,7 @@ namespace RepositoryLibrary.Features.Lessons.Services
 
             await _bookRepo.SaveChanges();
 
-            // 💰 Ledger se usar crédito
+            // Ledger se usar crédito
             if (willUseCredit)
             {
                 await _entitlementRepo.AddAsync(new UserCreditLedgerEntry
@@ -410,7 +415,7 @@ namespace RepositoryLibrary.Features.Lessons.Services
             await _lessonRepo.UpdateAsync(lesson);
         }
         //V2 implemented
-        public async Task<List<string>> DeleteAsync(int lessonId)
+        public async Task<int> DeleteAsync(int lessonId)
         {
             var lesson = await _lessonRepo.GetByIdWithDetailsAsync(lessonId);
 
@@ -444,10 +449,20 @@ namespace RepositoryLibrary.Features.Lessons.Services
 
             userIds = userIds.Distinct().ToList();
 
+            List<string> userEmails = await _userService.GetUserEmailsAsync(userIds);
+
+            var emailDto = new EmailSenderDto
+            {
+                UserEmails = userEmails,
+                Subject = "Aula cancelada",
+                Body = $"A aula de {lesson.BeginOfLesson:dd/MM HH:mm} foi cancelada."
+            };
+
+            await _EmailSender.SendLessonCancelledAsync(emailDto);
 
             await _lessonRepo.DeleteAsync(lesson);
 
-            return userIds;
+            return userEmails.Count();
         }
         //V2 implemented
         public async Task AssignHorseAsync(int lessonId, int horseId)

@@ -1,4 +1,7 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using DocumentFormat.OpenXml.Wordprocessing;
+using Microsoft.AspNetCore.Identity;
+using RepositoryLibrary.Features.Email.DTOs;
+using RepositoryLibrary.Features.Lessons.Entities;
 using RepositoryLibrary.Features.Users.Entities;
 using System.Net;
 using System.Net.Mail;
@@ -42,6 +45,8 @@ public class SmtpEmailSender : IEmailSender<EMUser>
             $"<p>Olá {user.FirstName},</p><p>O teu código de recuperação é: <strong>{resetCode}</strong></p>"
         );
     }
+
+   
 
     private async Task SendEmailAsync(string toEmail, string subject, string htmlBody)
     {

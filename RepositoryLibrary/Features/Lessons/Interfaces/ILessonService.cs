@@ -13,7 +13,7 @@ namespace RepositoryLibrary.Features.Lessons.Interfaces
         //V2 implemented
         Task UpdateAsync(LessonEditDto dto);
         //V2 implemented
-        Task <List<string>> DeleteAsync(int lessonId);
+        Task <int> DeleteAsync(int lessonId);
         //V2 implemented
         Task AssignHorseAsync(int lessonId, int horseId);
         //V2 implemented

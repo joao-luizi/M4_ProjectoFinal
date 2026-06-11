@@ -8,7 +8,7 @@ namespace RepositoryLibrary.Features.Email.DTOs
 {
     public class EmailSenderDto
     {
-        public List<string> UserIds { get; set; } = new();
+        public List<string> UserEmails { get; set; } = new();
 
         public string Subject { get; set; } = string.Empty;
 

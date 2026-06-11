@@ -29,6 +29,7 @@
 	  <Folder Include="Features\Bookings\DTOs\" />
 	  <Folder Include="Features\Bookings\Snapshots\" />
 	  <Folder Include="Features\Bookings\Views\" />
+	  <Folder Include="Features\Email\Interfaces\" />
 	  <Folder Include="Features\Entitlements\Services\" />
 	  <Folder Include="Features\Entitlements\Snapshots\" />
 	  <Folder Include="Features\Entitlements\Views\" />

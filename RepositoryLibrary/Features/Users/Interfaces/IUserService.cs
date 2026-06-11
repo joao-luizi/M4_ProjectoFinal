@@ -26,5 +26,7 @@ namespace RepositoryLibrary.Features.Users.Interfaces
         //V2 Implemented 
         Task<List<AdminUserListItemDto>> GetUserListItemsAsync();
 
+        Task<List<string>> GetUserEmailsAsync(List<string> userIds);
+
     }
 }

@@ -1,11 +1,12 @@
 ﻿
 
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using RepositoryLibrary.Features.Images.Interfaces;
 using RepositoryLibrary.Features.Users.DTOs;
 using RepositoryLibrary.Features.Users.Entities;
 using RepositoryLibrary.Features.Users.Interfaces;
-using Microsoft.AspNetCore.Identity;
 
 
 
@@ -38,6 +39,14 @@ namespace RepositoryLibrary.Features.Users.Service
             _logger = logger;
         }
 
+        public async Task<List<string>> GetUserEmailsAsync(List<string> userIds)
+        {
+            return await _userManager.Users
+                .Where(x => userIds.Contains(x.Id))
+                .Select(x => x.Email!)
+                .Distinct()
+                .ToListAsync();
+        }
         //V2 Implemented
         public async Task<AdminUsersDto> GetAdminUsersAsync()
         {

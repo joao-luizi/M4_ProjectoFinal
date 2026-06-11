@@ -9,6 +9,7 @@ using RepositoryLibrary.Features.Bookings.Repositories;
 using RepositoryLibrary.Features.Bookings.Services;
 using RepositoryLibrary.Features.DashBoard.Interfaces;
 using RepositoryLibrary.Features.DashBoard.Services;
+using RepositoryLibrary.Features.Email.Services;
 using RepositoryLibrary.Features.Entitlements.Interfaces;
 using RepositoryLibrary.Features.Entitlements.Repositories;
 using RepositoryLibrary.Features.Horses.Interfaces;
@@ -131,7 +132,7 @@ builder.Services.AddScoped<ILessonScheduleService, LessonScheduleService>();
 
 builder.Services.AddScoped<IPurchaseService, PurchaseService>();
 builder.Services.AddScoped<IPurchaseRepository, PurchaseRepository>();
-
+builder.Services.AddScoped<AppEmailSender>();
 builder.Services.AddRadzenComponents();
 
 var app = builder.Build();

@@ -181,21 +181,14 @@ else
 
         try
         {
-            var userIdsForEmails = await LessonService.DeleteAsync(lesson.LessonId);
+            var deletedCount = await LessonService.DeleteAsync(lesson.LessonId);
 
-            var emailDto = new EmailSenderDto
-            {
-                UserIds = userIdsForEmails,
-                Subject = "Aula cancelada",
-                Body = $"A aula de {lesson.Begin:dd/MM HH:mm} foi cancelada."
-            };
-
-            //await EmailService.SendAsync(emailDto);
+           
 
             NotificationService.Notify(
                 NotificationSeverity.Success,
                 "Eliminada",
-                $"Aula eliminada. Utilizadores a notificar: {userIdsForEmails.Count}");
+                $"Aula eliminada. Utilizadores a notificar: {deletedCount}");
 
             await OnLessonChanged.InvokeAsync();
         }
