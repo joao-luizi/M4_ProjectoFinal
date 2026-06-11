@@ -30,6 +30,9 @@ namespace RepositoryLibrary.Data.Migrations.RideReady
                     b.Property<string>("UserId")
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<int>("FundingType")
+                        .HasColumnType("int");
+
                     b.Property<bool>("WasPresent")
                         .HasColumnType("bit");
 
@@ -499,13 +502,14 @@ namespace RepositoryLibrary.Data.Migrations.RideReady
 
             modelBuilder.Entity("RepositoryLibrary.Features.Users.Entities.UserFoto", b =>
                 {
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<string>("FotoPath")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.HasKey("UserId");
 
                     b.ToTable("UserFotos");
                 });

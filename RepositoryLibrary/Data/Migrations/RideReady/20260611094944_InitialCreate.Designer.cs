@@ -12,7 +12,7 @@ using RepositoryLibrary.Data.Context;
 namespace RepositoryLibrary.Data.Migrations.RideReady
 {
     [DbContext(typeof(RideReadyDbContext))]
-    [Migration("20260607101810_InitialCreate")]
+    [Migration("20260611094944_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -32,6 +32,9 @@ namespace RepositoryLibrary.Data.Migrations.RideReady
 
                     b.Property<string>("UserId")
                         .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("FundingType")
+                        .HasColumnType("int");
 
                     b.Property<bool>("WasPresent")
                         .HasColumnType("bit");
@@ -502,13 +505,14 @@ namespace RepositoryLibrary.Data.Migrations.RideReady
 
             modelBuilder.Entity("RepositoryLibrary.Features.Users.Entities.UserFoto", b =>
                 {
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<string>("FotoPath")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.HasKey("UserId");
 
                     b.ToTable("UserFotos");
                 });

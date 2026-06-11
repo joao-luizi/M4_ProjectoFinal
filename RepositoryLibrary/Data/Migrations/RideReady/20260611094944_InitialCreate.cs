@@ -80,11 +80,12 @@ namespace RepositoryLibrary.Data.Migrations.RideReady
                 name: "UserFotos",
                 columns: table => new
                 {
-                    UserId = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     FotoPath = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
+                    table.PrimaryKey("PK_UserFotos", x => x.UserId);
                 });
 
             migrationBuilder.CreateTable(
@@ -348,7 +349,8 @@ namespace RepositoryLibrary.Data.Migrations.RideReady
                 {
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     LessonId = table.Column<int>(type: "int", nullable: false),
-                    WasPresent = table.Column<bool>(type: "bit", nullable: false)
+                    WasPresent = table.Column<bool>(type: "bit", nullable: false),
+                    FundingType = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {

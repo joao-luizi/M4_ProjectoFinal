@@ -119,21 +119,13 @@ Whenever an entity, relationship, configuration, or DbContext model changes, a m
 ## Identity Database
 
 ```bash
-dotnet ef migrations add MigrationName 
-    --context AppIdentityDbContext 
-    --project RepositoryLibrary 
-    --startup-project RideReady 
-    --output-dir Data/Migrations/Identity
+dotnet ef migrations add MigrationName --context AppIdentityDbContext --project RepositoryLibrary --startup-project RideReady --output-dir Data/Migrations/Identity
 ```
 
 Example:
 
 ```bash
-dotnet ef migrations add AddTeacherRole 
-    --context AppIdentityDbContext 
-    --project RepositoryLibrary 
-    --startup-project RideReady 
-    --output-dir Data/Migrations/Identity
+dotnet ef migrations add AddTeacherRole --context AppIdentityDbContext --project RepositoryLibrary --startup-project RideReady --output-dir Data/Migrations/Identity
 ```
 
 ---
