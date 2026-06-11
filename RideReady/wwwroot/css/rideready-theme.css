@@ -277,3 +277,54 @@ a, .btn-link { color: var(--rr-blue); }
 .rz-sidebar a.rz-navigation-item-link[aria-current] * {
   color: #fff !important;
 }
+
+/* superfícies do layout: tudo na cor base, sem ilhas brancas */
+html, body,
+.rz-layout, .rz-body, .rz-content,
+main, article.content {
+    background-color: var(--rr-paper) !important;
+}
+
+/* entrada animada dos gráficos (colunas crescem, donuts rodam, áreas surgem) */
+.dash-card .rz-column-series {
+    transform-box: fill-box;
+    transform-origin: 50% 100%;
+    animation: rrGrowY .9s cubic-bezier(.22, .61, .36, 1) both;
+}
+
+.dash-card .rz-donut-series, .dash-card .rz-pie-series {
+    transform-box: fill-box;
+    transform-origin: 50% 50%;
+    animation: rrSpinIn 1s ease both;
+}
+
+.dash-card .rz-area-series, .dash-card .rz-line-series {
+    animation: rrFadeIn 1.1s ease both;
+}
+
+@keyframes rrGrowY {
+    from {
+        transform: scaleY(0);
+    }
+}
+
+@keyframes rrSpinIn {
+    from {
+        opacity: 0;
+        transform: rotate(-60deg) scale(.85);
+    }
+}
+
+@keyframes rrFadeIn {
+    from {
+        opacity: 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .dash-card .rz-column-series, .dash-card .rz-donut-series,
+    .dash-card .rz-pie-series, .dash-card .rz-area-series,
+    .dash-card .rz-line-series {
+        animation: none !important;
+    }
+}
