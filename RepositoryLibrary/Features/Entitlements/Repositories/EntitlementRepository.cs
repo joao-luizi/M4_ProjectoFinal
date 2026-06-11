@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
+﻿using DocumentFormat.OpenXml.Spreadsheet;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -6,6 +7,8 @@ using RepositoryLibrary.Data.Context;
 using RepositoryLibrary.Features.Entitlements.Entities;
 using RepositoryLibrary.Features.Entitlements.Enums;
 using RepositoryLibrary.Features.Entitlements.Interfaces;
+using RepositoryLibrary.Features.Lessons.Entities;
+using RepositoryLibrary.Features.Products.Entities;
 
 
 namespace RepositoryLibrary.Features.Entitlements.Repositories
@@ -87,6 +90,21 @@ namespace RepositoryLibrary.Features.Entitlements.Repositories
             await _emContext.UserCreditLedgerEntries.AddRangeAsync(credsList);
             await _emContext.SaveChangesAsync();
         }
+
+        //V2 
+        public async Task<int> GetWeeklyLimit(string userId, int lessonTypeId)
+        {
+            var entitlement = await _emContext.UserSubscriptionEntitlements
+                .Where(x =>
+                    x.LessonTypeId == lessonTypeId &&
+                    x.UserSubscription.UserId == userId &&
+                    x.UserSubscription.Status == SubscriptionStatus.Active)
+                .Select(x => x.WeeklyFrequency)
+                .FirstOrDefaultAsync();
+
+            return entitlement;
+        }
+
         //V2 Implemented
         public async Task<List<BookingValidationError>> GetSubscriptionErrorsAsync(
     string userId,
@@ -130,6 +148,13 @@ namespace RepositoryLibrary.Features.Entitlements.Repositories
                     (x.ExpiresAtUtc == null || x.ExpiresAtUtc >= now))
                 .SumAsync(x => x.CreditsDelta);
         }
+
+        public async Task AddCreditLedgerEntryAsync(UserCreditLedgerEntry entry)
+        {
+            await _emContext.UserCreditLedgerEntries.AddAsync(entry);
+            await _emContext.SaveChangesAsync();
+        }
+
 
     }
 }

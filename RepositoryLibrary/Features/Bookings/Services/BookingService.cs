@@ -11,9 +11,7 @@ namespace RepositoryLibrary.Features.Bookings.Services;
 
 public class BookingService : IBookingService
 {
-   
-    private readonly IUserService _userService;
-  
+    private readonly IUserService _userService; 
     private readonly ILessonService _lessonService;
     private readonly ISchoolService _schoolService;
     public BookingService(RideReadyDbContext _context, IUserService userService, ILessonService lessonService)

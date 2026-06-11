@@ -12,6 +12,8 @@ namespace RepositoryLibrary.Features.Entitlements.Enums
         AlreadyBooked,
         NoActiveSubscription,
         SubscriptionExpired,
-        NoCreditsAvailable
+        NoCreditsAvailable,
+        SubscriptionLimitExceededUsingCredit,
+        WeeklyLimitExceeded
     }
 }

@@ -11,6 +11,9 @@ namespace RepositoryLibrary.Features.Entitlements.DTOs
     {
         public bool Success { get; set; }
 
+        public bool UsedCredit { get; set; }
+        public List<BookingValidationError> Warnings { get; set; } = new();
+
         public List<BookingValidationError> Errors { get; set; } = new();
     }
 }

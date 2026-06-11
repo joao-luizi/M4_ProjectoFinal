@@ -28,6 +28,9 @@ namespace RepositoryLibrary.Features.Entitlements.Interfaces
         //V2 implemented
         Task<int> GetCreditBalanceAsync(string userId, int lessonTypeId);
 
+        Task<int> GetWeeklyLimit(string userId, int lessonTypeId);
+
+
 
 
     }
