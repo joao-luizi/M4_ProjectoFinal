@@ -207,14 +207,25 @@ else
     private string NextClassCaption =>
         _nextLesson is null ? "Nenhuma aula agendada" : $"Próxima: {_nextLesson.Date:dd/MM/yyyy}";
 
-    private static string Greeting =>
-        DateTime.Now.Hour switch
+    private static string Greeting
+    {
+        get
         {
-            < 6 => "Boa noite",
-            < 13 => "Bom dia",
-            < 20 => "Boa tarde",
-            _ => "Boa noite",
-        };
+            var hour = DateTime.Now.Hour;
+
+            switch (hour)
+            {
+                case < 6:
+                    return "Boa noite";
+                case < 13:
+                    return "Bom dia";
+                case < 20:
+                    return "Boa tarde";
+                default:
+                    return "Boa noite";
+            }
+        }
+    }
 
     private static string TodayLabel
     {
