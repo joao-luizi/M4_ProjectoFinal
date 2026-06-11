@@ -1,0 +1,127 @@
+/* 403 — o banho. (inclui a base partilhada no fim deste ficheiro) */
+
+/* o pónei (com touca) chapinha: bob suave dentro da banheira */
+.b-pony {
+    position: relative;
+    animation: bBob 1.4s ease-in-out infinite;
+    transform-origin: 50% 90%;
+}
+@keyframes bBob {
+    0%, 100% { transform: translateY(0) rotate(0); }
+    30%      { transform: translateY(-4px) rotate(-1.5deg); }
+    60%      { transform: translateY(-1px) rotate(1.5deg); }
+}
+
+/* a touca, pousada na cabeça (acompanha o bob porque vive dentro de .b-pony) */
+.b-cap {
+    position: absolute;
+    top: -16%;
+    left: 52%;
+    width: 36%;
+}
+
+/* a banheira fica À FRENTE (tapa as pernas) */
+.b-tub {
+    position: absolute;
+    bottom: -6px;
+    left: -6%;
+    width: 112%;
+    z-index: 2;
+}
+
+/* o pato flutua em contraciclo */
+.b-duck {
+    position: absolute;
+    bottom: 26px;
+    left: 6%;
+    width: 22px;
+    z-index: 3;
+    animation: bDuck 1.8s ease-in-out -0.6s infinite;
+}
+@keyframes bDuck {
+    0%, 100% { transform: translateY(0) rotate(3deg); }
+    50%      { transform: translateY(-5px) rotate(-4deg); }
+}
+
+/* bolas de sabão a subir e a estourar */
+.b-soap {
+    position: absolute;
+    bottom: 46px;
+    width: 9px; height: 9px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.85);
+    background: rgba(255, 255, 255, 0.18);
+    opacity: 0;
+    animation: bSoap 3.4s ease-out infinite;
+}
+.b-soap-1 { left: 22%; animation-delay: .2s; }
+.b-soap-2 { left: 50%; animation-delay: 1.4s; width: 7px; height: 7px; }
+.b-soap-3 { left: 72%; animation-delay: 2.5s; width: 11px; height: 11px; }
+@keyframes bSoap {
+    0%   { opacity: 0; transform: translateY(0) translateX(0); }
+    12%  { opacity: .9; }
+    80%  { opacity: .9; transform: translateY(-72px) translateX(-8px); }
+    86%  { opacity: 0;  transform: translateY(-78px) translateX(-9px) scale(1.5); } /* pop! */
+    100% { opacity: 0; }
+}
+
+/* === BASE PARTILHADA — colada de ErrorPages.shared.css === */
+/* ======== base partilhada (cola em AMBOS os .razor.css) ======== */
+.px {
+    position: relative; min-height: 100vh; overflow: hidden;
+    display: flex; align-items: center; justify-content: center; padding: 24px;
+    background: linear-gradient(180deg,
+        #141f2b 0%, #1d2f42 22%, #2f4f6e 46%,
+        #4a6b8a 66%, #8aa0ae 84%, #c9b28a 96%, #41566b 100%);
+}
+.px-brand { position: absolute; top: 28px; left: 36px; z-index: 4;
+    display: inline-flex; align-items: center; gap: 12px; text-decoration: none; }
+.px-brand img { height: 46px; width: 46px; border-radius: 9px; }
+.px-brand span { color: #fff; font-weight: 800; font-size: 1.55rem; }
+.px-ground { position: absolute; left: 0; right: 0; bottom: 0; height: 34px;
+    background: #26331f; border-top: 2px solid var(--rr-tan); }
+.px-cloud { position: absolute; z-index: 1; pointer-events: none; }
+.px-cloud svg { width: 100%; display: block; }
+.px-cloud g rect { fill: #f3efe8; }
+.px-cloud-1 { top: 12%; width: 170px; opacity: .18; animation: pxDrift 100s linear -30s infinite; }
+.px-cloud-2 { top: 30%; width: 110px; opacity: .12; animation: pxDrift 140s linear -90s infinite; }
+@keyframes pxDrift { from { transform: translateX(-260px); } to { transform: translateX(110vw); } }
+.px-card { position: relative; z-index: 3; width: min(460px, 100%);
+    background: rgba(251, 248, 242, 0.92); border: 1px solid rgba(255, 255, 255, 0.55);
+    border-radius: var(--rr-radius-lg); box-shadow: var(--rr-shadow-lg);
+    padding: 30px 34px; text-align: center; animation: pxIn .7s ease .2s both; }
+@keyframes pxIn { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+.px-code { font-weight: 800; font-size: 4.4rem; line-height: 1; color: var(--rr-navy); letter-spacing: -0.03em; }
+.px-card h1 { font-size: 1.5rem; margin: 6px 0 10px; padding-bottom: 12px; position: relative; }
+.px-card h1::after { content: ""; position: absolute; left: 50%; bottom: 0; transform: translateX(-50%);
+    width: 56px; height: 4px; border-radius: 2px;
+    background: linear-gradient(90deg, var(--rr-brown), var(--rr-tan)); }
+.px-card p { color: var(--rr-muted); margin: 0 0 18px; }
+.px-btn { display: block; width: 100%; background-color: var(--rr-navy); color: #fff;
+    font-weight: 700; font-size: 1.05rem; border-radius: var(--rr-radius); padding: 12px 0;
+    text-decoration: none; transition: background-color .16s ease, transform .16s ease; }
+.px-btn:hover { background-color: var(--rr-navy-d); transform: translateY(-2px); color: #fff; }
+.px-btn-ghost { background: transparent; color: var(--rr-navy); border: 1px solid var(--rr-border); margin-top: 10px; }
+.px-btn-ghost:hover { background: rgba(47, 66, 86, 0.07); color: var(--rr-navy); }
+.px-scene { position: absolute; left: 7%; bottom: 36px; z-index: 2; width: 150px; }
+.px-horse { width: 100%; display: block; }
+.px-horse .hbody rect { fill: #ffffff; }
+.px-horse .hmane rect { fill: var(--rr-brown); }
+.px-horse .heye rect { fill: var(--rr-navy); }
+.px-bubblechat { position: absolute; bottom: 112%; left: 40%;
+    background: #fff; color: var(--rr-ink); border: 2px solid var(--rr-navy);
+    border-radius: 10px; padding: 10px 14px; width: max-content; max-width: 230px;
+    box-shadow: var(--rr-shadow-lg);
+    animation: pxBubble .45s cubic-bezier(.34,1.56,.64,1) 1.2s both; }
+.px-bubblechat strong { display: block; font-size: 1.05rem; color: var(--rr-alert); }
+.px-bubblechat span { font-size: .95rem; color: var(--rr-muted); }
+.px-bubblechat::after { content: ""; position: absolute; bottom: -9px; left: 22px;
+    width: 14px; height: 14px; background: #fff;
+    border-right: 2px solid var(--rr-navy); border-bottom: 2px solid var(--rr-navy);
+    transform: rotate(45deg); }
+@keyframes pxBubble { from { opacity: 0; transform: translateY(10px) scale(.7); } to { opacity: 1; transform: none; } }
+@media (max-width: 760px) { .px-scene { left: 3%; width: 110px; } }
+@media (prefers-reduced-motion: reduce) {
+    .px * { animation: none !important; }
+    .px-card, .px-bubblechat { opacity: 1 !important; }
+}

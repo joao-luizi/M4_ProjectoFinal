@@ -88,6 +88,11 @@ builder.Services.AddIdentityCore<EMUser>(options =>
 .AddSignInManager()
 .AddDefaultTokenProviders();
 
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.AccessDeniedPath = "/403";
+});
+
 builder.Services.AddScoped<IUserClaimsPrincipalFactory<EMUser>, CustomUserClaimsPrincipalFactory>();
 
 builder.Services.AddSingleton<IEmailSender<EMUser>, SmtpEmailSender>();
@@ -145,7 +150,7 @@ else
 }
 
 app.UseHttpsRedirection();
-app.UseStatusCodePagesWithReExecute("/404");
+app.UseStatusCodePagesWithReExecute("/{0}");
 
 app.UseStaticFiles();
 app.UseAntiforgery();
