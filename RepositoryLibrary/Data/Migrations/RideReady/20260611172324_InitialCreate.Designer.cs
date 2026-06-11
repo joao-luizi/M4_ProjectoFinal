@@ -12,7 +12,7 @@ using RepositoryLibrary.Data.Context;
 namespace RepositoryLibrary.Data.Migrations.RideReady
 {
     [DbContext(typeof(RideReadyDbContext))]
-    [Migration("20260611094944_InitialCreate")]
+    [Migration("20260611172324_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />

@@ -12,7 +12,7 @@ using RideReady.Data;
 namespace RepositoryLibrary.Data.Migrations.Identity
 {
     [DbContext(typeof(AppIdentityDbContext))]
-    [Migration("20260611094929_InitialIdentity")]
+    [Migration("20260611172306_InitialIdentity")]
     partial class InitialIdentity
     {
         /// <inheritdoc />
