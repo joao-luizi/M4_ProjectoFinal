@@ -58,6 +58,13 @@ public class SmtpEmailSender : IEmailSender<EMUser>
         var username = _configuration["Smtp:Username"];
         var password = _configuration["Smtp:Password"];
 
+        _logger.LogInformation(
+            "SMTP Config - Host={Host}, Port={Port}, User={User}, SSL={SSL}",
+            host,
+            port,
+            username,
+            true);
+
         using var client = new SmtpClient(host)
         {
             Port = port,
@@ -75,8 +82,21 @@ public class SmtpEmailSender : IEmailSender<EMUser>
 
         message.To.Add(toEmail);
 
-        await client.SendMailAsync(message);
+        try
+        {
+            await client.SendMailAsync(message);
 
-        _logger.LogInformation("Email sent to {Email}", toEmail);
+            _logger.LogInformation("Email sent to {Email}", toEmail);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex,
+                "SMTP Error. Host={Host}, Port={Port}, User={User}",
+                host,
+                port,
+                username);
+
+            throw;
+        }
     }
 }
