@@ -58,20 +58,23 @@ public class SmtpEmailSender : IEmailSender<EMUser>
         var username = _configuration["Smtp:Username"];
         var password = _configuration["Smtp:Password"];
 
+        var enableSsl = bool.Parse(_configuration["Smtp:EnableSsl"] ?? "false");
         _logger.LogInformation(
             "SMTP Config - Host={Host}, Port={Port}, User={User}, SSL={SSL}",
             host,
             port,
             username,
-            true);
+            enableSsl);
 
         using var client = new SmtpClient(host)
         {
             Port = port,
             Credentials = new NetworkCredential(username, password),
-            EnableSsl = true
+            EnableSsl = enableSsl
         };
 
+        _logger.LogWarning("ENABLE_SSL VALUE = {EnableSsl}",
+    _configuration["Smtp:EnableSsl"]);
         using var message = new MailMessage
         {
             From = new MailAddress(fromEmail, fromName),

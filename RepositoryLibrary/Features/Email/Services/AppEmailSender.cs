@@ -55,15 +55,19 @@ namespace RepositoryLibrary.Features.Email.Services
             var fromEmail = _configuration["Smtp:FromEmail"] ?? "noreply@rideready.local";
             var fromName = _configuration["Smtp:FromName"] ?? "RideReady";
 
+            var enableSsl = bool.Parse(_configuration["Smtp:EnableSsl"] ?? "false");
+            var username = _configuration["Smtp:Username"];
+            var password = _configuration["Smtp:Password"];
+
             using var client = new SmtpClient(host)
             {
-                        Port = port,
-                        Credentials = new NetworkCredential(
-                 _configuration["Smtp:Username"],
-                 _configuration["Smtp:Password"]
-             ),
-                        EnableSsl = true
-                    };
+                Port = port,
+                Credentials = new NetworkCredential(username, password),
+                EnableSsl = enableSsl
+            };
+
+            _logger.LogWarning("ENABLE_SSL VALUE = {EnableSsl}",
+    _configuration["Smtp:EnableSsl"]);
 
             using var message = new MailMessage
             {
