@@ -1,191 +1,138 @@
-# RideReady
+# RideReady 🐴
 
-RideReady is a web application built with ASP.NET Core designed to manage school-related transport and user services.
+Aplicação web de gestão para escolas de equitação: marcação de aulas online, gestão de alunos, professores e cavalos, controlo de presenças e pagamentos — tudo num só sítio.
 
-It uses a layered architecture with separate concerns for authentication, domain logic, and data persistence.
-
-## Tech Stack
-
-- ASP.NET Core
-- Entity Framework Core
-- SQL Server
-- ASP.NET Identity
+Projeto final do Módulo 4 (curso de programação C#/.NET), desenvolvido a partir de levantamento de requisitos junto de uma escola de equitação real.
 
 ---
 
+## O problema
 
+Numa escola de equitação tradicional, as marcações fazem-se por telefone e a gestão de recursos (cavalos, professores, horários) é manual — o que sobrecarrega a administração e gera erros de agendamento. O RideReady automatiza este processo de ponta a ponta.
 
+## Funcionalidades
 
-## Requirements
+**Alunos**
+- Registo de conta com confirmação por email (wizard de 3 passos, RGPD)
+- Consulta do calendário de aulas e marcação/desmarcação online
+- Dashboard pessoal: próxima aula, créditos por produto, estado de pagamentos, histórico
+- Bloqueio automático de marcações quando há pagamentos em atraso
 
-Antes de iniciar, garantir que tens instalado:
+**Professores**
+- Dashboard com a próxima aula e respetivos alunos
+- Criação e edição de aulas dentro do horário disponível
+- Registo de presenças por aula
 
-- .NET SDK 8.0
-- SQL Server / SQL Server Express
-- Visual Studio 2022 ou JetBrains Rider
-- Git
-- dotnet-ef CLI tool (if not installed):
+**Administradores**
+- Dashboard com indicadores da escola (alunos, aulas, cavalos, pagamentos em falta)
+- Gestão de utilizadores, escolas e cavalos
+- Exportação da informação de alunos para Excel
+- Notificação por email aos alunos em caso de cancelamento/alteração de aula
 
-```bash
-dotnet tool install --global dotnet-ef
+**Regras de negócio dos cavalos**
+- Máximo de 2 aulas/dia por cavalo, com 2 dias de descanso semanais
+- Regras específicas para passeios (até 4/dia, com restrições de combinação com aulas)
+
+## Stack tecnológica
+
+| Camada | Tecnologia |
+|---|---|
+| Frontend | Blazor Server (.NET 8) + Radzen Components 6.6.1 |
+| Backend | ASP.NET Core 8 |
+| API | ASP.NET Core Web API + JWT (Swagger incluído) |
+| Dados | Entity Framework Core 8 + SQL Server (LocalDB em desenvolvimento) |
+| Autenticação | ASP.NET Core Identity |
+| Exportação | ClosedXML (Excel) |
+| Logging | Serilog (consola + ficheiro, em `RideReady/Logs/`) |
+| Email | SMTP (smtp4dev/Papercut em desenvolvimento) |
+
+## Arquitetura
+
+Solução com três projetos e **duas bases de dados separadas** — uma para identidade/utilizadores e outra para o domínio da escola:
+
+```
+M4_ProjectoFinal/
+├── RepositoryLibrary/            # Domínio e acesso a dados (camada partilhada)
+│   ├── Data/
+│   │   ├── Context/              # AppIdentityDbContext + RideReadyDbContext
+│   │   ├── Migrations/           # Migrações separadas por contexto
+│   │   └── Seeds/                # Dados iniciais
+│   └── Features/                 # Organização por funcionalidade (vertical slices):
+│                                 # Account, Bookings, DashBoard, Entitlements,
+│                                 # Horses, Lessons, Products, Purchases, Schools, Users
+│                                 # (cada uma com DTOs / Entities / Interfaces /
+│                                 #  Repositories / Services)
+├── RideReady/                    # Aplicação Blazor Server (frontend)
+│   ├── Components/
+│   │   ├── Features/             # Páginas e modais por funcionalidade
+│   │   ├── Layout/               # MainLayout, NavMenu
+│   │   ├── Shared/               # Componentes reutilizáveis (StatCard, EmptyState, UserAvatar)
+│   │   └── Pages/                # Landing page, páginas de erro temáticas (404/401/403)
+│   ├── Services/                 # Serviços de UI (ex.: ToastService)
+│   └── wwwroot/
+│       ├── css/rideready-theme.css    # Fundação visual (tokens, paleta, movimento)
+│       └── js/rideready-motion.js     # Camada de animação
+└── RideReadyAPI/                 # Web API com autenticação JWT
+    └── Features/Auth/
 ```
 
----
+Cada feature agrupa DTOs, entidades, interfaces, repositórios e serviços (*vertical slices*), em vez de camadas horizontais por tipo.
 
+## Como executar
 
+### Pré-requisitos
+- [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
+- SQL Server LocalDB (incluído no Visual Studio)
+- Ferramentas EF Core: `dotnet tool install --global dotnet-ef`
+- Um servidor SMTP de desenvolvimento para os emails — [smtp4dev](https://github.com/rnwood/smtp4dev) (`dotnet tool install -g Rnwood.Smtp4dev`) ou [Papercut SMTP](https://github.com/ChangemakerStudios/Papercut-SMTP), à escuta no porto 25
 
-
-## Clone Repository
-
-```bash
-git clone <repository-url>
-cd RideReady
-````
-
----
-
-## Local Configuration
-
-This project uses local configuration files that are not committed to the repository.
-
-
-### Criar ficheiros de configuração
-
-Start by creating a local copy of the configuration file:
-
-```text
-.\RideReady\appsettings.example.json
-````
-
-Create a new file based on it:
-
-```text
-.\RideReady\appsettings.json
-```
-
-Optionally, you can also create an environment-specific configuration for development:
-
-```text
-.\RideReady\appsettings.Development.json
-```
-
-> O ficheiro `appsettings.Development.json` sobrepõe configurações do `appsettings.json` quando a aplicação é executada em ambiente `Development`.
-
-> The `appsettings.Development.json` file overrides values from `appsettings.json` when the application runs in `Development` mode.
-
-
-
----
-
-
-
-## Configure Connection Strings
-
-Open `appsettings.json` and update the connection strings according to your local SQL Server setup.
-
-Exemplo:
-
-```json
-"ConnectionStrings": {
-  "RideReadyDB": "Server=localhost;Database=RideReadyDB;Trusted_Connection=True;TrustServerCertificate=True;",
-  "IdentityDb": "Server=localhost;Database=IdentityDb;Trusted_Connection=True;TrustServerCertificate=True;"
-}
-````
-
-
----
-
-## Apply Database Migrations
-
-### 1. Verify EF Core CLI tool
-
-Run:
+### Configuração
+1. Clonar o repositório e abrir `RideReady.sln`
+2. Criar `RideReady/appsettings.json` a partir do `appsettings.example.json` (connection strings `IdentityDb` e `RideReadyDB`, e secção `Smtp`)
+3. Aplicar as migrações às **duas** bases de dados:
 
 ```bash
-dotnet ef
+dotnet ef database update --context AppIdentityDbContext --project RepositoryLibrary --startup-project RideReady
+dotnet ef database update --context RideReadyDbContext --project RepositoryLibrary --startup-project RideReady
 ```
 
-If the command is not found, install it globally:
+(Guia completo de migrações em [`docs/dev/database-migrations.md`](docs/dev/database-migrations.md).)
+
+4. Executar:
 
 ```bash
-dotnet tool install --global dotnet-ef
+dotnet run --project RideReady
 ```
 
-Open the solution and in the developer terminal type:
+A aplicação fica disponível em `https://localhost:56116`.
 
-```bash
-dotnet ef database update --context ApplicationDbContext --project RideReady --startup-project RideReady
-```
+> ⚠️ **Nota:** o servidor SMTP de desenvolvimento deve estar ligado antes de testar o registo de contas ou a recuperação de password — o envio de email de confirmação faz parte desses fluxos.
 
-And: 
-```bash
-dotnet ef database update --context EM_DbContext --project RepositoryLibrary --startup-project RideReady
-```
-You should see the output `Build started...` and `Build succeeded`. a cascade of info output and finally `Done.`
+## Documentação
 
+> 📚 **Nota para futuros desenvolvedores deste projeto:** este README é apenas o ponto de partida. A documentação mais elaborada vive na pasta [`Docs/`](Docs/) — planeamento, notas de desenvolvimento, decisões de arquitetura e material de apresentação — e em [`docs/dev/`](docs/dev/) encontra-se a documentação técnica de desenvolvimento (ex.: o guia de migrações da base de dados). Antes de mexer no código, vale a pena passar por lá: muitas das decisões que vais questionar já estão explicadas.
+
+## Equipa
+
+Este projeto teve **duas fases de desenvolvimento**: foi iniciado por uma primeira equipa e posteriormente retomado pela equipa atual — a segunda a trabalhar no código —, que fez o levantamento do estado do trabalho, consolidou a base existente e o levou até à versão atual.
+
+**Equipa atual:**
+
+| | Área |
+|---|---|
+| **João Luizi** | Backend, Web API, base de dados |
+| **Susana Ribeiro** | Frontend, UI/UX, documentação, exportação Excel, email e logging |
+
+Desenvolvido com metodologia ágil (sprints de 3 dias) e recurso assistido a IA, de forma declarada.
+
+## Próximos passos
+
+- Transferência de cavalos entre escolas
+- Marcação de "aula livre" para cavaleiros com cavalo próprio
+- Fotografias dos cavalos carregadas pelos utilizadores
+- Repetição de aulas na criação (recorrência semanal)
+- Associação de pistas da escola às aulas
 
 ---
 
-
-
-## Run the Project
-
-### Visual Studio
-
-Oprn solution and start the project.
-
-### CLI
-
-```bash
-dotnet run
-````
-
-
----
-
-
-## Troubleshooting
-
-### Database connection issues
-
-If the application cannot connect to the database, verify the following:
-
-- SQL Server is running locally
-- Connection strings in appsettings.json are correct
-- The SQL Server instance name matches your local setup (e.g. localhost, localhost\SQLEXPRESS)
-- The database user has sufficient permissions (if not using Windows Authentication)
-- TrustServerCertificate=True is set if using a local/development environment
-
-### Migration errors
-
-If database migrations fail, check the following:
-
-- The correct startup project is selected (RideReady)
-- The correct DbContext is being targeted:
-- ApplicationDbContext (Identity)
-- EM_DbContext (Application data)
-- Migrations exist in the correct project (RepositoryLibrary)
-- Entity Framework CLI tools are installed:
-
-
----
-# Old Readme
-
-# RideReady
-
-## Getting Started
-
-To get this project up and running on your local machine, follow the steps below:
-
-### 1. Update the Connection Strings
-
-Before running the application, you **must** update the connection strings in the `appSettings` file.  
-These connection strings are required for the application to connect to the correct database and services.
-
-- Open the `appSettings.json`.
-- Locate the section with the connection strings.
-- Replace the placeholders or existing values with your own valid connection strings.
-
-### 2. Run the Application
-
-Once the connection strings have been updated, run the **RideReady** program.
+*Projeto académico — Módulo 4, 2026.*
