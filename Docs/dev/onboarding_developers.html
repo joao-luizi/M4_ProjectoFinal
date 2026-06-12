@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="pt-PT"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RideReady — Guia de Iniciação para Developers</title>
+<style>@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&display=swap');
+:root { --paper:#f3efe8; --card:#fbf8f2; --border:#ddd2bd; --ink:#262019; --muted:#6f6453; --navy:#2f4256; --blue:#3f7fae; --brown:#8a5a2b; --amber:#d9a531; }
+* { box-sizing: border-box; }
+body { font-family:'Manrope',system-ui,sans-serif; background:var(--paper); color:var(--ink); line-height:1.65; margin:0; padding:40px 16px; }
+.wrap { max-width:900px; margin:0 auto; background:var(--card); border:1px solid var(--border); border-radius:14px; box-shadow:0 14px 30px -16px rgba(38,32,25,.4); padding:48px 56px; }
+h1 { font-weight:800; letter-spacing:-0.02em; font-size:1.9rem; line-height:1.15; border-bottom:4px solid var(--brown); padding-bottom:12px; }
+h2 { font-weight:800; color:var(--navy); font-size:1.3rem; margin-top:38px; border-bottom:2px solid var(--border); padding-bottom:6px; }
+h3 { font-weight:800; color:var(--brown); font-size:1.05rem; margin-top:24px; }
+blockquote { background:var(--paper); border-left:5px solid var(--amber); border-radius:8px; margin:16px 0; padding:12px 18px; color:var(--muted); }
+blockquote p { margin:6px 0; }
+table { border-collapse:collapse; width:100%; margin:14px 0; font-size:0.9rem; }
+th { background:var(--navy); color:#fff; padding:9px 12px; text-align:left; font-weight:700; }
+td { border:1px solid var(--border); padding:8px 12px; vertical-align:top; }
+tr:nth-child(even) td { background:#faf7f1; }
+code { background:#ece6da; padding:1px 6px; border-radius:4px; font-size:0.86em; }
+pre { background:#2f4256; color:#f3efe8; border-radius:8px; padding:14px 18px; overflow-x:auto; }
+pre code { background:transparent; color:inherit; padding:0; }
+ol li, ul li { margin:5px 0; }
+ol li strong:first-child { color:var(--navy); }
+hr { border:none; border-top:1px solid var(--border); margin:28px 0; }
+a { color:var(--blue); }
+@media (max-width:700px) { .wrap { padding:24px 18px; } body { padding:12px 6px; } }
+@media print { body { background:#fff; padding:0; } .wrap { box-shadow:none; border:none; padding:0; } }</style></head>
+<body><div class="wrap"><h1>Guia de Iniciação para Developers — RideReady</h1>
+<blockquote>
+<p><strong>Bem-vind@ ao projeto.</strong> Este guia leva-te de um clone fresco até à aplicação a correr, e poupa-te os tropeções que já custaram horas a quem cá esteve antes. Lê isto antes de escrever código.</p>
+<p>Documentos irmãos: <a href="../../README.md"><code>README.md</code></a> (visão geral) · <a href="database-migrations.md"><code>database-migrations.md</code></a> (migrações em detalhe) · <code>Docs/</code> (especificação consolidada, planeamento, decisões).</p>
+</blockquote>
+<hr />
+<h2>1. Pré-requisitos</h2>
+<table>
+<thead>
+<tr>
+<th>O quê</th>
+<th>Notas</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>.NET 8 SDK</td>
+<td><code>dotnet --version</code> deve devolver 8.x</td>
+</tr>
+<tr>
+<td>SQL Server</td>
+<td>Instância local <strong>ou</strong> LocalDB (vem com o Visual Studio)</td>
+</tr>
+<tr>
+<td>Ferramentas EF Core</td>
+<td><code>dotnet tool install --global dotnet-ef</code></td>
+</tr>
+<tr>
+<td>Servidor SMTP de desenvolvimento</td>
+<td><strong>Obrigatório</strong> — ver §4. <a href="https://github.com/rnwood/smtp4dev">smtp4dev</a>: <code>dotnet tool install -g Rnwood.Smtp4dev</code></td>
+</tr>
+<tr>
+<td>Visual Studio 2022+ (ou Rider/VS Code)</td>
+<td>Solução: <code>RideReady.sln</code></td>
+</tr>
+</tbody>
+</table>
+<h2>2. Do clone ao primeiro arranque</h2>
+<pre><code class="language-bash">git clone https://github.com/joao-luizi/M4_ProjectoFinal.git
+cd M4_ProjectoFinal
+</code></pre>
+<p><strong>2.1 Configuração</strong> — o <code>appsettings.json</code> real <strong>não está no Git</strong> (de propósito: o <code>.gitignore</code> exclui <code>appsettings*.json</code>, exceto o example). Cria o teu:</p>
+<pre><code class="language-bash">cp RideReady/appsettings.example.json RideReady/appsettings.json
+</code></pre>
+<p>Depois ajusta as connection strings ao teu ambiente — o example traz a variante para <strong>SQL Server local</strong> ativa e a variante <strong>LocalDB</strong> em linhas <code>_LocalDB</code> prontas a trocar. ⚠️ <strong>Nunca commits o <code>appsettings.json</code></strong> nem credenciais de servidores.</p>
+<p><strong>2.2 Bases de dados</strong> — são <strong>duas</strong> (decisão de arquitetura: identidade separada do domínio), por isso são <strong>dois</strong> comandos:</p>
+<pre><code class="language-bash">dotnet ef database update --context AppIdentityDbContext --project RepositoryLibrary --startup-project RideReady
+dotnet ef database update --context RideReadyDbContext --project RepositoryLibrary --startup-project RideReady
+</code></pre>
+<p>Detalhes, criação de novas migrações e resolução de problemas: <a href="database-migrations.md"><code>database-migrations.md</code></a>.</p>
+<p><strong>2.3 Arrancar:</strong></p>
+<pre><code class="language-bash">dotnet run --project RideReady
+</code></pre>
+<p>→ <strong>https</strong>://localhost:56116 — atenção ao <strong>https</strong>: o endereço http dá "página não está a funcionar" e já enganou muita gente nesta equipa.</p>
+<h2>3. Mapa da solução (60 segundos)</h2>
+<ul>
+<li><strong><code>RepositoryLibrary/</code></strong> — domínio + dados. Organizado por <strong><em>vertical slices</em></strong>: cada pasta em <code>Features/</code> (Lessons, Horses, Users...) contém os seus DTOs, Entities, Interfaces, Repositories e Services. Procura por funcionalidade, não por tipo.</li>
+<li><strong><code>RideReady/</code></strong> — a app Blazor Server. Páginas e componentes em <code>Components/Features/&lt;área&gt;/</code>; componentes reutilizáveis (StatCard, EmptyState, UserAvatar) em <code>Components/Shared/</code>. A identidade visual vive em <code>wwwroot/css/rideready-theme.css</code> (tokens <code>--rr-*</code>) e a camada de animação em <code>wwwroot/js/rideready-motion.js</code>.</li>
+<li><strong><code>RideReadyAPI/</code></strong> — Web API com JWT (Swagger incluído em dev).</li>
+</ul>
+<h2>4. O email é parte do fluxo — liga o SMTP antes de testar</h2>
+<p>O registo de contas e a recuperação de password <strong>enviam email de confirmação</strong>, e o <code>SmtpEmailSender</code> foi desenhado para <strong>falhar alto</strong> (lança exceção se o envio falhar — decisão deliberada, documentada em <code>Docs/</code>). Tradução prática: <strong>sem um servidor SMTP de dev a correr no porto 25, o registo rebenta.</strong></p>
+<pre><code class="language-bash">smtp4dev   # e abre a UI dele para veres os emails recebidos
+</code></pre>
+<h2>5. Convenções da equipa</h2>
+<ul>
+<li><strong>Branches:</strong> <code>feature/&lt;nome&gt;</code> a partir de <code>main</code> atualizado; merge por PR. Trabalho de risco alto isolado em branches próprios.</li>
+<li><strong>Commits:</strong> em <strong>inglês, no passado</strong> — ex.: <code>Added welcome toast after login</code>, <code>Fixed lessons calendar initial load</code>. Correções de bugs <strong>não se misturam</strong> com cosmética no mesmo commit.</li>
+<li><strong>Idioma da UI:</strong> PT-PT. Textos novos nascem em português.</li>
+<li><strong>Cores:</strong> usar os tokens <code>--rr-*</code> do tema, nunca hex soltos. O <strong>coral (<code>--rr-alert</code>) é exclusivo para estados maus</strong> (erros, atrasos, lotado) — não o uses como decoração.</li>
+<li><strong>Dados sensíveis:</strong> nunca no Git (ver §2.1). Imagens de runtime (<code>wwwroot/Images/users/</code>) também não.</li>
+</ul>
+<h2>6. Armadilhas conhecidas (aprendidas a chorar)</h2>
+<ol>
+<li><strong>Páginas de Identity ficam SSR.</strong> Não apliques <code>@rendermode InteractiveServer</code> a Login/Register/etc. — componentes interativos do Radzen aí causam <code>NullReferenceException</code>. Interatividade nessas páginas faz-se com JS estático (vê o padrão no <code>rideready-motion.js</code>).</li>
+<li><strong><code>RedirectManager.RedirectTo(...)</code> não pára a execução.</strong> O código a seguir à chamada continua a correr — põe <code>return</code> explícito depois, ou colhes <code>NullReferenceException</code> (já aconteceu três vezes neste projeto).</li>
+<li><strong>CSS scoped novo (<code>.razor.css</code> acabado de criar) exige restart completo</strong> da app; alterar um existente basta Ctrl+F5. Esquecer isto = "o meu CSS não funciona".</li>
+<li><strong>CSS scoped não entra em componentes filhos</strong> — usa <code>::deep</code> para estilizar markup de componentes Radzen dentro do teu.</li>
+<li><strong>O tema do Radzen carrega depois do nosso</strong> e ganha empates de especificidade. Para o vencer: variáveis <code>--rz-*</code> em <code>:root:has(.rz-layout)</code> com <code>!important</code> (vê os exemplos no fim do <code>rideready-theme.css</code>).</li>
+<li><strong><code>var()</code> não valida tipos</strong> — pintar um fundo com <code>var(--rr-base)</code> (que é <code>18px</code>) falha em silêncio. Confirma que a variável é do tipo certo.</li>
+<li><strong><code>@</code> literal em Razor escreve-se <code>@@</code></strong> ("Bem-vind@@" → "Bem-vind@").</li>
+<li><strong><code>string.GetHashCode()</code> é aleatorizado por execução</strong> no .NET moderno — para hashes determinísticos (ex.: cor do <code>UserAvatar</code>), usa um hash à mão (FNV-1a no código, comentado).</li>
+<li><strong>Conflitos de merge esquecidos</strong> (<code>&lt;&lt;&lt;&lt;&lt;&lt;&lt;</code>) produzem cascatas de erros Razor (RZ1006/RZ9980) em linhas inocentes — o erro aparece longe da causa. Despiste: Ctrl+Shift+F por <code>&lt;&lt;&lt;&lt;&lt;&lt;&lt;</code> na solução inteira.</li>
+</ol>
+<h2>7. Estado real do produto — lê antes de assumir</h2>
+<p>Nem tudo o que o código sugere está <strong>ligado</strong>. Três exemplos que enganam (detalhe completo na §8.2 e §9 da <a href="../../Docs/">Especificação Consolidada</a>):</p>
+<ul>
+<li><code>BookingService.CanBook</code> (bloqueio de marcações por pagamento em atraso) existe mas está <strong>comentado</strong>;</li>
+<li><code>IsAvailable()</code> (regras de carga/descanso dos cavalos) existe mas <strong>nunca é chamado</strong> na criação de aulas;</li>
+<li>o <strong>envio de email no cancelamento de aulas</strong> está comentado (a infraestrutura funciona — confirmação de conta e recuperação de password usam-na).</li>
+</ul>
+<p>Os dashboards correm em <strong>modo de demonstração assumido</strong> (faixa âmbar visível); a receita de religação aos serviços está em comentário em cada um.</p>
+<h2>8. Onde pedir ajuda ao passado</h2>
+<ul>
+<li><strong>Especificação consolidada</strong> (<code>Docs/</code>) — requisitos, estado, user stories, diagramas e as recomendações da 2.ª equipa (pistas, pagamentos, subscrições).</li>
+<li><strong>Manuais técnicos</strong> (<code>Docs/</code>) — fundamentos do projeto, exportação Excel, sistema de email, explicados linha a linha.</li>
+<li><strong><code>git log</code></strong> — as mensagens de commit contam a história por ordem.</li>
+</ul>
+<p>Bom código — e lembra-te da regra de ouro da casa: <em>comentários e código órfãos mentem; quando encontrares um, apaga-o ou corrige-o.</em> 🐴</p></div></body></html>
