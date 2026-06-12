@@ -46,37 +46,37 @@ public class SmtpEmailSender : IEmailSender<EMUser>
         );
     }
 
-   
+
 
     private async Task SendEmailAsync(string toEmail, string subject, string htmlBody)
     {
         var host = _configuration["Smtp:Host"] ?? "localhost";
         var port = int.Parse(_configuration["Smtp:Port"] ?? "25");
-        var fromEmail = _configuration["Smtp:FromEmail"] ?? "noreply@rideready.local";
+        var fromEmail = _configuration["Smtp:FromEmail"] ?? "noreply@local";
         var fromName = _configuration["Smtp:FromName"] ?? "RideReady";
 
-        try
-        {
-            using var client = new SmtpClient(host, port);
-            client.EnableSsl = false;
-            client.DeliveryMethod = SmtpDeliveryMethod.Network;
+        var username = _configuration["Smtp:Username"];
+        var password = _configuration["Smtp:Password"];
 
-            using var message = new MailMessage
-            {
-                From = new MailAddress(fromEmail, fromName),
-                Subject = subject,
-                Body = htmlBody,
-                IsBodyHtml = true
-            };
-            message.To.Add(toEmail);
-
-            await client.SendMailAsync(message);
-            _logger.LogInformation("Email enviado para {Email} com assunto '{Subject}'.", toEmail, subject);
-        }
-        catch (Exception ex)
+        using var client = new SmtpClient(host)
         {
-            _logger.LogError(ex, "Falha ao enviar email para {Email}.", toEmail);
-            throw;
-        }
+            Port = port,
+            Credentials = new NetworkCredential(username, password),
+            EnableSsl = true
+        };
+
+        using var message = new MailMessage
+        {
+            From = new MailAddress(fromEmail, fromName),
+            Subject = subject,
+            Body = htmlBody,
+            IsBodyHtml = true
+        };
+
+        message.To.Add(toEmail);
+
+        await client.SendMailAsync(message);
+
+        _logger.LogInformation("Email sent to {Email}", toEmail);
     }
 }
