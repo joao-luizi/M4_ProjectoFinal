@@ -113,16 +113,34 @@ namespace RideReadyAPI
             app.MapAuthEndpoints();
 
 
-            if (app.Environment.IsDevelopment())
+            //if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
 
 
-            app.MapGet("/", () => "RideReady API is running");
+            app.MapGet("/", (IConfiguration config) =>
+            {
+                return Results.Ok(new
+                {
+                    name = "RideReady API",
+                    status = "Running",
+                    version = "1.0",
+                    environment = app.Environment.EnvironmentName,
+                    authentication = "JWT + ASP.NET Identity",
+                    database = "SQL Server (Identity + RideReadyDB)",
+                    endpoints = new
+                    {
+                        auth = "/api/auth/login",
+                        debug = "/api/auth/debug",
+                        health = "/api/health"
+                    },
+                    timestamp = DateTime.UtcNow
+                });
+            });
 
-            
+
             app.Run();
         }
     }

@@ -11,9 +11,44 @@ namespace RideReadyAPI.Features.Auth.EndPoints
     {
         public static IEndpointRouteBuilder MapAuthEndpoints(this IEndpointRouteBuilder app)
         {
-            
 
-            
+
+            app.MapGet("/api/health", () =>
+            {
+                return Results.Ok(new
+                {
+                    status = "Healthy",
+                    uptime = "Running",
+                    serverTime = DateTime.UtcNow
+                });
+            });
+
+            app.MapGet("/api", () =>
+            {
+                return Results.Ok(new
+                {
+                    project = "RideReady",
+                    modules = new[]
+                    {
+            "Authentication (JWT + Identity)",
+            "Booking system",
+            "Subscriptions",
+            "Roles (Student/Teacher/Admin)"
+        }
+                });
+            });
+
+            app.MapGet("/api/docs", () =>
+            {
+                return Results.Ok(new
+                {
+                    login = "POST /api/auth/login",
+                    debug = "GET /api/auth/debug",
+                    studentTest = "GET /api/auth/test_student",
+                    teacherTest = "GET /api/auth/test_teacher",
+                    adminTest = "GET /api/auth/test_admin"
+                });
+            });
 
             // TEST ENDPOINTS
 
@@ -46,9 +81,14 @@ namespace RideReadyAPI.Features.Auth.EndPoints
 
             app.MapGet("/api/auth/debug", (ClaimsPrincipal user) =>
             {
-                return Results.Ok(user.Claims.Select(c => new { c.Type, c.Value }));
+                return Results.Ok(new
+                {
+                    isAuthenticated = user.Identity?.IsAuthenticated,
+                    name = user.Identity?.Name,
+                    claims = user.Claims.Select(c => new { c.Type, c.Value })
+                });
             });
-           
+
 
             app.MapPost("/api/auth/login", async (
                 Microsoft.AspNetCore.Identity.Data.LoginRequest request,

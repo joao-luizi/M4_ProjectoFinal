@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using RepositoryLibrary.Features.Email.DTOs;
 using RepositoryLibrary.Features.Users.Entities;
+using System.Net;
 using System.Net.Mail;
 
 namespace RepositoryLibrary.Features.Email.Services
@@ -54,7 +55,15 @@ namespace RepositoryLibrary.Features.Email.Services
             var fromEmail = _configuration["Smtp:FromEmail"] ?? "noreply@rideready.local";
             var fromName = _configuration["Smtp:FromName"] ?? "RideReady";
 
-            using var client = new SmtpClient(host, port);
+            using var client = new SmtpClient(host)
+            {
+                        Port = port,
+                        Credentials = new NetworkCredential(
+                 _configuration["Smtp:Username"],
+                 _configuration["Smtp:Password"]
+             ),
+                        EnableSsl = true
+                    };
 
             using var message = new MailMessage
             {
